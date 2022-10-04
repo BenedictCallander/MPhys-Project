@@ -30,6 +30,22 @@ names = [sim['name'] for sim in r['simulations']]
 
 print(names)
 
+
+i = names.index('Illustris-3')
+
+sim = get(r['simulations'][i]['url'])
+sim.keys()
+
+print(sim['num_dm'])
+
+snaps = get(sim['snapshots'])
+print('length of snapshot', len(snaps)) #find total number of snapshots
+print(snaps[-1]) #print -1 index to find total number of snapshots
+
+snap = get(snaps[-1]['url'])
+print(snap)
+
 #test to see if github working
 #black panther trailer
+
 # %%
