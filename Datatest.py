@@ -28,7 +28,7 @@ r['simulations'][0]
 
 names = [sim['name'] for sim in r['simulations']]
 
-print(names)
+# print(names)
 
 
 i = names.index('Illustris-3')
@@ -39,12 +39,18 @@ sim.keys()
 print(sim['num_dm'])
 
 snaps = get(sim['snapshots'])
-print('length of snapshot', len(snaps)) #find total number of snapshots
-print(snaps[-1]) #print -1 index to find total number of snapshots
+#print('length of snapshot', len(snaps)) #find total number of snapshots
+#print(snaps[-1]) #print -1 index to find total number of snapshots
 
 snap = get(snaps[-1]['url'])
 print(snap)
 
+
+
+subs = get(snap['subhalos'], {'limit':220})#obtain list of subhalos inside selected snapshot 
+print(subs.keys(),'\n \n')
+print(subs['results'][0])
+print(subs['next'])
 #test to see if github working
 #black panther trailer
 
