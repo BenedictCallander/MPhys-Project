@@ -1,5 +1,5 @@
 #%% 
-
+import numpy as np
 import requests
 import h5py
 import matplotlib.pyplot as plt
@@ -94,10 +94,32 @@ with h5py.File(mpb2,'r') as f:
     pos = f['SubhaloPos'][:]
     snapnum= f['SnapNum'][:]
     subid = f['SubhaloNumber'][:]
-for i in range (3):
-    plt.plot(snapnum,pos[:,i] - pos[0,i], label=['x','y','z'][i])
-plt.legend()
-plt.xlabel('Snapshot Number')
-plt.ylabel('Pos$_{x,y,z}$(z) - Pos(z=0)');
+#for i in range (3):
+ #   plt.plot(snapnum,pos[:,i] - pos[0,i], label=['x','y','z'][i])
+#plt.legend()
+#plt.xlabel('Snapshot Number')
+#plt.ylabel('Pos$_{x,y,z}$(z) - Pos(z=0)')
 
+url = sim['snapshots']+'z=1'
+print(url)
+
+snap = get(url)
+
+i = np.where(snapnum==85)
+print(subid[i])
+
+sub_prog_url = "http://www.tng-project.org/api/Illustris-3/snapshots/85/subhalos/185/"
+sub_prog = get(sub_prog_url)
+
+cutout_request = {'gas':'Coordinates,Masses'}
+cutout = get(sub_prog_url+'cutout.hdf5', cutout_request)
+
+with h5py.File(cutout,'r') as f:
+    x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
+    y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
+    dens = np.log10(f['PartType0']['Masses'][:])
+
+plt.hist2d(x,y,weights=dens,bins=[150,100])
+plt.xlabel('$\Delta x$ [ckpc/h]')
+plt.ylabel('$\Delta y$ [ckpc/h]');
 # %%
