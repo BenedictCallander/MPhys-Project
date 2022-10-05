@@ -21,10 +21,6 @@ r.keys()
 ['simulations']
 len(r['simulations'])
 
-r['simulations'][0]
-{'name': 'Illustris-1',
- 'num_snapshots': 134,
- 'url': 'http://www.tng-project.org/api/Illustris-1/'}
 
 names = [sim['name'] for sim in r['simulations']]
 
@@ -53,5 +49,20 @@ print(subs['results'][0])
 print(subs['next'])
 #test to see if github working
 #black panther trailer
+
+
+#request first 20 subhalos, sort by descending stellar mass
+
+
+
+subs = get(snap['subhalos'],{'limit':20, 'order_by':'-mass_stars'})
+for i in range(5):
+    print(subs['results'][i]['id'])
+
+sub = get(subs['results'][1]['url'])
+print(sub['cm_x'])
+
+url = sub['related']['parent_halo']+'info.json'
+print(url)
 
 # %%
