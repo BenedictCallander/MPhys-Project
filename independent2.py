@@ -33,15 +33,13 @@ cutout_request = {'gas':'gasmetallicitysfr'}
 metallicity = []
 masslog =[]
 ilist=[]
-for i in range(859077):
+for i in range(20):
     fileurl = base_url+str(i)
     met = get(fileurl)
     metallicity.append(met['gasmetallicity'])
     masslog.append(met['mass_gas'])
     ilist.append(i)
-    #print(i, met['starmetallicity'])
-df = pd.DataFrame({'i': ilist, 'mass': masslog, 'metallicity': metallicity})
-pd.DataFrame.to_csv('ind1.csv')
+    print(i, met['starmetallicity'])
 
 plt.figure()
 plt.plot(masslog,metallicity, 'r.')
