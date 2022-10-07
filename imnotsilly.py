@@ -1,11 +1,11 @@
 #%%
 
-import enum
+import random
 import logging # http logging for debugging purpouses
 import time #runtime calculation 
 import numpy as np #data handling 
 import requests #obtain data from API server
-import h5py #binary file manipulation
+#import h5py #binary file manipulation
 import pandas as pd 
 import matplotlib.pyplot as plt 
 
@@ -54,12 +54,16 @@ for i,id in enumerate(valid_ids):
 df = pd.DataFrame({"id": valid_ids, "sfr": sfr, "mass": mass})
 
 df.to_csv('test1.csv')
+colors = [plt.cm.hsv(i) for i in np.linspace(0, 1, 600)]
 
-plt.figure(figsize = (15,15))
-plt.plot(df['mass'], df['sfr'], 'g+')
+plt.figure(figsize = (20,12), dpi = 500)
+plt.scatter(df['mass'], df['sfr'], c = df['id'], cmap = 'hsv')
 plt.yscale('log')
-plt.ylabel("log(SFR)")
-plt.xlabel("Mass (Log Msun)")
+plt.ylabel("log(SFR)", fontsize = 25)
+plt.xlabel("Mass (Log Msun)", fontsize = 25)
+plt.tick_params(axis = 'both', which = 'both',direction = 'inout', length = 15, labelsize = 15)
+plt.colorbar(label='arbitrary 3rd')
+plt.savefig('sfr.png')
 plt.show()
 plt.close()
 

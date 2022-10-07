@@ -4,7 +4,6 @@ import logging # http logging for debugging purpouses
 import time #runtime calculation 
 import numpy as np #data handling 
 import requests #obtain data from API server
-import h5py #binary file manipulation
 import pandas as pd 
 import matplotlib.pyplot as plt 
 
@@ -30,7 +29,7 @@ def get(path, params = 'None'):
         return filename # return the filename string
     return r
 base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/"
-
+colors = [plt.cm.hsv(i) for i in np.linspace(0, 1, 600)]
 sq = '?sfr_gt=0.0'
 url1 = base_url+sq
 valid_subs = get(url1)
