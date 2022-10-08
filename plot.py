@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt 
 
 
-df = pd.read_csv('bigdata1.csv')
+df = pd.read_csv('bigdata2.csv')
 print(df['sfr'])
 
 plt.figure(figsize = (20,12))

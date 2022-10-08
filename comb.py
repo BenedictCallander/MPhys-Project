@@ -59,7 +59,7 @@ valid_ids = [ valid_subs['results'][i]['id'] for i in range(100)]
 # read url for 'next' page from API, load next page and collect ID numbers of valid subhalos
 #
 
-for i in range(20): #range = number of pages past 1 to include in data download
+for i in range(40): #range = number of pages past 1 to include in data download
     urlnext = valid_subs['next']
     valid_subs= get(urlnext)
     ids2 = [ valid_subs['results'][i]['id'] for i in range(100)]
@@ -111,7 +111,7 @@ df = pd.DataFrame({
     "metallicity_stars" : starmetallicity,
     "metallicity_gas" : gasmetallicity,
     "m_gas_sfr_weighted" : gasmetallicitysfrweighted})
-df.to_csv('bigdata1.csv')
+df.to_csv('bigdata2.csv')
 
 end = time.time()
 print('runtime is', (end-start),' seconds')
