@@ -35,7 +35,7 @@ def get(path, params = 'None'):
     return r
 
 #define search criteria for subhalo filtering 
-search_q = "?sfr__gt=0.0"
+search_q = "?limit=200&sfr__gt=0.0"
 
 #set base url as subhalos list 
 base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/"
@@ -59,7 +59,7 @@ valid_ids = [ valid_subs['results'][i]['id'] for i in range(100)]
 # read url for 'next' page from API, load next page and collect ID numbers of valid subhalos
 #
 
-for i in range(1): #range = number of pages past 1 to include in data download
+for i in range(20): #range = number of pages past 1 to include in data download
     urlnext = valid_subs['next']
     valid_subs= get(urlnext)
     ids2 = [ valid_subs['results'][i]['id'] for i in range(100)]
@@ -73,8 +73,13 @@ pos_x = []; pos_y = []; pos_z = []
 starmetallicity = []
 gasmetallicity = []
 gasmetallicitysfrweighted = []
+ticker = 1
+
+print("sending API request for ", len(valid_ids), "subhalos")
 for i in valid_ids:
-    result = r.get ()
+    url=base_url+str(i)
+    #print(url)
+    result = get(url)
     links.append(url)
     sfr.append(result['sfr'])
     mass_gas.append(result['mass_gas'])
@@ -86,9 +91,16 @@ for i in valid_ids:
     starmetallicity.append(result['starmetallicity'])
     gasmetallicity.append(result['gasmetallicity'])
     gasmetallicitysfrweighted.append(result['gasmetallicitysfrweighted'])
+    ticker = ticker + 1
+    pc = (ticker/(len(valid_ids)))*100
+    if pc%5 ==0:
+        print('Request {:.2f} % complete, {:.2f} s'.format(pc, (time.time()-start)))
+    if pc ==5:
+        print('projected runtime = {:.2f}'.format(pc*20))
+
 df = pd.DataFrame({
     "id" : valid_ids,
-    "link" : url,
+    "link" : links,
     "sfr" :  sfr,
     "mass_stars" : mass_stars,
     "mass_total" : mass,
@@ -99,3 +111,8 @@ df = pd.DataFrame({
     "metallicity_stars" : starmetallicity,
     "metallicity_gas" : gasmetallicity,
     "m_gas_sfr_weighted" : gasmetallicitysfrweighted})
+df.to_csv('bigdata1.csv')
+
+end = time.time()
+print('runtime is', (end-start),' seconds')
+# %%
