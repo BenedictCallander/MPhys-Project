@@ -30,7 +30,7 @@ def get(path, params = 'None'):
             f.write(r.content)
         return filename # return the filename string
     return r
-base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/"
+base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=2/subhalos/"
 
 sq = '?sfr_gt=0.0'
 url1 = base_url+sq
@@ -57,12 +57,12 @@ df.to_csv('test1.csv')
 colors = [plt.cm.hsv(i) for i in np.linspace(0, 1, 600)]
 
 plt.figure(figsize = (20,12), dpi = 500)
-plt.scatter(df['mass'], df['sfr'], c = df['id'], cmap = 'hsv')
+#plt.scatter(df['mass'], df['sfr'], c = df['id'], cmap = 'hsv')
 plt.yscale('log')
 plt.ylabel("log(SFR)", fontsize = 25)
 plt.xlabel("Mass (Log Msun)", fontsize = 25)
 plt.tick_params(axis = 'both', which = 'both',direction = 'inout', length = 15, labelsize = 15)
-plt.colorbar(label='arbitrary 3rd')
+#plt.colorbar(label='arbitrary 3rd')
 plt.savefig('sfr.png')
 plt.show()
 plt.close()
