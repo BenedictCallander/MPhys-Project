@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html><head>
+    <title>IllustrisTNG - Browsable API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="The IllustrisTNG project. The next generation of cosmological hydrodynamical simulations of galaxy formation and evolution.">
+    <meta name="author" content="Dylan Nelson for the TNG Collaboration.">
+    <link href="IllustrisTNG%20-%20Browsable%20API_files/base_tng.css" rel="stylesheet" type="text/css">
+    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="NONE,NOARCHIVE">
+    <link href="IllustrisTNG%20-%20Browsable%20API_files/data.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="IllustrisTNG%20-%20Browsable%20API_files/prettify.css">
+    <link rel="stylesheet" type="text/css" href="IllustrisTNG%20-%20Browsable%20API_files/default.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+   <link rel="icon" type="image/png" href="https://www.tng-project.org/static/tng/images/favicon.png"> 
+  <script src="IllustrisTNG%20-%20Browsable%20API_files/prompt.js"></script></head>
+  
+  <body id="browsable_page">
+    
+    <div class="navbar  navbar-inverse navbar-fixed-top ">
+      <div class="container">
+        <div class="navbar-header ">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          
+          <a class="navbar-brand" href="https://www.tng-project.org/">TNG</a>
+          
+        </div>
+        <div class="navbar-collapse  collapse">
+
+          <ul class="nav navbar-nav ">
+            
+            <li><a href="https://www.tng-project.org/about/">Project Description</a></li>
+            <li><a href="https://www.tng-project.org/people/">People + Contact</a></li>
+            <li><a href="https://www.tng-project.org/results/">Results</a></li>
+            <!--<li><a href="">Press</a></li>-->
+            <li><a href="https://www.tng-project.org/media/">Images + Videos</a></li>
+            <li class="active"><a href="https://www.tng-project.org/data/">Data Access</a></li>
+            <li><a href="https://www.tng-project.org/explore/">Explore</a></li>
+            
+            
+            
+            <li class="hidden-lg hidden-md ">
+              <a href="https://www.tng-project.org/users/login/">User Settings</a>
+            </li>
+          </ul>
+          
+          <ul class="nav navbar-nav navbar-right hidden-sm hidden-xs"><a href="https://www.tng-project.org/users/profile/"><span class="sr-only">User settings</span><li class="user-settings gear3 "></li></a></ul>
+        </div> <!-- navbar-collapse -->
+       </div> <!--container-->
+    </div>
+    
+    
+    <div class="container">
+      
+
+  <div class="page-header">
+    <h1>Public Data Access 
+      <small><a href="https://www.tng-project.org/data/">Overview</a> / Browsable API</small>
+    </h1>
+  </div>
+
+    <ul class="breadcrumb" id="browsable_path">
+        
+            
+                <li><a href="https://www.tng-project.org/api/">Api Root</a></li>
+            
+        
+            
+                <li><a href="https://www.tng-project.org/api/TNG50-2/">Simulation Detail</a></li>
+            
+        
+            
+                <li><a href="https://www.tng-project.org/api/TNG50-2/snapshots/">Snapshot List</a></li>
+            
+        
+            
+                <li><a href="https://www.tng-project.org/api/TNG50-2/snapshots/99/">Snapshot Detail</a></li>
+            
+        
+            
+                <li><a href="https://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/">Subhalo List</a></li>
+            
+        
+            
+                <li class="active"><a href="https://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/">Subhalo Detail</a></li>
+            
+        
+    </ul>
+
+  <div id="content">
+
+      
+          <form id="get-form" class="pull-right">
+              <fieldset>
+                  <div class="btn-group format-selection">
+                      <a class="btn btn-primary js-tooltip" href="https://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/" rel="nofollow" title="" data-original-title="Make a GET request on the Subhalo Detail resource">GET</a>
+
+                      <button class="btn btn-primary dropdown-toggle js-tooltip" data-toggle="dropdown" title="" data-original-title="Specify a format for the GET request">
+                          <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                          
+                              <li>
+                                  <a class="js-tooltip format-option" href="https://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/?format=json" rel="nofollow" title="" data-original-title="Make a GET request on the Subhalo Detail resource with the format set to `json`">
+                                      json
+                                  </a>
+                              </li>
+                          
+                              <li>
+                                  <a class="js-tooltip format-option" href="https://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/?format=api" rel="nofollow" title="" data-original-title="Make a GET request on the Subhalo Detail resource with the format set to `api`">
+                                      api
+                                  </a>
+                              </li>
+                          
+                      </ul>
+                  </div>
+              </fieldset>
+          </form>
+      
+
+      <div class="content-main">
+          <div class="page-header">
+              
+              <h1>Subhalo Detail</h1>
+              
+          </div>
+          
+              <p>Showing detail for one subhalo in this particular snapshot.</p>
+          
+          <div class="request-info" style="clear: both">
+              <pre class="prettyprint"><b><span class="pln">GET</span></b><span class="pln"> </span><span class="pun">/</span><span class="pln">api</span><span class="pun">/</span><span class="pln">TNG50</span><span class="pun">-</span><span class="lit">2</span><span class="pun">/</span><span class="pln">snapshots</span><span class="pun">/</span><span class="lit">99</span><span class="pun">/</span><span class="pln">subhalos</span><span class="pun">/</span><span class="lit">0</span><span class="pun">/</span></pre>
+          </div>
+          <div class="response-info">
+              <pre class="prettyprint"><span class="meta nocode"><b>HTTP 200 OK</b>
+<b>Allow:</b> <span class="lit">GET, HEAD, OPTIONS</span>
+<b>Content-Type:</b> <span class="lit">application/json</span>
+<b>Vary:</b> <span class="lit">Accept</span>
+
+</span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"snap"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">99</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"id"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"bhmdot"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.000320963</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"cm_x"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">7306.13</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"cm_y"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">24514.2</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"cm_z"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">21300.2</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"gasmetallicity"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.00710731</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"gasmetallicityhalfrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.00764307</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"gasmetallicitymaxrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.00596665</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"gasmetallicitysfr"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.00626532</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"gasmetallicitysfrweighted"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0065664</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"pos_x"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">7320.26</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"pos_y"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">24545.4</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"pos_z"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">21301.7</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"halfmassrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">379.081</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"halfmassrad_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">379.446</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"halfmassrad_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">386.297</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"halfmassrad_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">34.7084</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"halfmassrad_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"len"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">90409663</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"len_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">36026275</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"len_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">47469006</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"len_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">6914380</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"len_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">2</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">13647.3</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">1762.13</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">11672.4</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">212.158</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.634181</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinhalfrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">375.25</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinhalfrad_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">6.19947</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinhalfrad_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">262.337</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinhalfrad_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">106.079</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinhalfrad_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.633994</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinmaxrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">5428.79</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinmaxrad_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">664.465</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinmaxrad_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">4567.06</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinmaxrad_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">196.637</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinmaxrad_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.634181</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">963.345</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinrad_gas"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">37.2361</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinrad_dm"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">782.098</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinrad_stars"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">143.376</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"massinrad_bhs"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.633994</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"sfr"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.124289</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"sfrinhalfrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0391872</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"sfrinmaxrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.100002</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"sfrinrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0391872</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"spin_x"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">14494.3</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"spin_y"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">17560.8</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"spin_z"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">8664.39</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"starmetallicity"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0278504</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"starmetallicityhalfrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0309823</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"starmetallicitymaxrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.0236488</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_u"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">23.8244</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_b"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">24.2684</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_v"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">25.1499</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_k"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">28.1217</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_g"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">24.7301</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_r"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">25.4943</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_i"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">25.857</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometrics_z"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">26.1199</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometricsmassinrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">127.117</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"stellarphotometricsrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">37.0179</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"vel_x"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">17.8473</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"vel_y"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">2.5973</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"vel_z"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">39.197</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"veldisp"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">489.459</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"vmax"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">890.449</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"vmaxrad"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">294.539</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"windmass"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0.013797</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"prog_snap"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">98</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"prog_sfid"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"desc_snap"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">1</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"desc_sfid"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">-</span><span class="lit">1</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"parent"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"grnr"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">0</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"primary_flag"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">1</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"mass_log_msun"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">14.30420154616799</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"related"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"sublink_progenitor"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/98/subhalos/0/" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/98/subhalos/0/</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"sublink_descendant"</span><span class="pun">:</span><span class="pln"> </span><span class="kwd">null</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"parent_halo"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/halos/0/" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/halos/0/</span></a><span class="str">"</span><span class="pln">
+    </span><span class="pun">},</span><span class="pln">
+    </span><span class="str">"cutouts"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"subhalo"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/cutout.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/cutout.hdf5</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"parent_halo"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/halos/0/cutout.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/halos/0/cutout.hdf5</span></a><span class="str">"</span><span class="pln">
+    </span><span class="pun">},</span><span class="pln">
+    </span><span class="str">"trees"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"sublink"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/full.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/full.hdf5</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"sublink_mpb"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/mpb.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/mpb.hdf5</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"sublink_mdb"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/mdb.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/mdb.hdf5</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"sublink_simple"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/simple.json" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/simple.json</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"lhalotree"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/lhalotree/full.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/lhalotree/full.hdf5</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"lhalotree_mpb"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/lhalotree/mpb.hdf5" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/lhalotree/mpb.hdf5</span></a><span class="str">"</span><span class="pln">
+    </span><span class="pun">},</span><span class="pln">
+    </span><span class="str">"supplementary_data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{},</span><span class="pln">
+    </span><span class="str">"vis"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"mergertree_sublink"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/tree.png" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/sublink/tree.png</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"halo_gas_dens"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"halo_gas_temp"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;partField=temp" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;partField=temp</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"halo_dm_dens"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=dm" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=dm</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"halo_stellar_dens"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"galaxy_gas_dens"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;size=5.0&amp;sizeType=rHalfMassStars" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;size=5.0&amp;sizeType=rHalfMassStars</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"galaxy_gas_dens_faceon"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;size=5.0&amp;sizeType=rHalfMassStars&amp;rotation=face-on" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=gas&amp;size=5.0&amp;sizeType=rHalfMassStars&amp;rotation=face-on</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"galaxy_stellar_light"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars&amp;partField=stellarComp-jwst_f200w-jwst_f115w-jwst_f070w&amp;size=5.0&amp;sizeType=rHalfMassStars" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars&amp;partField=stellarComp-jwst_f200w-jwst_f115w-jwst_f070w&amp;size=5.0&amp;sizeType=rHalfMassStars</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"galaxy_stellar_light_faceon"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars&amp;partField=stellarComp-jwst_f200w-jwst_f115w-jwst_f070w&amp;size=5.0&amp;sizeType=rHalfMassStars&amp;rotation=face-on" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/vis.png?partType=stars&amp;partField=stellarComp-jwst_f200w-jwst_f115w-jwst_f070w&amp;size=5.0&amp;sizeType=rHalfMassStars&amp;rotation=face-on</span></a><span class="str">"</span><span class="pln">
+    </span><span class="pun">},</span><span class="pln">
+    </span><span class="str">"meta"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"url"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"snapshot"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"simulation"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/</span></a><span class="str">"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"info"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"</span><a href="http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/info.json" rel="nofollow"><span class="str">http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/0/info.json</span></a><span class="str">"</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></pre>
+          </div>
+      </div>
+
+      
+
+          
+
+          
+      
+  </div> <!-- content -->
+  
+
+    
+      <hr>
+
+      <footer>
+        <p id="footer-right">We gratefully acknowledge support from
+          <a href="https://www.mpcdf.mpg.de/"><img src="IllustrisTNG%20-%20Browsable%20API_files/mpcdf-logo.png"></a>
+          and 
+          <a href="http://www.rc.fas.harvard.edu/"><img src="IllustrisTNG%20-%20Browsable%20API_files/logo_fasrc.png"></a>
+        </p>
+        <p>(c) 2021 The TNG Collaboration.
+        (You are logged in: Benedict Callander).
+        </p>
+      </footer>
+    </div> <!-- /container -->
+    
+    
+    <script async="" src="IllustrisTNG%20-%20Browsable%20API_files/analytics.js"></script><script type="text/javascript">
+       var token = "none"; 
+       var debugPath = ""; 
+      
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-25177588-6', 'auto', {'storage':'none','clientId':'23a619e0cdf48377'});
+      ga('set', 'anonymizeIp', true);
+      ga('send', 'pageview');
+    </script>
+    <script type="text/javascript" src="IllustrisTNG%20-%20Browsable%20API_files/base_tng.js" charset="utf-8"></script>
+    
+
+      <script>
+        window.drf = {
+          csrfHeaderName: "X-CSRFTOKEN",
+          csrfCookieName: "csrftoken"
+        };
+      </script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/jquery-3.3.1.min.js"></script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/ajax-form.js"></script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/csrf.js"></script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/bootstrap.min.js"></script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/prettify-min.js"></script>
+      <script src="IllustrisTNG%20-%20Browsable%20API_files/default.js"></script>
+      <script>
+        $(document).ready(function() {
+          $('form').ajaxForm();
+        });
+      </script>
+
+
+  
+
+</body></html>

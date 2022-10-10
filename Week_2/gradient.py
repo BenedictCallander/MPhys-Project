@@ -1,5 +1,5 @@
 
-#%%#
+#%%
 # Program to plot metallicity gradient of singular subhalo 
 #
 import logging # http logging for debugging purpouses
@@ -43,7 +43,7 @@ with h5py.File(cutout,'r') as f:
     x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
     y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
     dens = np.log10(f['PartType0']['Masses'][:])
- 
+
 plt.hist2d(x,y,weights=dens,bins=[150,100])
 plt.xlabel('$\Delta x$ [ckpc/h]')
 plt.ylabel('$\Delta y$ [ckpc/h]');
