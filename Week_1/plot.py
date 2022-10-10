@@ -21,7 +21,7 @@ plt.close()
 
 
 plt.figure(figsize = (20,12))
-plt.scatter(df['mass_gas'], 12+np.log(df['m_gas_sfr_weighted']), marker = '+',c = np.log(df['sfr']), cmap = 'hsv')
+plt.scatter(df['mass_gas'], 12+np.log(df['metallicity_gas']), marker = '+',c = np.log(df['sfr']), cmap = 'hsv')
 plt.xscale('log')
 plt.ylabel("Metallicity(Gas)", fontsize = 25)
 plt.xlabel("Mass(Gas))", fontsize = 25)
