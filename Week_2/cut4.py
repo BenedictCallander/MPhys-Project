@@ -42,7 +42,7 @@ with h5py.File("/Users/benedictcallander/Desktop/MPhys/MPhys-Project/Week_2/cut.
     dens =(f['PartType0']['Masses'][:])
 lim = 750
 plt.figure()
-plt.hist2d(x,y,weights=dens,bins=[50000,10000], cmap = 'inferno', vmin = min(dens), vmax = max(dens))
+plt.hist2d(x,y,weights=dens,bins=[5000,5000], cmap = 'inferno', vmin = min(dens), vmax = max(dens))
 plt.xlabel('$\Delta x$ [ckpc/h]')
 plt.ylabel('$\Delta y$ [ckpc/h]')
 #plt.xlim(-lim,lim)
