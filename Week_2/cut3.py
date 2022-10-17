@@ -25,7 +25,6 @@ def get(path, params=None):
         return filename # return the filename string
 
     return r
-<<<<<<< HEAD
 id=19546
 
 sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
@@ -38,12 +37,6 @@ for i in range (5):
 print(massive_ids)
 
 
-=======
-id=0
-
-sub_prog_url = "http://www.tng-project.org/api/TNG100-2/snapshots/99/subhalos/"+str(id)+"/"
-sub_prog = get(sub_prog_url)
->>>>>>> 49c34438ff99afa978574d8bb3766390ab7c2839
 
 cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
 cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
@@ -52,7 +45,6 @@ cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
 with h5py.File(cutout,'r') as f:
     x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
     y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-<<<<<<< HEAD
     dens =(f['PartType0']['GFM_Metallicity'][:])
 lim = 750
 plt.figure()
@@ -61,22 +53,8 @@ plt.xlabel('$\Delta x$ [ckpc/h]')
 plt.ylabel('$\Delta y$ [ckpc/h]')
 #plt.xlim(-lim,lim)
 #plt.ylim(-lim,lim)
-=======
-    dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])
-lim = 150
-plt.figure()
-plt.hist2d(x,y,weights=dens,bins=[5000,5000], cmap = 'inferno')
-plt.xlabel('$\Delta x$ [ckpc/h]')
-plt.ylabel('$\Delta y$ [ckpc/h]')
-plt.xlim(-lim,lim)
-plt.ylim(-lim,lim)
->>>>>>> 49c34438ff99afa978574d8bb3766390ab7c2839
 plt.savefig('hist_met_{}.png'.format(id))
 plt.close()
 
 end = time.time()
-<<<<<<< HEAD
 print('runtime{}'.format(end-start))
-=======
-print('runtime {}'.format(end-start))
->>>>>>> 49c34438ff99afa978574d8bb3766390ab7c2839

@@ -4,7 +4,10 @@ import h5py
 import pandas as pd 
 import scipy 
 import matplotlib.pyplot as plt
+import illustris_python as il 
 
+baseurl = baseUrl = 'http://www.tng-project.org/api/'
+headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 
 def get(path, params=None):
     # make HTTP GET request to path
@@ -74,4 +77,124 @@ class galaxy(object):
         self.pstar_vel   = self.pstar_vel * self.conv_kms2kpcyr
 
 
-    #Calculating the centre of mass of a galaxy    
+    #Calculating the centre of mass of a galaxy
+    def calc_galcen(self):
+
+        # Uncomment if determining mass-weighted centre of gas particles
+        self.pgas_coo  -= self.centre[None,:]
+        self.pstar_coo -= self.centre[None,:]
+        
+    def calc_ang_mom(self, angmom_type='stars'):
+        #== Compute the angular momentum vector ==
+        # different possible angmom_type: gas', 'stars'
+        if (angmom_type == 'gas'):
+            _coo = np.copy(self.pgas_coo)
+            _vel = np.copy(self.pgas_vel)
+            _m   = np.copy(self.pgas_m)
+        elif (angmom_type == 'stars'):
+            _coo = np.copy(self.pstar_coo)
+            _vel = np.copy(self.pstar_vel)
+            _m   = np.copy(self.pstar_m)
+
+        # Calculate angular momentum based on particle type of choice (stars, gas or baryons)
+        self.ang_mom_3D       = np.sum(_m[:,None]*np.cross(_coo,_vel),axis=0) # (3-element array specifying orientation of angular momentum vector)
+        #specific angular momentum \|/
+        # self.ang_mom = self.ang_mom_3D/ np.sum(_m) #angular momentum vector divided by total mass 
+
+        #Aligning the z axis to the angular momentum vector
+        j = self.ang_mom/np.linalg.norm(self.ang_mom)  #normalised specific angular momentum vector
+
+        x = np.array([1.,2.,3.]) #np.random.randn(3) # random vector # np.array([1.,1.,1.]) #
+        x -= x.dot(j) * j # make it orthogonal to j
+        x /= np.linalg.norm(x) # normalize it
+
+        y = np.cross(j, x) #third vector orthogonal to x and j
+
+        A=(x,y,j) #transformation matrix
+
+
+        #== Work on gas particles ==
+        self.pgas_coo=np.dot(A,self.pgas_coo.T).T  #change coordinates
+        self.pgas_vel=np.dot(A,self.pgas_vel.T).T 
+        
+        #-- Make checkplot of x-y, y-z, x-z views --
+        '''
+        fig  = plt.figure()
+        gs   = fig.add_gridspec(2, 2)
+
+        idx  = np.random.uniform(low=0, high=len(self.pgas_coo[:,0]), size=5000).astype(int)#Draw random particles
+        
+        ax = fig.add_subplot(gs[0,0]) # x-y
+        #ax.scatter(_coo[idx,0], _coo[idx,1], c="r", s=1)
+        ax.scatter(self.pgas_coo[idx,0], self.pgas_coo[idx,1], s=1)
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_xlim((-10,10))
+        ax.set_ylim((-10,10))
+        
+        ax = fig.add_subplot(gs[0,1]) # y-z
+        #ax.scatter(_coo[idx,1], _coo[idx,2], c="r", s=1)
+        ax.scatter(self.pgas_coo[idx,1], self.pgas_coo[idx,2], s=1)
+        ax.set_xlabel('y')
+        ax.set_ylabel('z')
+        ax.set_xlim((-10,10))
+        ax.set_ylim((-10,10))
+        
+        ax = fig.add_subplot(gs[1,0]) # x-z
+        #ax.scatter(_coo[idx,0], _coo[idx,2], c="r", s=1)
+        ax.scatter(self.pgas_coo[idx,0], self.pgas_coo[idx,2], s=1)
+        ax.set_xlabel('x')
+        ax.set_ylabel('z')
+        ax.set_xlim((-10,10))
+        ax.set_ylim((-10,10))
+
+        #plt.title('Galaxy in three different planes before and after the coordinate transformation')
+        fig.tight_layout()
+        fig.savefig('../plots/'+str(self.snapNum)+'_'+str(self.subhaloID)+'_3D.png')
+        #plt.show()
+        plt.close()
+        '''
+        #--
+        
+        #Changing coordinates to cylindrical polar
+        #phi= np.arctan(self.pgas_coo[:,1]/self.pgas_coo[:,0]) #phi component 
+        #phi[(self.pgas_coo[:,0] < 0)] += np.pi # if x is negative, need to add pi
+        #r  = np.sqrt(self.pgas_coo[:,0]**2 + self.pgas_coo[:,1]**2) #r component from cartesian to cylindrical
+        #v_r=(self.pgas_coo[:,0]*self.pgas_vel[:,0]+self.pgas_coo[:,1]*self.pgas_vel[:,1])/(np.sqrt(self.pgas_coo[:,0]**2 + self.pgas_coo[:,1]**2)) #radial velocity using the velocity and position in cartesian coordinates 
+        #v_phi=(self.pgas_coo[:,0]*self.pgas_vel[:,1]-self.pgas_coo[:,1]*self.pgas_vel[:,0])/(np.sqrt(self.pgas_coo[:,0]**2 + self.pgas_coo[:,1]**2)) #angular velocity using the velocity and position in cartesian coordinates
+
+        # Keep cartesian coordinates (x and y part) for easy postage stamp plotting
+        self.pgas_cart_coo = np.copy(self.pgas_coo[:,:2])
+        self.pgas_cart_vel = np.copy(self.pgas_vel[:,:2])
+        # Compute total velocity (amplitude)
+        self.pgas_veltot   = np.sqrt(np.sum(self.pgas_vel**2, axis=1)) # (N,)
+        
+        self.pgas_vel[:,0] = v_r #change coordinates
+        self.pgas_vel[:,1] = v_phi #change coordinates
+        self.pgas_coo[:,0] = r #change coordinates
+        self.pgas_coo[:,1] = phi #change coordinates
+
+
+        #== Work on stellar particles ==
+        self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
+        self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
+        
+        #Changing coordinates to cylindrical polar       
+        phi= np.arctan(self.pstar_coo[:,1]/self.pstar_coo[:,0]) #phi component 
+        phi[(self.pstar_coo[:,0] < 0)] += np.pi # if x is negative, need to add pi
+        r  = np.sqrt(self.pstar_coo[:,0]**2 + self.pstar_coo[:,1]**2) #r component from cartesian to cylindrical
+        v_r=(self.pstar_coo[:,0]*self.pstar_vel[:,0]+self.pstar_coo[:,1]*self.pstar_vel[:,1])/(np.sqrt(self.pstar_coo[:,0]**2 + self.pstar_coo[:,1]**2)) #radial velocity using the velocity and position in cartesian coordinates 
+        v_phi=(self.pstar_coo[:,0]*self.pstar_vel[:,1]-self.pstar_coo[:,1]*self.pstar_vel[:,0])/(np.sqrt(self.pstar_coo[:,0]**2 + self.pstar_coo[:,1]**2)) #angular velocity using the velocity and position in cartesian coordinates
+
+        #_coo = np.copy(self.pgas_coo)#coordinates before the change in order to check everything functions well
+        # Keep cartesian coordinates (x and y part) for easy postage stamp plotting
+        self.pstar_cart_coo = np.copy(self.pstar_coo[:,:2])
+        self.pstar_cart_vel = np.copy(self.pstar_vel[:,:2])
+        # Compute total velocity (amplitude)
+        self.pstar_veltot   = np.sqrt(np.sum(self.pstar_vel**2, axis=1)) # (N,)
+        
+        self.pstar_vel[:,0] = v_r #change coordinates
+        self.pstar_vel[:,1] = v_phi #change coordinates
+        self.pstar_coo[:,0] = r #change coordinates
+        self.pstar_coo[:,1] = phi #change coordinates
+
