@@ -28,25 +28,25 @@ def get(path, params=None):
         return filename # return the filename string
 
     return r
-cutout = h5py.File("/Users/benedictcallander/Desktop/MPhys/MPhys-Project/Week_2/cut.hdf5",'r')
+cutout = h5py.File("/Users/benedictcallander/Desktop/MPhys/MPhys-Project/Week_2/cutout_0.hdf5",'r')
 
 id = 0
-sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
+sub_prog_url = "http://www.tng-project.org/api/TNG100-2/snapshots/99/subhalos/"+str(id)+"/"
 sub_prog = get(sub_prog_url)
 
 
 
-with h5py.File("/Users/benedictcallander/Desktop/MPhys/MPhys-Project/Week_2/cut.hdf5",'r') as f:
+with h5py.File("/Users/benedictcallander/Desktop/MPhys/MPhys-Project/Week_2/cutout_0.hdf5",'r') as f:
     x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
     y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-    dens =(f['PartType0']['Masses'][:])
+    dens =(f['PartType0']['GFM_Metallicity'][:])
 lim = 750
 plt.figure()
-plt.hist2d(x,y,weights=dens,bins=[5000,5000], cmap = 'inferno', vmin = min(dens), vmax = max(dens))
+plt.hist2d(x,y,weights=dens,bins=[10000,10000], cmap = 'inferno', vmin = min(dens), vmax = max(dens))
 plt.xlabel('$\Delta x$ [ckpc/h]')
 plt.ylabel('$\Delta y$ [ckpc/h]')
-#plt.xlim(-lim,lim)
-#plt.ylim(-lim,lim)
+plt.xlim(-lim,lim)
+plt.ylim(-lim,lim)
 plt.savefig('hist_met_{}.png'.format(id))
 plt.close()
 
