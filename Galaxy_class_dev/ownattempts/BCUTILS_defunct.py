@@ -1,17 +1,18 @@
-#
-# BCUTILS Function Library for MPhys Project 
-#
-import logging # http logging for debugging purpouses
-import time #runtime calculation 
-import numpy as np #data handling 
-import requests #obtain data from API server
-import h5py #binary file manipulation
-import pandas as pd 
+from random import random
+import numpy as np 
 import matplotlib.pyplot as plt 
-import random
+import requests
+import logging 
+import scipy 
+import pandas as pd 
+import illustris_python as il 
+import h5py
+
+#
+#BCUTILS
+#
+
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
-
-
 def get(path, params = None):
     #utility function for API reading 
 
@@ -36,12 +37,11 @@ def get(path, params = None):
 
     return r
 
-
-def subhalo_filter(limit):
+def subhalo_filter():
     #search_q = "?sfr__gt=0.0"
 
 #set base url as subhalos list 
-    base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/?limit={}&sfr__gt=0.0".format(limit)
+    base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/?limit=1000&sfr__gt=0.0"
     url = base_url#+search_q
     #find all subhalos that fill search criteria 
     valid_subs = get(url)
@@ -52,9 +52,10 @@ def subhalo_filter(limit):
     #print(len(valid_subs['results']))
 
     #find the subhalo ID numbers of each of these star forming subhalos 
-    valid_ids = [ valid_subs['results'][i]['id'] for i in range(limit)]
+    valid_ids = [ valid_subs['results'][i]['id'] for i in range(100)]
     return valid_ids
-
+valid_ids=subhalo_filter()
+print(valid_ids)
 
 def visualise_cutout(id, type, lim):
 
@@ -70,29 +71,21 @@ def visualise_cutout(id, type, lim):
         x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
         y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
         if (type=='gas'):
-            dens =np.exp(f['PartType0']['Masses'][:])**4
+            dens =(f['PartType0']['Masses'][:])
         elif(type =='met'): 
             dens =(f['PartType0']['GFM_Metallicity'][:])
 
     plt.figure()
-    plt.hist2d(x,y,weights=dens,bins=[500,250], cmap = 'inferno', vmin = min(dens), vmax = (max(dens)))
+    plt.hist2d(x,y,weights=dens,bins=[1000,500], cmap = 'inferno', vmin = min(dens), vmax = max(dens))
     plt.xlabel('$\Delta x$ [ckpc/h]')
     plt.ylabel('$\Delta y$ [ckpc/h]')
-    #plt.xlim(-lim,lim)
-    #plt.ylim(-lim,lim)
+    plt.xlim(-lim,lim)
+    plt.ylim(-lim,lim)
     plt.savefig('hist_met_{}.png'.format(id))
     plt.close()
 
-    return print("graph plotted for subhalo{}".format(id))
+    return print("graph plotted")
+random_ids = [9938,9681,9513,7401,5676,5511,6317]
 
-valid_ids=subhalo_filter(20)
+visualise_cutout(8,'gas',10)
 
-id = random.choice(valid_ids)
-ticker = 0
-for i in valid_ids:
-    if i==0:
-        print('i=0isannoying')
-    else:   
-        visualise_cutout(i,'met',5)
-        ticker=ticker+1
-        print("Subhalo number {}/20".format(ticker))
