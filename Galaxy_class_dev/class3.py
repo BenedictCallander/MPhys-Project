@@ -109,4 +109,92 @@ class galaxy:
             _coo =np.copy(self.pstar_coo)
             _vel = np.copy(self.pstar_vel)
             _m = np.copy(self.pstar_m)
-            
+        # calc angular momentum based on particle type 
+        
+        self.ang_mom_3d = np.sum(_m[:,None,]*np.cross(_coo,_vel), axis = 0)
+        # (3-element array specifying orientation of angular momentum vector)
+        self.ang_mom = self.ang_mom_3D/ np.sum(_m)
+        
+        #
+        # inclination orientation 
+        #
+        
+        j=self.ang_mom/np.linalg.norm(self.ang_mom)
+        #normalised specific angular momentum 
+        
+        x= np.array([1,2,3])
+        x-= x.dot(j)*j #make x orthogonal to j
+        
+        x/= np.linalg.norm(x) # normalise
+        
+        y = np.cross(j,x)#create 3rd vector - orth to x,j
+        
+        
+        A = (x,y,j) # transformation matrix
+        
+        self.pgas_coo=np.dot(A,self.pgas_coo.T).T # change co-ordinates
+        self.pgas_vel = np.dot(A,self.pgas_vel.T).T
+        
+        #
+        # Apply same process to stellar particle type
+        #
+        
+        self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
+        self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
+        
+    def visualise_cutout_TNG50(id, type, lim):
+
+
+        sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
+        sub_prog = get(sub_prog_url)
+        
+        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
+        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
+
+
+        with h5py.File(cutout,'r') as f:
+            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
+            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
+            if (type=='gas'):
+                dens =np.exp(f['PartType0']['Masses'][:])**4
+            elif(type =='met'): 
+                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
+
+        plt.figure()
+        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
+        plt.xlabel('$\Delta x$ [ckpc/h]')
+        plt.ylabel('$\Delta y$ [ckpc/h]')
+        plt.xlim(-10,10)
+        plt.ylim(-7,4)
+        plt.savefig('hist_met_{}_{}.png'.format(type,id))
+        plt.close()
+
+        return print("graph plotted for subhalo{}".format(id))
+    def visualise_cutout_TNG100(id, type, lim):
+
+
+        sub_prog_url = "http://www.tng-project.org/api/TNG100-1/snapshots/99/subhalos/"+str(id)+"/"
+        sub_prog = get(sub_prog_url)
+        
+        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
+        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
+
+
+        with h5py.File(cutout,'r') as f:
+            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
+            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
+            if (type=='gas'):
+                dens =np.exp(f['PartType0']['Masses'][:])**4
+            elif(type =='met'): 
+                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
+
+        plt.figure()
+        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
+        plt.xlabel('$\Delta x$ [ckpc/h]')
+        plt.ylabel('$\Delta y$ [ckpc/h]')
+        plt.xlim(-10,10)
+        plt.ylim(-7,4)
+        plt.savefig('hist_met_{}_{}.png'.format(type,id))
+        plt.close()
+
+        return print("graph plotted for subhalo{}".format(id))
