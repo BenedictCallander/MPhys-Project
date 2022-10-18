@@ -72,27 +72,17 @@ def visualise_cutout(id, type, lim):
         if (type=='gas'):
             dens =np.exp(f['PartType0']['Masses'][:])**4
         elif(type =='met'): 
-            dens =(f['PartType0']['GFM_Metallicity'][:])
+            dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
 
     plt.figure()
-    plt.hist2d(x,y,weights=dens,bins=[500,250], cmap = 'inferno', vmin = min(dens), vmax = (max(dens)))
+    plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
     plt.xlabel('$\Delta x$ [ckpc/h]')
     plt.ylabel('$\Delta y$ [ckpc/h]')
-    #plt.xlim(-lim,lim)
-    #plt.ylim(-lim,lim)
-    plt.savefig('hist_met_{}.png'.format(id))
+    plt.xlim(-10,10)
+    plt.ylim(-7,4)
+    plt.savefig('hist_met_{}_{}.png'.format(type,id))
     plt.close()
 
     return print("graph plotted for subhalo{}".format(id))
 
-valid_ids=subhalo_filter(20)
-
-id = random.choice(valid_ids)
-ticker = 0
-for i in valid_ids:
-    if i==0:
-        print('i=0isannoying')
-    else:   
-        visualise_cutout(i,'met',5)
-        ticker=ticker+1
-        print("Subhalo number {}/20".format(ticker))
+visualise_cutout(40,'met',5)
