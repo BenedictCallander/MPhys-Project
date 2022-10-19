@@ -142,7 +142,13 @@ class galaxy:
         
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
         self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
-        
+
+    def radial_pos(self):
+        xval = self.pgas_coo[:,0]
+        yval = self.pgas_coo[:,1]
+
+        self.rval = np.sqrt(xval**2+yval**2)    
+    
     def visualise_cutout_TNG50(id, type, lim):
 
 
@@ -208,13 +214,24 @@ class galaxy:
     #    for i,j in range(zlen):
     #        = np.sum(self.pgas_coo[i][j][])
     
+list=[0, 7516, 21013, 15129, 31129]
 
-
-sub0 = galaxy('TNG100-1',70,0)
+sub0 = galaxy('TNG100-1',70,21013)
 sub0.galcen()
 sub0.ang_mom_align('gas')
+'''
+print(sub0.pgas_coo)
+print(np.ndim(sub0.pgas_m))
+'''
+x= sub0.pgas_coo[:,0]
+y= sub0.pgas_coo[:,1]
+dens = (sub0.pgas_m)
+plt.figure()
+plt.scatter(x,y,c=dens,cmap='inferno')
+plt.savefig('pls.png')
+plt.close()
 df = pd.DataFrame({"x": sub0.pgas_coo[:,0],"y": sub0.pgas_coo[:,1],"z": sub0.pgas_coo[:,2],"m": sub0.pgas_m})
 df2=df.round()
 df2.sort_values(by='x',inplace=True)
-df.to_csv('filet.csv')
+df2.to_csv('filet.csv')
 

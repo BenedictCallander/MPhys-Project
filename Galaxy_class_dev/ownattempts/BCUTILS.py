@@ -41,7 +41,7 @@ def subhalo_filter(limit):
     #search_q = "?sfr__gt=0.0"
 
 #set base url as subhalos list 
-    base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/?limit={}&sfr__gt=0.0".format(limit)
+    base_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?sfr__gt=0.0".format(limit)
     url = base_url#+search_q
     #find all subhalos that fill search criteria 
     valid_subs = get(url)
@@ -86,4 +86,10 @@ def visualise_cutout(id, type, lim):
 
     return print("graph plotted for subhalo{}".format(id))
 
-visualise_cutout(40,'met',5)
+
+massive_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?order_by=-mass&sfr_gt=0.0/"
+
+for i in range (5):
+    valid_subs = get(massive_url)
+    massive_ids = [ valid_subs['results'][i]['id'] for i in range(5)]
+print(massive_ids)
