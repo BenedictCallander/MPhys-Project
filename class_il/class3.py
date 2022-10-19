@@ -213,18 +213,8 @@ class galaxy:
 sub0 = galaxy('TNG100-1',70,0)
 sub0.galcen()
 sub0.ang_mom_align('gas')
-'''
-print(sub0.pgas_coo)
-print(np.ndim(sub0.pgas_m))
-'''
-x= sub0.pgas_coo[:,0]
-y= sub0.pgas_coo[:,1]
-dens = (sub0.pgas_m)
-plt.figure()
-plt.scatter(x,y,c=dens,cmap='inferno')
-plt.savefig('pls.png')
-plt.close()
 df = pd.DataFrame({"x": sub0.pgas_coo[:,0],"y": sub0.pgas_coo[:,1],"z": sub0.pgas_coo[:,2],"m": sub0.pgas_m})
 df2=df.round()
 df2.sort_values(by='x',inplace=True)
-df2.to_csv('filet.csv')
+df.to_csv('filet.csv')
+
