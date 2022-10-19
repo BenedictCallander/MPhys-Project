@@ -1,4 +1,3 @@
-
 import logging # http logging for debugging purpouses
 import time #runtime calculation import numpy as np #data handling 
 import requests #obtain data from API server
@@ -34,11 +33,6 @@ def get(path, params = None):
 
     return r
 
-'''
-def geturl(simID, snapID):
-    baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID)
-    return baseurl
-'''
 
 class galaxy:
     def __init__(self,simID,snapID,subID):
@@ -73,26 +67,25 @@ class galaxy:
         # [units: proper kpc] (quantified in 3D)
         
         # Load all the relevant particle level info
-        gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses', 'Velocities', 'StarFormationRate'])
+        gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses', 'Velocities', 'StarFormationRate','GFM_Metallicity'])
         # dimensions and units (see https://www.tng-project.org/data/docs/specifications/#parttype0):
         # Coordinates (N,3) ckpc/h   where ckps stands for co-moving kpc
         # Masses      (N)   10**10 Msun/h
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
-        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
-        self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
-        self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
+        self.pgas_coo   = gas['Coordinates']
+        self.pgas_m     = gas['Masses']
+        self.pgas_vel   = gas['Velocities']- all_fields['SubhaloVel']
         self.conv_kms2kpcyr = (3.1558 / 3.08568) * 10**(-9)
         self.pgas_vel   = self.pgas_vel * self.conv_kms2kpcyr    #Convert to kpc/yr
-        self.pgas_sfr   = gas['StarFormationRate'][hcoldgas]
+        self.pgas_sfr   = gas['StarFormationRate']
+        self.pgas_met   =gas['GFM_Metallicity']
         
         # Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities'])
-        hstar = np.where( (np.sum((stars['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        self.pstar_coo   = stars['Coordinates'][hstar]/hubble / (1. + redshift)
-        self.pstar_m     = stars['Masses'][hstar] * 10**10 / hubble
-        self.pstar_vel   = (stars['Velocities'][hstar] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
+        self.pstar_coo   = stars['Coordinates']
+        self.pstar_m     = stars['Masses']
+        self.pstar_vel   = stars['Velocities']- all_fields['SubhaloVel']
         self.pstar_vel   = self.pstar_vel * self.conv_kms2kpcyr
         
     def galcen(self):
@@ -110,7 +103,7 @@ class galaxy:
             _m = np.copy(self.pstar_m)
         # calc angular momentum based on particle type 
         
-        self.ang_mom_3d = np.sum(_m[:,None,]*np.cross(_coo,_vel), axis = 0)
+        self.ang_mom_3D = np.sum(_m[:,None,]*np.cross(_coo,_vel), axis = 0)
         # (3-element array specifying orientation of angular momentum vector)
         self.ang_mom = self.ang_mom_3D/ np.sum(_m)
         
@@ -121,8 +114,8 @@ class galaxy:
         j=self.ang_mom/np.linalg.norm(self.ang_mom)
         #normalised specific angular momentum 
         
-        x= np.array([1,2,3])
-        x-= x.dot(j)*j #make x orthogonal to j
+        x = np.array([1,2,3])
+        x = x-(x.dot(j)*j) #make x orthogonal to j
         
         x/= np.linalg.norm(x) # normalise
         
@@ -139,64 +132,31 @@ class galaxy:
         #
         
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
-        self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
-        
-    def visualise_cutout_TNG50(id, type, lim):
+        self.pstar_vel=np.dot(A,self.pstar_vel.T).T
 
 
-        sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
-        sub_prog = get(sub_prog_url)
-        
-        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
-        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
-
-
-        with h5py.File(cutout,'r') as f:
-            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
-            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-            if (type=='gas'):
-                dens =np.exp(f['PartType0']['Masses'][:])**4
-            elif(type =='met'): 
-                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
-
-        plt.figure()
-        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
-        plt.xlabel('$\Delta x$ [ckpc/h]')
-        plt.ylabel('$\Delta y$ [ckpc/h]')
-        plt.xlim(-10,10)
-        plt.ylim(-7,4)
-        plt.savefig('hist_{}_{}.png'.format(type,id))
-        plt.close()
-
-        return print("graph plotted for subhalo{}".format(id))
-    def visualise_cutout_TNG100(id, type, lim):
-
-
-        sub_prog_url = "http://www.tng-project.org/api/TNG100-1/snapshots/99/subhalos/"+str(id)+"/"
-        sub_prog = get(sub_prog_url)
-        
-        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
-        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
-
-
-        with h5py.File(cutout,'r') as f:
-            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
-            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-            if (type=='gas'):
-                dens =np.exp(f['PartType0']['Masses'][:])**4
-            elif(type =='met'): 
-                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
-
-        plt.figure()
-        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
-        plt.xlabel('$\Delta x$ [ckpc/h]')
-        plt.ylabel('$\Delta y$ [ckpc/h]')
-        plt.xlim(-10,10)
-        plt.ylim(-7,4)
-        plt.savefig('hist_{}_{}.png'.format(type,id))
-        plt.close()
-
-        return print("graph plotted for subhalo{}".format(id))
-
-
-sub0 = 
+sub0 = galaxy('TNG100-1',70,0)
+sub0.galcen()
+sub0.ang_mom_align('gas')
+print(sub0.pgas_coo)
+print(len(sub0.pgas_m))
+x= sub0.pgas_coo[:,0]
+y= sub0.pgas_coo[:,1]
+dens = (sub0.pgas_m)
+#plt.figure()
+#plt.hist2d(x,y,weights =dens, bins=[1500,1000],cmap='inferno',vmin=(min(dens)/2), vmax = max(dens))
+#plt.savefig('pls2.png')
+#plt.close()
+df = pd.DataFrame({"x": sub0.pgas_coo[:,0],"y": sub0.pgas_coo[:,1],"z": sub0.pgas_coo[:,2],"m": sub0.pgas_m})
+df2=df.round(2)
+df2.sort_values(by='x',inplace=True)
+df2.to_csv('filet2.csv')
+print(dens)
+print(min(sub0.pgas_coo[:,0]))
+print(max(sub0.pgas_coo[:,0]))
+#
+print(min(sub0.pgas_coo[:,1]))
+print(max(sub0.pgas_coo[:,1]))
+#
+print(min(sub0.pgas_coo[:,2]))
+print(max(sub0.pgas_coo[:,2]))
