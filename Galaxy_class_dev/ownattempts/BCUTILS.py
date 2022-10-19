@@ -75,11 +75,12 @@ def visualise_cutout(id, type, lim):
             dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
 
     plt.figure()
-    plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
+    plt.scatter(x,y,c=dens,cmap='inferno', markersize=1)
+    #plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
     plt.xlabel('$\Delta x$ [ckpc/h]')
     plt.ylabel('$\Delta y$ [ckpc/h]')
-    plt.xlim(-10,10)
-    plt.ylim(-7,4)
+    #plt.xlim(-10,10)
+    #plt.ylim(-7,4)
     plt.savefig('hist_met_{}_{}.png'.format(type,id))
     plt.close()
 
