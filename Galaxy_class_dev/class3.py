@@ -98,8 +98,7 @@ class galaxy:
     def galcen(self):
         self.pgas_coo -= self.centre[None,:]
         self.pstar_coo -= self.centre[None,:]
-    
-    
+        
     def ang_mom_align(self, type):
         if (type=='gas'):
             _coo = np.copy(self.pgas_coo)
@@ -166,7 +165,7 @@ class galaxy:
         plt.ylabel('$\Delta y$ [ckpc/h]')
         plt.xlim(-10,10)
         plt.ylim(-7,4)
-        plt.savefig('hist_met_{}_{}.png'.format(type,id))
+        plt.savefig('hist_{}_{}.png'.format(type,id))
         plt.close()
 
         return print("graph plotted for subhalo{}".format(id))
@@ -194,7 +193,10 @@ class galaxy:
         plt.ylabel('$\Delta y$ [ckpc/h]')
         plt.xlim(-10,10)
         plt.ylim(-7,4)
-        plt.savefig('hist_met_{}_{}.png'.format(type,id))
+        plt.savefig('hist_{}_{}.png'.format(type,id))
         plt.close()
 
         return print("graph plotted for subhalo{}".format(id))
+
+
+sub0 = 
