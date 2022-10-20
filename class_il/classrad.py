@@ -145,102 +145,71 @@ class galaxy:
         yval = self.pgas_coo[:,1]
 
         self.rval = np.sqrt(xval**2+yval**2)    
-    
-    def visualise_cutout_TNG50(id, type, lim):
-
-        sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
-        sub_prog = get(sub_prog_url)
-        
-        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
-        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
-
-
-        with h5py.File(cutout,'r') as f:
-            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
-            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-            if (type=='gas'):
-                dens =np.exp(f['PartType0']['Masses'][:])**4
-            elif(type =='met'): 
-                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
-
-        plt.figure()
-        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
-        plt.xlabel('$\Delta x$ [ckpc/h]')
-        plt.ylabel('$\Delta y$ [ckpc/h]')
-        plt.xlim(-10,10)
-        plt.ylim(-7,4)
-        plt.savefig('hist_{}_{}.png'.format(type,id))
-        plt.close()
-
-        return print("graph plotted for subhalo{}".format(id))
-    def visualise_cutout_TNG100(id, type, lim):
-
-
-        sub_prog_url = "http://www.tng-project.org/api/TNG100-1/snapshots/99/subhalos/"+str(id)+"/"
-        sub_prog = get(sub_prog_url)
-        
-        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity'}
-        cutout = get(sub_prog_url+"cutout.hdf5", cutout_request)
-
-
-        with h5py.File(cutout,'r') as f:
-            x = f['PartType0']['Coordinates'][:,0] - sub_prog['pos_x']
-            y = f['PartType0']['Coordinates'][:,1] - sub_prog['pos_y']
-            if (type=='gas'):
-                dens =np.exp(f['PartType0']['Masses'][:])**4
-            elif(type =='met'): 
-                dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
-
-        plt.figure()
-        plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
-        plt.xlabel('$\Delta x$ [ckpc/h]')
-        plt.ylabel('$\Delta y$ [ckpc/h]')
-        plt.xlim(-10,10)
-        plt.ylim(-7,4)
-        plt.savefig('hist_{}_{}.png'.format(type,id))
-        plt.close()
-
-        return print("graph plotted for subhalo{}".format(id))
-    zval =np.empty(shape=(2,2))
-    
     def radial_coo(self):
         self.pgas_rad_len   = np.sqrt(self.pgas_coo[:,0]**2+self.pgas_coo[:,1]**2)
         self.pstar_rad_len  = np.sqrt(self.pstar_coo[:,0]**2+self.pstar_coo[:,1]**2)
+    def xyzprop_df(self):
+        df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"m": self.pgas_m})
+        
+        self.df = df
+        return df
+    def gas_plot(self,annuli_pc):
+            #self.ang_mom_align('gas')
+        annul1= annuli_pc*self.crit_dist
+        df_valid = self.df[self.df['rad']<annul1]
+        df_valid =df_valid.round()
+        df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+        plt.figure(figsize=(21,15))
+        plt.style.use('dark_background')
+            #plt.hist2d(data2['x'],data2['y'], weights=data2['m'],bins=[500,500],cmap = 'inferno',vmin=(min(data2['m'])),vmax = max(data2['m']))
+        plt.scatter(-df_valid['x'],-df_valid['y'],c=np.log10(df_valid['m']),cmap='inferno',vmin=1.01*(min(np.log10(df_valid['m']))), vmax=0.99*(max(np.log10(df_valid['m']))))
+            #plt.plot(critical_radius,zeros,'g+', markersize=10,label='critical radius')
+        plt.xlabel('$\Delta x$ [kpc/h]')
+        plt.ylabel('$\Delta y$ [kpc/h]')
+            #plt.xlim(-100,100)
+            #plt.ylim(-100,100)
+        plt.colorbar(label='log10(Gas Density)')
+        plt.title('Gas Density of SubID {}: TNG100-1 snapshot 70'.format(self.subID))
+            #plt.legend(loc='upper right')
+        filename = 'temppng/TNG100_sub_{}.png'.format(sub1.subID)
+        plt.savefig(filename)
+        plt.close()
+    def met_grad(self,annuli_pc):
+        df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"metallicity": self.pgas_met})
+        annul1= annuli_pc*self.crit_dist
+        met_df = df[df['rad']<annul1]
+        
+        plt.figure(figsize=(21,15))
+        plt.scatter(met_df['rad'], met_df['metallicity'], c=met_df['rad'],cmap='inferno')
+        plt.xlabel('X')
+        plt.ylabel('metallicity')
+        filename = 'temppng/TNG100_metgrad_sub_{}.png'.format(sub1.subID)
+        plt.savefig(filename)
+        plt.close()
+        return print('.')
+            
+            
+            
+'''
+massive_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?order_by=-mass&sfr_gt=0.0/"
+
+for i in range (20):
+    valid_subs = get(massive_url)
+    massive_ids = [ valid_subs['results'][i]['id'] for i in range(20)]
+print(massive_ids)
+'''
+massive_ids = [0, 7516, 21013, 15129, 31129, 39628, 47416, 26558, 44002, 34668, 57620, 51083, 54570, 63544, 69982, 60421, 85032, 87479, 88730, 80680]
 
 
-sub1= galaxy('TNG100-1',70,15129)
-sub1.galcen()
-sub1.ang_mom_align('gas')
-sub1.radial_coo()
-#print(len(sub1.pgas_coo))
-#print(sub1.pgas_rad_len)
-df=pd.DataFrame({"x": sub1.pgas_coo[:,0], "y":sub1.pgas_coo[:,1],"z":sub1.pgas_coo[:,2], "rad":sub1.pgas_rad_len,"m": sub1.pgas_m})
-annul1= 0.66*sub1.crit_dist
-df_valid = df[df['rad']<annul1]
-print(df_valid)
-
-print(len(df['rad']))
-print(len(df_valid['rad']))
-
-df_valid =df_valid.round()
-df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
-#print(len(df_valid['rad']))
-
-plt.figure(figsize=(21,15))
-plt.style.use('dark_background')
-#plt.hist2d(data2['x'],data2['y'], weights=data2['m'],bins=[500,500],cmap = 'inferno',vmin=(min(data2['m'])),vmax = max(data2['m']))
-plt.scatter(-df_valid['x'],-df_valid['y'],c=np.log10(df_valid['m']),cmap='inferno',vmin=1.01*(min(np.log10(df_valid['m']))), vmax=0.99*(max(np.log10(df_valid['m']))))
-#plt.plot(critical_radius,zeros,'g+', markersize=10,label='critical radius')
-plt.xlabel('$\Delta x$ [kpc/h]')
-plt.ylabel('$\Delta y$ [kpc/h]')
-#plt.xlim(-100,100)
-#plt.ylim(-100,100)
-plt.colorbar(label='log10(Gas Density)')
-plt.title('Gas Density of SubID 15129: TNG100-1 snapshot 70')
-#plt.legend(loc='upper right')
-plt.savefig('group15129.png')
-
-plt.close()
+for i in massive_ids:
+    sub1= galaxy('TNG100-1',70,i)
+    print(len(sub1.pgas_met))
+    print(len(sub1.pgas_coo))
+    sub1.galcen()
+    sub1.ang_mom_align('gas')
+    sub1.radial_coo()
+    sub1.xyzprop_df()
+    sub1.met_grad(0.6)
 
 end = time.time()
 print('runtime = {} seconds'.format(end-start))
