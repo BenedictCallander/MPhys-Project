@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import illustris_python as il
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
-
+start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 def get(path, params = None):
     #utility function for API reading 
@@ -75,6 +75,7 @@ class galaxy:
         # Masses      (N)   10**10 Msun/h
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
+        self.crit_dist = crit_dist
         #np.where( (gas['StarFormationRate'] > 0.) & 
         hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
@@ -207,12 +208,39 @@ class galaxy:
         self.pstar_rad_len  = np.sqrt(self.pstar_coo[:,0]**2+self.pstar_coo[:,1]**2)
 
 
-sub1= galaxy('TNG100-1',70,0)
+sub1= galaxy('TNG100-1',70,15129)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_coo()
+#print(len(sub1.pgas_coo))
+#print(sub1.pgas_rad_len)
+df=pd.DataFrame({"x": sub1.pgas_coo[:,0], "y":sub1.pgas_coo[:,1],"z":sub1.pgas_coo[:,2], "rad":sub1.pgas_rad_len,"m": sub1.pgas_m})
+annul1= 0.66*sub1.crit_dist
+df_valid = df[df['rad']<annul1]
+print(df_valid)
 
-print(sub1.pgas_rad_len)
-#df=pd.Dataframe({"x": sub1.pgas_coo[:,0], "y":sub1.pgas_coo[:,1], "rad":sub1.pgas_rad_len})
+print(len(df['rad']))
+print(len(df_valid['rad']))
 
+df_valid =df_valid.round()
+df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+#print(len(df_valid['rad']))
 
+plt.figure(figsize=(21,15))
+plt.style.use('dark_background')
+#plt.hist2d(data2['x'],data2['y'], weights=data2['m'],bins=[500,500],cmap = 'inferno',vmin=(min(data2['m'])),vmax = max(data2['m']))
+plt.scatter(-df_valid['x'],-df_valid['y'],c=np.log10(df_valid['m']),cmap='inferno',vmin=1.01*(min(np.log10(df_valid['m']))), vmax=0.99*(max(np.log10(df_valid['m']))))
+#plt.plot(critical_radius,zeros,'g+', markersize=10,label='critical radius')
+plt.xlabel('$\Delta x$ [kpc/h]')
+plt.ylabel('$\Delta y$ [kpc/h]')
+#plt.xlim(-100,100)
+#plt.ylim(-100,100)
+plt.colorbar(label='log10(Gas Density)')
+plt.title('Gas Density of SubID 15129: TNG100-1 snapshot 70')
+#plt.legend(loc='upper right')
+plt.savefig('group15129.png')
+
+plt.close()
+
+end = time.time()
+print('runtime = {} seconds'.format(end-start))
