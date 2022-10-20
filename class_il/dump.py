@@ -30,9 +30,9 @@ plt.ylabel('$\Delta y$ [kpc/h]')
 #plt.xlim(-100,100)
 #plt.ylim(-100,100)
 plt.colorbar(label='log10(Gas Density)')
-plt.title('Gas Density of SubID 0: TNG100-1 snapshot 70')
+plt.title('Gas Density of SubID 15129: TNG100-1 snapshot 70')
 #plt.legend(loc='upper right')
-plt.savefig('group11.png')
+plt.savefig('group15129.png')
 
 plt.close()
 

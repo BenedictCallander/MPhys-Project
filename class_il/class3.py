@@ -34,27 +34,23 @@ def get(path, params = None):
 
     return r
 
-'''
-def geturl(simID, snapID):
-    baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID)
-    return baseurl
-'''
-
 class galaxy:
     def __init__(self,simID,snapID,subID):
-        self.simID = simID
-        self.snapID = snapID
-        self.subID = subID 
-        basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
-        baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID)
+        
+        #object creation requires only 3 input parameters for galaxy selection 
+        self.simID = simID #simulation used (TNG100/TNG50)
+        self.snapID = snapID #snapshot of study - can be either number of z= (z= required in parenthesis )
+        self.subID = subID #subhalo ID - could be iterated 
+        basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output' #path to simulation data on Noether
+        baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID) # API url for simulation/snapshot information
         
         hubble =0.7
         
         snap_util =get(baseurl) #use api to easily read snapshot information
         redshift = snap_util['redshift']
-        self.redshift =redshift 
+        self.redshift =redshift  # store redshift value as attribute
         
-        scalefac = 1./(1.+redshift)
+        scalefac = 1./(1.+redshift) #calculate scale factor
         
         #
         # Read Subhalo level info 
@@ -151,7 +147,6 @@ class galaxy:
     
     def visualise_cutout_TNG50(id, type, lim):
 
-
         sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
         sub_prog = get(sub_prog_url)
         
@@ -216,7 +211,7 @@ class galaxy:
     
 list=[0, 7516, 21013, 15129, 31129]
 
-sub0 = galaxy('TNG100-1',70,21013)
+sub0 = galaxy('TNG100-1',70,15129)
 sub0.galcen()
 sub0.ang_mom_align('gas')
 '''
