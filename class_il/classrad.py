@@ -203,13 +203,11 @@ massive_ids = [0, 7516, 21013, 15129, 31129, 39628, 47416, 26558, 44002, 34668, 
 
 for i in massive_ids:
     sub1= galaxy('TNG100-1',70,i)
-    print(len(sub1.pgas_met))
-    print(len(sub1.pgas_coo))
     sub1.galcen()
     sub1.ang_mom_align('gas')
     sub1.radial_coo()
     sub1.xyzprop_df()
-    sub1.met_grad(0.6)
+    sub1.gas_plot(1)
 
 end = time.time()
 print('runtime = {} seconds'.format(end-start))
