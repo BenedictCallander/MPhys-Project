@@ -41,7 +41,7 @@ def subhalo_filter(limit):
     #search_q = "?sfr__gt=0.0"
 
 #set base url as subhalos list 
-    base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/?limit={}&sfr__gt=0.0".format(limit)
+    base_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?sfr__gt=0.0".format(limit)
     url = base_url#+search_q
     #find all subhalos that fill search criteria 
     valid_subs = get(url)
@@ -75,14 +75,21 @@ def visualise_cutout(id, type, lim):
             dens =-np.log10(f['PartType0']['GFM_Metallicity'][:])**3
 
     plt.figure()
-    plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
+    plt.scatter(x,y,c=-np.log10(dens),cmap='inferno',s=1.2)
+    #plt.hist2d(x,y,weights=dens,bins=[1500,1000], cmap = 'afmhot', vmin = min(dens), vmax = (max(dens)))
     plt.xlabel('$\Delta x$ [ckpc/h]')
     plt.ylabel('$\Delta y$ [ckpc/h]')
-    plt.xlim(-10,10)
-    plt.ylim(-7,4)
+    #plt.xlim(-10,10)
+    #plt.ylim(-7,4)
     plt.savefig('hist_met_{}_{}.png'.format(type,id))
     plt.close()
 
     return print("graph plotted for subhalo{}".format(id))
 
-visualise_cutout(40,'met',5)
+
+massive_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?order_by=-mass&sfr_gt=0.0/"
+
+for i in range (20):
+    valid_subs = get(massive_url)
+    massive_ids = [ valid_subs['results'][i]['id'] for i in range(20)]
+print(massive_ids)

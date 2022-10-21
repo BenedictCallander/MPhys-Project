@@ -34,27 +34,23 @@ def get(path, params = None):
 
     return r
 
-'''
-def geturl(simID, snapID):
-    baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID)
-    return baseurl
-'''
-
 class galaxy:
     def __init__(self,simID,snapID,subID):
-        self.simID = simID
-        self.snapID = snapID
-        self.subID = subID 
-        basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
-        baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID)
+        
+        #object creation requires only 3 input parameters for galaxy selection 
+        self.simID = simID #simulation used (TNG100/TNG50)
+        self.snapID = snapID #snapshot of study - can be either number of z= (z= required in parenthesis )
+        self.subID = subID #subhalo ID - could be iterated 
+        basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output' #path to simulation data on Noether
+        baseurl = 'http://www.tng-project.org/api/'+str(simID)+'/snapshots/'+str(snapID) # API url for simulation/snapshot information
         
         hubble =0.7
         
         snap_util =get(baseurl) #use api to easily read snapshot information
         redshift = snap_util['redshift']
-        self.redshift =redshift 
+        self.redshift =redshift  # store redshift value as attribute
         
-        scalefac = 1./(1.+redshift)
+        scalefac = 1./(1.+redshift) #calculate scale factor
         
         #
         # Read Subhalo level info 
@@ -142,9 +138,14 @@ class galaxy:
         
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
         self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
-        
-    def visualise_cutout_TNG50(id, type, lim):
 
+    def radial_pos(self):
+        xval = self.pgas_coo[:,0]
+        yval = self.pgas_coo[:,1]
+
+        self.rval = np.sqrt(xval**2+yval**2)    
+    
+    def visualise_cutout_TNG50(id, type, lim):
 
         sub_prog_url = "http://www.tng-project.org/api/TNG50-2/snapshots/99/subhalos/"+str(id)+"/"
         sub_prog = get(sub_prog_url)
@@ -208,9 +209,9 @@ class galaxy:
     #    for i,j in range(zlen):
     #        = np.sum(self.pgas_coo[i][j][])
     
+list=[0, 7516, 21013, 15129, 31129]
 
-
-sub0 = galaxy('TNG100-1',70,0)
+sub0 = galaxy('TNG100-1',70,15129)
 sub0.galcen()
 sub0.ang_mom_align('gas')
 '''
@@ -228,3 +229,4 @@ df = pd.DataFrame({"x": sub0.pgas_coo[:,0],"y": sub0.pgas_coo[:,1],"z": sub0.pga
 df2=df.round()
 df2.sort_values(by='x',inplace=True)
 df2.to_csv('filet.csv')
+
