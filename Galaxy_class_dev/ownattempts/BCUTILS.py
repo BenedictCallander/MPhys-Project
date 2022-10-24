@@ -87,9 +87,9 @@ def visualise_cutout(id, type, lim):
     return print("graph plotted for subhalo{}".format(id))
 
 
-massive_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/?order_by=-mass&sfr_gt=0.0/"
+massive_url = "http://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/?order_by=-mass&sfr_gt=0.0/"
 
-for i in range (20):
+for i in range (5):
     valid_subs = get(massive_url)
     massive_ids = [ valid_subs['results'][i]['id'] for i in range(20)]
 print(massive_ids)
