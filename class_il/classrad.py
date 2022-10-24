@@ -72,7 +72,7 @@ class galaxy:
         # [units: proper kpc] (quantified in 3D)
         
         # Load all the relevant particle level info
-        gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses', 'Velocities', 'StarFormationRate','GFM_Metallicity'])
+        gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses','Density','Velocities', 'StarFormationRate','GFM_Metallicity'])
         # dimensions and units (see https://www.tng-project.org/data/docs/specifications/#parttype0):
         # Coordinates (N,3) ckpc/h   where ckps stands for co-moving kpc
         # Masses      (N)   10**10 Msun/h
@@ -88,7 +88,7 @@ class galaxy:
         self.pgas_vel   = self.pgas_vel * self.conv_kms2kpcyr    #Convert to kpc/yr
         self.pgas_sfr   = gas['StarFormationRate'][hcoldgas]
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
-        
+        self.pgas_dens = gas['Density'][hcoldgas]
         # Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities','GFM_Metallicity' ])
         hstar = np.where( (np.sum((stars['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
@@ -148,21 +148,21 @@ class galaxy:
         self.pstar_rad_len  = np.sqrt(self.pstar_coo[:,0]**2+self.pstar_coo[:,1]**2)
     def dataframegen(self,type):
         if(type=='gas'):
-            df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"m":self.pgas_m,"met": 10e9*self.pgas_met})
+            df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"m":self.pgas_dens,"met": self.pgas_met})
         elif(type=='star'):
-            df=pd.DataFrame({"x": self.pstar_coo[:,0], "y":self.pstar_coo[:,1],"z":self.pstar_coo[:,2], "rad":self.pstar_rad_len,"m":self.pstar_m,"met": 10e9*self.pstar_met})
+            df=pd.DataFrame({"x": self.pstar_coo[:,0], "y":self.pstar_coo[:,1],"z":self.pstar_coo[:,2], "rad":self.pstar_rad_len,"m":self.pstar_m,"met":self.pstar_met})
         self.df = df
         return df
     def gas_plot(self,annuli_pc):
         
         annul1= annuli_pc*self.crit_dist
         df_valid = self.df[self.df['rad']<annul1]
-        df_valid =df_valid.round(4)
+        df_valid =df_valid.round(1)
         df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
         plt.figure(figsize=(21,15))
         plt.style.use('dark_background')
-        plt.hist2d(df_valid['x'],df_valid['y'], weights=-np.log10(df_valid['m']),bins=[500,500],cmap = 'inferno')#,vmin=-np.log10(min(df_valid['m'])),vmax = -np.log10(max(df_valid['m'])))
-        #plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=np.log10(min(df_valid['m'])), vmax = 0.95*np.log10(max(df_valid['m'])))
+        #plt.hist2d(df_valid['x'],df_valid['y'], weights=-np.log10(df_valid['m']),bins=[500,500],cmap = 'inferno')#,vmin=-np.log10(min(df_valid['m'])),vmax = -np.log10(max(df_valid['m'])))
+        plt.scatter(-df_valid['x'],-df_valid['y'],c=np.log10(df_valid['m']),cmap='inferno', vmin=np.log10(min(df_valid['m'])), vmax = np.log10(max(df_valid['m'])))
             #plt.plot(critical_radius,zeros,'g+', markersize=10,label='critical radius')
         plt.xlabel('$\Delta x$ [kpc/h]')
         plt.ylabel('$\Delta y$ [kpc/h]')
@@ -220,7 +220,7 @@ class visualisation:
                 df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
                 plt.figure(figsize=(21,15))
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=np.log10(min(df_valid['m'])), vmax = 0.95*np.log10(max(df_valid['m'])))
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Mass)')
@@ -232,10 +232,10 @@ class visualisation:
                 df_valid = df.round(decp)
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
-                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                df_valid = df_valid.groupby(['x','y'])['met'].sum().reset_index()
                 plt.figure(figsize=(21,15))
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(df_valid['met']),cmap='inferno', vmin=min(df_valid['m']), vmax = max(df_valid['m']))
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(df_valid['met']),cmap='inferno', vmin=1.1*min(df_valid['m']),vmax= max(df_valid['m']))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Metallicity)')
@@ -245,7 +245,7 @@ class visualisation:
                 plt.close()
 
         elif(type=='stars'):
-            self.df = self.df_s
+            df = self.df_s
             if (quant=='mass'):
                 df_valid = df.round(decp)
                 annul1= annuli_pc*self.crit_dist
@@ -281,7 +281,7 @@ class visualisation:
     def metgrad (self,type,decp, annuli_pc):
         if (type=='gas'):
             df = self.df_g
-            df_valid = self.df.round(decp)
+            df_valid = self.df.round()
             annul1= annuli_pc*self.crit_dist
             df_valid = df[df['rad']<annul1]
             df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
@@ -325,15 +325,17 @@ massive_list=[0, 63864, 96762, 117250, 143880, 184931, 198182, 208811, 220595, 2
 #print(len(sub1.pgas_met))
 
 #for i in massive_ids:
-sub1= galaxy('TNG50-1',99,63864)
+sub1= galaxy('TNG50-1',99,242788)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_coo()
 dfg = sub1.dataframegen('gas')
 dfs = sub1.dataframegen('star')
+#sub1.gas_plot(0.5)
+#dfg.to_csv('inspect.csv')
 
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.visual('gas','mass',0,0.75)
+sub1plot.visual('gas','mass',8,1)
 
 #print(min(sub1.pstar_coo[:,0]))
 #print(max(sub1.pstar_coo[:,0]))

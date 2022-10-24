@@ -1,9 +1,6 @@
 week_2/cutout_0.hdf5
-<<<<<<< HEAD
 cutout_0.hdf5
-=======
 
->>>>>>> 49c34438ff99afa978574d8bb3766390ab7c2839
 .gitignore
 cutout_5.hdf5
 cutout_52.hdf5
@@ -18,3 +15,4 @@ cutout_68803.hdf5
 cutout_59896.hdf5
 cutout_77285.hdf5
 Week_2/cut.hdf5
+class_il/inspect.csv
