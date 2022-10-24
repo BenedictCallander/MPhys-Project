@@ -77,8 +77,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -194,11 +194,11 @@ class galaxy:
         return print('.')
     def met_grad_star(self,annuli_pc):
         df =pd.DataFrame({"rad": self.pstar_rad_len,"met": self.pstar_met })
-        df= df.sample(frac=0.01,random_state=1)
+        #df= df.sample(frac=0.01,random_state=1)
         annul1= annuli_pc*self.crit_dist
         met_df = df[df['rad']<annul1]
         plt.figure(figsize=(21,15))
-        plt.scatter(met_df['rad'], (met_df['met']), 'b.')
+        plt.scatter(met_df['rad'], 12+np.log10(met_df['met']), 'b.')
         plt.xlabel('Radial Position')
         plt.ylabel('metallicity')
         filename = 'temppng/TNG100_metgrad__stellar_forsub_{}.png'.format(sub1.subID)
@@ -216,22 +216,20 @@ print(massive_ids)
 '''
 massive_ids = [0, 7516, 21013, 15129, 31129, 39628, 47416, 26558, 44002, 34668, 57620, 51083, 54570, 63544, 69982, 60421, 85032, 87479, 88730, 80680]
 
-
 #print(len(sub1.pgas_coo))
 #print(len(sub1.pgas_met))
 
-#for i in massive_ids:
-sub1= galaxy('TNG100-1',70,0)
-sub1.galcen()
-sub1.ang_mom_align('stars')
-sub1.radial_coo()
-sub1.xyzprop_df('met')
-sub1.gas_plot(0.75)
-print(sub1.pgas_met)
+for i in massive_ids:
+    sub1= galaxy('TNG100-1',70,i)
+    sub1.galcen()
+    sub1.ang_mom_align('gas')
+    sub1.radial_coo()
+    sub1.xyzprop_df('met')
+    sub1.met_grad_gas(0.75)
 
-print(min(sub1.pstar_coo[:,0]))
-print(max(sub1.pstar_coo[:,0]))
-print(len(sub1.pstar_rad_len))
+#print(min(sub1.pstar_coo[:,0]))
+#print(max(sub1.pstar_coo[:,0]))
+#print(len(sub1.pstar_rad_len))
 end = time.time()
 print('runtime = {} seconds'.format(end-start))
 
