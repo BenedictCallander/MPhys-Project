@@ -77,7 +77,8 @@ class galaxy(object):
 
         # Calculate angular momentum based on particle type of choice (stars, gas or baryons)
         self.ang_mom_3D       = np.sum(_m[:,None]*np.cross(_coo,_vel),axis=0) # (3-element array specifying orientation of angular momentum vector)
-        self.ang_mom = self.ang_mom_3D/ np.sum(_m) #angular momentum vector divided by total mass 
+        #specific angular momentum \|/
+        # self.ang_mom = self.ang_mom_3D/ np.sum(_m) #angular momentum vector divided by total mass 
 
         #Aligning the z axis to the angular momentum vector
         j = self.ang_mom/np.linalg.norm(self.ang_mom)  #normalised specific angular momentum vector
