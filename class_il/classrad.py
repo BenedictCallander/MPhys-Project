@@ -325,7 +325,7 @@ massive_list=[0, 63864, 96762, 117250, 143880, 184931, 198182, 208811, 220595, 2
 #print(len(sub1.pgas_met))
 
 #for i in massive_ids:
-sub1= galaxy('TNG50-1',99,300903)
+sub1= galaxy('TNG50-1',99,275545)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_coo()
@@ -335,7 +335,7 @@ dfs = sub1.dataframegen('star')
 #dfg.to_csv('inspect.csv')
 
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.visual('gas','mass',8,1)
+sub1plot.visual('gas','mass',3,1)
 
 #print(min(sub1.pstar_coo[:,0]))
 #print(max(sub1.pstar_coo[:,0]))
