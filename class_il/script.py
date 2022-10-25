@@ -41,5 +41,5 @@ def geturl(simID, snapID):
 '''
 basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 
-subhalos = il.snapshot.loadSubhalo(basePath,70,0,'stars')
+subhalos = il.snapshot.loadSubhalo(basePath,70,0,'gas')
 print(subhalos.keys())

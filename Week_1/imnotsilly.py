@@ -32,8 +32,6 @@ def get(path, params = 'None'):
     return r
 base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=2/subhalos/"
 massive_ids = []
-massive
-for i in range (5):
     
 sq = '?sfr_gt=0.0'
 url1 = base_url+sq
