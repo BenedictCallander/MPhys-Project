@@ -1,3 +1,4 @@
+#%%
 import logging
 from random import random # http logging for debugging purpouses
 import time #runtime calculation import numpy as np #data handling 
@@ -35,10 +36,10 @@ def get(path, params = None):
 
     return r
 
-baseurl = "https://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/"
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
 sq = '?sfr__gt=0.0'
-sfr_q = "?limit=105181&sfr__gt=0.0"
-all_q = "?limit=4716081"
+sfr_q = "?limit=17553&sfr__gt=0.0"
+all_q = "?limit=5688113"
 
 
 sfrurl = baseurl+sfr_q
@@ -61,7 +62,7 @@ for i,id in enumerate(all_ids):
 mass=[]
 sfr=[]
 
-sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(105181)]
+sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(17553)]
 mass_sfr = []
 sfr_sfr = []
 for i,id in enumerate(sfr_ids):
@@ -77,3 +78,4 @@ plt.close()
 
 end = time.time()
 print("runtime :{}".format(end-start))
+# %%
