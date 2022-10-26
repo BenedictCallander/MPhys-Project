@@ -9,6 +9,7 @@ import requests #obtain data from API server
 import h5py #binary file manipulation
 import pandas as pd 
 import matplotlib.pyplot as plt 
+from joblib import Parallel, delayed
 
 baseurl = baseUrl = 'http://www.tng-project.org/api/'
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
@@ -38,7 +39,7 @@ def get(path, params = 'None'):
 search_q = "?sfr__gt=0.0"
 
 #set base url as subhalos list 
-base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/"
+base_url = "http://www.tng-project.org/api/TNG50-1/snapshots/z=0/subhalos/"
 url = base_url+search_q
 #find all subhalos that fill search criteria 
 valid_subs = get(url)
