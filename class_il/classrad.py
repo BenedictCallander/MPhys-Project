@@ -218,9 +218,9 @@ class visualisation:
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
                 df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
-                plt.figure(figsize=(20,12))
+                plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='afmhot', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Mass)')
@@ -324,7 +324,7 @@ massive_list=[0, 63864, 96762, 117250, 143880, 184931, 198182, 208811, 220595, 2
 #print(len(sub1.pgas_met))
 
 #for i in massive_ids:
-sub1= galaxy('TNG50-1',99,96762)
+sub1= galaxy('TNG50-1',99,275545)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_coo()
@@ -334,7 +334,7 @@ dfs = sub1.dataframegen('star')
 #dfg.to_csv('inspect.csv')
 
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.metgrad('gas',4,1)
+sub1plot.visual('gas','mass',4,1)
 
 #print(min(sub1.pstar_coo[:,0]))
 #print(max(sub1.pstar_coo[:,0]))
