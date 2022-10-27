@@ -1,3 +1,4 @@
+from itertools import groupby
 import logging
 from random import random # http logging for debugging purpouses
 import time #runtime calculation import numpy as np #data handling 
@@ -7,6 +8,7 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt 
 import illustris_python as il
+from scipy.signal import medfilt
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
@@ -79,8 +81,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -154,21 +156,136 @@ class galaxy:
         self.df = df
         return df
     #'''
-    def height_filter(self):
+    def height_filter(self,dfin):
         z_max = 0.1*self.stellarphotometricsrad
-        df_filtered = self.df[self.df['z']<z_max]
+        df_filtered = dfin[dfin['z']<z_max]
         self.filt_df = df_filtered
         return df_filtered
     #'''
-sub1 = galaxy("TNG50-1", 99, 2)
+
+
+class visualisation:
+    def __init__(self, df_g, df_s, subID, snapID, simID,crit_dist):
+        self.df_g = df_g #gas dataframe
+        self.df_s = df_s #stars dataframe
+        self.subID = subID
+        self.snapID = snapID
+        self.simID = simID
+        self.crit_dist = crit_dist
+    def visual(self,type, quant, decp, annuli_pc):
+        if (type=='gas'):
+            df = self.df_g
+            if(quant=='mass'):
+                df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                plt.figure(figsize=(20,12), dpi=500)
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='log10(Gas Mass)')
+                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'temppng/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+            elif(quant=='metallicity'):
+                df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid = df_valid.groupby(['x','y'])['met'].sum().reset_index()
+                plt.figure(figsize=(20,12), dpi=500)
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='log10(Gas Metallicity)')
+                plt.title('Metallicity Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'temppng/met_gas_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+
+        elif(type=='stars'):
+            df = self.df_s
+            if (quant=='mass'):
+                df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                plt.figure(figsize=(21,15))
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=np.log10(min(df_valid['m'])), vmax = np.log10(max(df_valid['m'])))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='log10(Stellar Mass)')
+                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'temppng/Mstar_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+            
+            elif(quant=='metallicity'):
+                df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                plt.figure(figsize=(21,15))
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(df_valid['met']),cmap='inferno', vmin=min(df_valid['m']), vmax = max(df_valid['m']))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='Metallicity)')
+                plt.title('Metallicity Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'temppng/met_star_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+
+    def metgrad (self,type,decp, annuli_pc):
+        if (type=='gas'):
+            df = self.df_g
+            annul1= annuli_pc*self.crit_dist
+            df_valid = df[df['rad']<annul1]
+            df_valid.sort_values(by='rad',inplace=True)
+            medfit = medfilt(df_valid['met'],kernel_size=5)
+            plt.figure(figsize=(21,15))
+            plt.plot(df_valid['rad'], (12+np.log10(medfit)), 'r--')
+            #plt.scatter(df_valid['rad'], (12+np.log10(df_valid['met'])), c=df_valid['m'], cmap = 'viridis')
+            plt.xlabel('Radial Distance [kpc/h]')
+            plt.ylabel('12+log10(O/H) [kpc/h]')
+            #plt.colorbar(label='Gass mass')
+            plt.title('Gas Metallicity Gradient for SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+            filename = 'temppng/metgradGAS_{}_sub_{}.png'.format(self.simID, self.subID)
+            plt.savefig(filename)
+            plt.close()
+
+        elif (type=='stars'):
+            df = self.df_s
+            annul1= annuli_pc*self.crit_dist
+            df_valid = df[df['rad']<annul1]
+            df_valid.sort_values(by='rad', inplace=True)
+            plt.figure(figsize=(21,15))
+            plt.scatter(df_valid['rad'], (12+np.log10(df_valid['met'])), c=df_valid['m'], cmap = 'viridis')
+            plt.xlabel('Radial Distance [kpc/h]')
+            plt.ylabel('12+log10(O/H) [kpc/h]')
+            plt.colorbar(label='Gass mass')
+            plt.title('Stellar Metallicity gradient for SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+            filename = 'temppng/metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
+            plt.savefig(filename)
+            plt.close()
+  
+sub1 = galaxy("TNG50-1", 99, 8)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_calc()
 dfg = sub1.dataframegen('gas')
+dfs = sub1.dataframegen('star')
 print(len(dfg['z']))
 
-dfg2=sub1.height_filter()
+dfg2=sub1.height_filter(dfg)
+dfs2=sub1.height_filter(dfs)
 print(len(dfg2['z']))
-  
-        
+sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
+sub1plot.metgrad('gas',1,1)
+end = time.time()
+print("runtime {}".format(end-start))
 
