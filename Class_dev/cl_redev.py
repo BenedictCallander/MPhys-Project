@@ -272,20 +272,23 @@ class visualisation:
             filename = 'temppng/metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
-  
-sub1 = galaxy("TNG50-1", 99, 8)
-sub1.galcen()
-sub1.ang_mom_align('gas')
-sub1.radial_calc()
-dfg = sub1.dataframegen('gas')
-dfs = sub1.dataframegen('star')
-print(len(dfg['z']))
+galaxy_df = pd.read_csv("test1.csv")
+valid_galaxies = galaxy_df[galaxy_df['mass']<9.5]
 
-dfg2=sub1.height_filter(dfg)
-dfs2=sub1.height_filter(dfs)
-print(len(dfg2['z']))
-sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.metgrad('gas',1,1)
+ticker = 0
+for i in valid_galaxies['id']:
+    sub1 = galaxy("TNG50-1", 99, i)
+    sub1.galcen()
+    sub1.ang_mom_align('gas')
+    sub1.radial_calc()
+    dfg = sub1.dataframegen('gas')
+    dfs = sub1.dataframegen('star')
+    dfg2=sub1.height_filter(dfg)
+    dfs2=sub1.height_filter(dfs)
+    sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
+    sub1plot.metgrad('gas',1,1)
+    print("subhalo {}/1998".format(ticker))
+    ticker = ticker+1
 end = time.time()
 print("runtime {}".format(end-start))
 
