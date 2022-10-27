@@ -30,14 +30,14 @@ def get(path, params = 'None'):
             f.write(r.content)
         return filename # return the filename string
     return r
-base_url = "http://www.tng-project.org/api/TNG50-2/snapshots/z=0/subhalos/"
+base_url = "http://www.tng-project.org/api/TNG50-1/snapshots/z=0/subhalos/"
 massive_ids = []
 
-search_q = "?limit=10057&sfr__gt=0.0"
+search_q = "?limit=17553&sfr__gt=0.0"
 url = base_url+search_q
 valid_subs = get(url)
 print(url)
-valid_ids = [ valid_subs['results'][i]['id'] for i in range(10057)]
+valid_ids = [ valid_subs['results'][i]['id'] for i in range(17553)]
 print(len(valid_ids))
 
 mass = []
@@ -55,6 +55,7 @@ colors = [plt.cm.hsv(i) for i in np.linspace(0, 1, 600)]
 plt.figure(figsize=(20,12))
 plt.plot(df['mass'], df['sfr'],'g+')
 plt.yscale('log')
+plt.xscale('log')
 plt.ylabel("log(SFR)", fontsize = 25)
 plt.xlabel("Mass (Log Msun)", fontsize = 25)
 plt.tick_params(axis = 'both', which = 'both',direction = 'inout', length = 15, labelsize = 15)
