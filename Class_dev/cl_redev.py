@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import illustris_python as il
 from scipy.signal import medfilt
-
+from joblib import Parallel, delayed
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
@@ -254,7 +254,7 @@ class visualisation:
             plt.ylabel('12+log10(O/H) [kpc/h]')
             #plt.colorbar(label='Gass mass')
             plt.title('Gas Metallicity Gradient for SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-            filename = 'temppng/metgradGAS_{}_sub_{}.png'.format(self.simID, self.subID)
+            filename = 'masspng/metgradGAS_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
 
@@ -275,8 +275,7 @@ class visualisation:
 galaxy_df = pd.read_csv("test1.csv")
 valid_galaxies = galaxy_df[galaxy_df['mass']<9.5]
 
-ticker = 0
-for i in valid_galaxies['id']:
+def met_plot(i):
     sub1 = galaxy("TNG50-1", 99, i)
     sub1.galcen()
     sub1.ang_mom_align('gas')
@@ -287,8 +286,9 @@ for i in valid_galaxies['id']:
     dfs2=sub1.height_filter(dfs)
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
     sub1plot.metgrad('gas',1,1)
-    print("subhalo {}/1998".format(ticker))
-    ticker = ticker+1
+    return print(".")
+    
+returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 end = time.time()
 print("runtime {}".format(end-start))
 
