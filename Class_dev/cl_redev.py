@@ -246,6 +246,7 @@ class visualisation:
             annul1= annuli_pc*self.crit_dist
             df_valid = df[df['rad']<annul1]
             df_valid.sort_values(by='rad',inplace=True)
+            df_valid = df_valid[abs(df_valid['met'])>0]
             medfit = medfilt(df_valid['met'],kernel_size=5)
             plt.figure(figsize=(21,15))
             plt.plot(df_valid['rad'], (12+np.log10(medfit)), 'r--')
@@ -274,7 +275,20 @@ class visualisation:
             plt.close()
 galaxy_df = pd.read_csv("test1.csv")
 valid_galaxies = galaxy_df[galaxy_df['mass']<9.5]
-
+307531
+'''
+sub1 = galaxy("TNG50-1", 99, 307614)
+sub1.galcen()
+sub1.ang_mom_align('gas')
+sub1.radial_calc()
+dfg = sub1.dataframegen('gas')
+dfs = sub1.dataframegen('star')
+dfg2=sub1.height_filter(dfg)
+dfs2=sub1.height_filter(dfs)
+sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
+sub1plot.metgrad('gas',1,1)
+'''
+#'''
 def met_plot(i):
     sub1 = galaxy("TNG50-1", 99, i)
     sub1.galcen()
@@ -286,9 +300,13 @@ def met_plot(i):
     dfs2=sub1.height_filter(dfs)
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
     sub1plot.metgrad('gas',1,1)
-    return print(".")
+    return print("\n")
+
+with  in range 200
     
-returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+
+#returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+#'''
 end = time.time()
 print("runtime {}".format(end-start))
 
