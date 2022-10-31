@@ -111,6 +111,8 @@ class galaxy:
         self.pstar_vel   = (stars['Velocities'][hstar] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
         self.pstar_vel   = self.pstar_vel * self.conv_kms2kpcyr
         self.pstar_met = stars['GFM_Metallicity'][hstar]
+
+        
     def galcen(self):
         self.pgas_coo -= self.centre[None,:]
         self.pstar_coo -= self.centre[None,:]
@@ -156,22 +158,43 @@ class galaxy:
         
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
         self.pstar_vel=np.dot(A,self.pstar_vel.T).T
+
+
+
     def rad_gen(self):
         self.gas_radial = (np.sqrt((self.pgas_coo[:,0]**2)+(self.pgas_coo[:,1]**2)))
         #print(self.gas_radial)
         self.star_radial = (np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]**2)))
         #print(self.str_radial)
+
+
+
     def df_gen(self):
-        self.dfg = pd.DataFrame({"x":self.pgas_coo[:,0], "y": self.pgas_coo[:,1],"z":self.pgas_coo[:,2],"rad":self.gas_radial,"mass":self.pgas_m,"met":(12+np.log10(self.pgas_met))})
-        self.dfs = pd.DataFrame({"x":self.pstar_coo[:,0], "y": self.pstar_coo[:,1],"z":self.pstar_coo[:,2],"rad":self.star_radial,"mass":self.pstar_m,"met":(12+np.log10(self.pstar_met))})
+        #gas data -> dataframe -> dfg
+        self.dfg = pd.DataFrame({"x":self.pgas_coo[:,0], "y": self.pgas_coo[:,1],
+        "z":self.pgas_coo[:,2],"rad":self.gas_radial,"mass":self.pgas_m,"met":(12+np.log10(self.pgas_met))})
+        #star data -> dataframe -> dfs
+        self.dfs = pd.DataFrame({"x":self.pstar_coo[:,0], "y": self.pstar_coo[:,1],
+        "z":self.pstar_coo[:,2],"rad":self.star_radial,"mass":self.pstar_m,"met":(12+np.log10(self.pstar_met))})
+
+
+
     def rad_norm(self,factor):
+        #normalise dataframe radial values -> all subhalos will have identical x scale set by factor input 
         self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.mean())/(self.dfg.rad.max()-self.dfg.rad.min()))
+        #
         self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.mean())/(self.dfs.rad.max()-self.dfs.rad.min()))
+
+
+
     def fit_lin(self,dfin):
+
+        #apply curve_fit function to particle data, for either linear or curved fit, 
         popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
         plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
         dfin.sort_values(by='rad', inplace=True)
-        medfit = medfilt(dfin['met'],kernel_size=5)
+        medfit = medfilt(dfin['met'],kernel_size=5) 
         plt.plot(dfin['rad'], medfit,'g-')
         #plt.plot(dfin['rad'], dfin['met'],'g+')
         plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')

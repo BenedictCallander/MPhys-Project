@@ -1,5 +1,4 @@
-#%%
-#git update
+#
 import logging # http logging for debugging purpouses
 import time #runtime calculation 
 import numpy as np #data handling 
@@ -7,8 +6,7 @@ import requests #obtain data from API server
 import h5py #binary file manipulation
 import pandas as pd 
 import matplotlib.pyplot as plt 
-baseurl = baseUrl = 'http://www.tng-project.org/api/'
-headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
+
 
 def get(path, params=None):
     # make HTTP GET request to path
@@ -34,4 +32,4 @@ subhalo = get(cut_url,cutout_rq)
 print(subhalo)
 
 
-# %%
+#
