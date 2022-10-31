@@ -12,6 +12,7 @@ from scipy.signal import medfilt
 from joblib import Parallel, delayed
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
+from sklearn.preprocessing import MinMaxScaler
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 def get(path, params = None):
     #utility function for API reading 
@@ -148,20 +149,52 @@ class galaxy:
     def radial_calc(self):
         self.pgas_rad_len   = np.sqrt(self.pgas_coo[:,0]**2+self.pgas_coo[:,1]**2)
         self.pstar_rad_len  = np.sqrt(self.pstar_coo[:,0]**2+self.pstar_coo[:,1]**2)
+        #print(self.pgas_rad_len)
+        #pgas_rad=[]
+        #numvals = np.linspace(0,len(self.pgas_coo[:,0]),1)
+        '''
+        for i in numvals:
+            pgas_rad.append(np.sqrt(self.pgas_coo[:,0][i]**2+self.pgas_coo[:,1][i]**2))
+        rmax = max(pgas_rad)
+        rmin = min(pgas_rad)
+        rnorm=[]
+        for i in pgas_rad:
+            rnorm.append((100*(pgas_rad[i]-rmin)/(rmax-rmin)))
+        self.rnorm = rnorm
+        '''
+
+
+
     def dataframegen(self,type):
         if(type=='gas'):
             df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"m":self.pgas_dens,"met": self.pgas_met})
+            #print(df['rad'])
         elif(type=='star'):
             df=pd.DataFrame({"x": self.pstar_coo[:,0], "y":self.pstar_coo[:,1],"z":self.pstar_coo[:,2], "rad":self.pstar_rad_len,"m":self.pstar_m,"met":self.pstar_met})
         self.df = df
         return df
+
     #'''
     def height_filter(self,dfin):
         z_max = 0.1*self.stellarphotometricsrad
         df_filtered = dfin[dfin['z']<z_max]
         self.filt_df = df_filtered
         return df_filtered
-    #'''
+    '''
+    def rad_normalise(self,df):
+        rad_arr = df['rad'].to_numpy()
+        rmax = max(rad_arr)
+        rmin = min(rad_arr)
+        numvals = np.arange(0,len(rad_arr),1)
+        rad2 = []
+        for j in numvals:
+            rad2.append(100*(rad_arr[j]-rmin)/(rmax-rmin))
+        rad2df = pd.DataFrame({'rad':rad2})
+        df['rad'] = rad2df['rad'].values
+        return df
+    '''
+
+        
 
 
 class visualisation:
@@ -245,6 +278,7 @@ class visualisation:
             df = self.df_g
             annul1= annuli_pc*self.crit_dist
             df_valid = df[df['rad']<annul1]
+            df_valid.rad = 100*((df_valid.rad-df_valid.rad.mean())/(df_valid.rad.max()-df_valid.rad.min()))
             df_valid.sort_values(by='rad',inplace=True)
             df_valid = df_valid[abs(df_valid['met'])>0]
             medfit = medfilt(df_valid['met'],kernel_size=5)
@@ -298,15 +332,12 @@ def met_plot(i):
     dfs = sub1.dataframegen('star')
     dfg2=sub1.height_filter(dfg)
     dfs2=sub1.height_filter(dfs)
+    #dfg2 = sub1.rad_normalise(dfg2)
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
     sub1plot.metgrad('gas',1,1)
-    return print("\n")
-
-with  in range 200
-    
-
-#returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+    return print(".") 
+returns = Parallel(n_jobs=19)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 #'''
+
 end = time.time()
 print("runtime {}".format(end-start))
-

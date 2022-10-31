@@ -148,3 +148,6 @@ class visualisation:
             filename = 'temppng/metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
+
+
+#"mygalaxy%d"%ID=Galaxy()
