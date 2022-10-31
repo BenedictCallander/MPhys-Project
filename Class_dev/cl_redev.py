@@ -167,10 +167,10 @@ class galaxy:
 
     def dataframegen(self,type):
         if(type=='gas'):
-            df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":self.pgas_rad_len,"m":self.pgas_dens,"met": self.pgas_met})
+            df=pd.DataFrame({"x": self.pgas_coo[:,0], "y":self.pgas_coo[:,1],"z":self.pgas_coo[:,2], "rad":abs(self.pgas_rad_len),"m":self.pgas_dens,"met": self.pgas_met})
             #print(df['rad'])
         elif(type=='star'):
-            df=pd.DataFrame({"x": self.pstar_coo[:,0], "y":self.pstar_coo[:,1],"z":self.pstar_coo[:,2], "rad":self.pstar_rad_len,"m":self.pstar_m,"met":self.pstar_met})
+            df=pd.DataFrame({"x": self.pstar_coo[:,0], "y":self.pstar_coo[:,1],"z":self.pstar_coo[:,2], "rad":abs(self.pstar_rad_len),"m":self.pstar_m,"met":self.pstar_met})
         self.df = df
         return df
 
@@ -220,7 +220,7 @@ class visualisation:
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Mass)')
                 plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-                filename = 'temppng/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+                filename = 'suppng/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
             elif(quant=='metallicity'):
@@ -277,11 +277,11 @@ class visualisation:
         if (type=='gas'):
             df = self.df_g
             annul1= annuli_pc*self.crit_dist
-            df_valid = df[df['rad']<annul1]
+            df_valid = df[abs(df['rad'])<annul1]
             df_valid.rad = 100*((df_valid.rad-df_valid.rad.mean())/(df_valid.rad.max()-df_valid.rad.min()))
             df_valid.sort_values(by='rad',inplace=True)
             df_valid = df_valid[abs(df_valid['met'])>0]
-            medfit = medfilt(df_valid['met'],kernel_size=31)
+            medfit = medfilt(df_valid['met'],kernel_size=21)
             plt.figure(figsize=(21,15))
             plt.plot(df_valid['rad'], (12+np.log10(medfit)), 'r--')
             #plt.scatter(df_valid['rad'], (12+np.log10(df_valid['met'])), c=df_valid['m'], cmap = 'viridis')
@@ -312,7 +312,7 @@ class visualisation:
             plt.close()
 galaxy_df = pd.read_csv("test1.csv")
 valid_galaxies = galaxy_df[galaxy_df['mass']<9.5]
-307531
+
 '''
 sub1 = galaxy("TNG50-1", 99, 307614)
 sub1.galcen()
@@ -337,10 +337,10 @@ def met_plot(i):
     dfs2=sub1.height_filter(dfs)
     #dfg2 = sub1.rad_normalise(dfg2)
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-    sub1plot.metgrad('gas',1,1)
+    sub1plot.visual('gas','mass',4,1)
     return print(".") 
 met_plot(117743)
-#returns = Parallel(n_jobs=5)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 #'''
 
 end = time.time()
