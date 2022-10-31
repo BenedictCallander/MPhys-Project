@@ -281,7 +281,7 @@ class visualisation:
             df_valid.rad = 100*((df_valid.rad-df_valid.rad.mean())/(df_valid.rad.max()-df_valid.rad.min()))
             df_valid.sort_values(by='rad',inplace=True)
             df_valid = df_valid[abs(df_valid['met'])>0]
-            medfit = medfilt(df_valid['met'],kernel_size=5)
+            medfit = medfilt(df_valid['met'],kernel_size=31)
             plt.figure(figsize=(21,15))
             plt.plot(df_valid['rad'], (12+np.log10(medfit)), 'r--')
             #plt.scatter(df_valid['rad'], (12+np.log10(df_valid['met'])), c=df_valid['m'], cmap = 'viridis')
@@ -289,7 +289,7 @@ class visualisation:
             plt.ylabel('12+log10(O/H) [kpc/h]')
             #plt.colorbar(label='Gass mass')
             plt.title('Gas Metallicity Gradient for SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-            filename = 'masspng/metgradGAS_{}_sub_{}.png'.format(self.simID, self.subID)
+            filename = 'metgradGAS_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
 
@@ -297,6 +297,8 @@ class visualisation:
             df = self.df_s
             annul1= annuli_pc*self.crit_dist
             df_valid = df[df['rad']<annul1]
+            df_valid=df_valid.round()
+            df_valid.groupby(['rad'])['met'].mean().reset_index()
             df_valid.sort_values(by='rad', inplace=True)
             plt.figure(figsize=(21,15))
             plt.scatter(df_valid['rad'], (12+np.log10(df_valid['met'])), c=df_valid['m'], cmap = 'viridis')
@@ -304,7 +306,8 @@ class visualisation:
             plt.ylabel('12+log10(O/H) [kpc/h]')
             plt.colorbar(label='Gass mass')
             plt.title('Stellar Metallicity gradient for SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-            filename = 'temppng/metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
+            #temppng/
+            filename = 'metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
 galaxy_df = pd.read_csv("test1.csv")
@@ -336,8 +339,8 @@ def met_plot(i):
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
     sub1plot.metgrad('gas',1,1)
     return print(".") 
-#met_plot(301092)
-returns = Parallel(n_jobs=5)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+met_plot(117743)
+#returns = Parallel(n_jobs=5)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 #'''
 
 end = time.time()

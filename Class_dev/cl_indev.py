@@ -112,7 +112,7 @@ class galaxy:
         self.pstar_vel   = self.pstar_vel * self.conv_kms2kpcyr
         self.pstar_met = stars['GFM_Metallicity'][hstar]
 
-        
+
     def galcen(self):
         self.pgas_coo -= self.centre[None,:]
         self.pstar_coo -= self.centre[None,:]
@@ -189,24 +189,29 @@ class galaxy:
 
     def fit_lin(self,dfin):
 
+        popt,pcov = curve_fit(linear_fit,dfin['rad'],dfin['met'])
         #apply curve_fit function to particle data, for either linear or curved fit, 
-        popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
-        plt.figure(figsize=(15,10))
-        #sort dataframe values by radial value -> plot clarity for line plotting
         dfin.sort_values(by='rad', inplace=True)
         medfit = medfilt(dfin['met'],kernel_size=5) 
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
         plt.plot(dfin['rad'], medfit,'g-')
         #plt.plot(dfin['rad'], dfin['met'],'g+')
-        plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')
+        plt.plot(dfin['rad'], linear_fit(dfin['rad'],*popt),'r--')
         plt.xlabel("Radial Distance (Normalised Code Units)")
         plt.ylabel("12+log10(O/H)")
         plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
-        filename = ("fitpng/fit_{}.png".format(self.subID))
+        filename = ("fitpng/lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
 
-valid_id = [85,88,91,111,119,3052,63864,63865]
-
+df_in = pd.read_csv("verify.csv")
+valid_id=[]
+idlist = list(df_in['id'])
+for i in range(200):
+    valid_id.append(idlist[i])
+print(valid_id)
 for i in valid_id:
     sub1 = galaxy("TNG50-1", 99, i)
     sub1.galcen()
@@ -215,3 +220,4 @@ for i in valid_id:
     sub1.df_gen()
     sub1.rad_norm(100)
     sub1.fit_lin(sub1.dfg)
+
