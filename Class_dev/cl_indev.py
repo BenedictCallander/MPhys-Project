@@ -43,7 +43,9 @@ def get(path, params = None):
 def linear_fit(a,x,b):
     f = (a*x)+b
     return f
-
+def sq_fit(x,a,b,c):
+    f = (a*(x**2))+(b*x)+c
+    return f
 
 
 class galaxy:
@@ -166,22 +168,27 @@ class galaxy:
         self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.mean())/(self.dfg.rad.max()-self.dfg.rad.min()))
         self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.mean())/(self.dfs.rad.max()-self.dfs.rad.min()))
     def fit_lin(self,dfin):
-        popt,pcov = curve_fit(linear_fit,dfin['rad'],dfin['met'])
+        popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
         plt.figure(figsize=(15,10))
         dfin.sort_values(by='rad', inplace=True)
         medfit = medfilt(dfin['met'],kernel_size=5)
         plt.plot(dfin['rad'], medfit,'g-')
         #plt.plot(dfin['rad'], dfin['met'],'g+')
-        plt.plot(dfin['rad'], linear_fit(dfin['rad'],*popt),'r--')
-        plt.savefig("linfit.png")
+        plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10(O/H)")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        filename = ("fitpng/fit_{}.png".format(self.subID))
+        plt.savefig(filename)
         plt.close()
 
+valid_id = [85,88,91,111,119,3052,63864,63865]
 
-
-sub1 = galaxy("TNG50-1", 99, 208811)
-sub1.galcen()
-sub1.ang_mom_align('gas')
-sub1.rad_gen()
-sub1.df_gen()
-sub1.rad_norm(100)
-sub1.fit_lin(sub1.dfg)
+for i in valid_id:
+    sub1 = galaxy("TNG50-1", 99, i)
+    sub1.galcen()
+    sub1.ang_mom_align('gas')
+    sub1.rad_gen()
+    sub1.df_gen()
+    sub1.rad_norm(100)
+    sub1.fit_lin(sub1.dfg)
