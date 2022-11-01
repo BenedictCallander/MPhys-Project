@@ -339,8 +339,8 @@ def met_plot(i):
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
     sub1plot.visual('gas','mass',4,1)
     return print(".") 
-met_plot(117743)
-returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
+met_plot(3052)
+#returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 #'''
 
 end = time.time()
