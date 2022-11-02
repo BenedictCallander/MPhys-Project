@@ -96,8 +96,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -206,6 +206,13 @@ class galaxy:
         filename = ("fitpng/lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
+        
+        
+        
+        
+
+
+
 class visualisation:
     def __init__(self, df_g, df_s, subID, snapID, simID,crit_dist):
         self.df_g = df_g #gas dataframe
@@ -321,8 +328,10 @@ class visualisation:
             plt.close()
 #'''
 df_in = pd.read_csv("verify.csv")
-valid_id = list(df_in['id'])
-
+#valid_id = df_in[df_in['mass']<9.5]
+valid_id = df_in[df_in['sfr']>10e-1]
+valid_id = list(valid_id['id'])
+print(len(valid_id))
 #'''
 '''
 sub1 = galaxy("TNG50-1", 99, 117743)
@@ -346,7 +355,7 @@ def runlist(i):
             sub1.rad_gen()
             sub1.df_gen()
             sub1plot=visualisation(sub1.dfg, sub1.dfs,sub1.subID,sub1.snapID,sub1.simID,sub1.crit_dist)
-            sub1plot.visual('gas','mass',1,1)
+            sub1plot.visual('gas','mass',5,1)
             print("Subhalo {} done".format(i))
     
     except OSError:
