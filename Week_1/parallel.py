@@ -24,7 +24,7 @@ def get(path, params = 'None'):
             f.write(r.content)
         return filename # return the filename string
     return r
-'''
+#'''
 base_url = "http://www.tng-project.org/api/TNG50-1/snapshots/z=0/subhalos/"
 massive_ids = []
 
@@ -43,7 +43,7 @@ for i,id in enumerate(valid_ids):
     
 df=pd.DataFrame({"id": idvals, "url":urlvals})
 df.to_csv("parallel.csv")
-'''
+#'''
 
 
 
@@ -56,15 +56,17 @@ def gfm_get (url):
     ids=(subdata['id'])
     mass=(subdata['mass_gas'])
     GFM_met=(subdata['gasmetallicity'])
-    return ids, GFM_met, mass
+    radius = subdata['halfmassrad']
+    print(ids)
+    return ids, GFM_met, mass,radius
 
 returns = Parallel(n_jobs=-1)(delayed(gfm_get)(url) for url in df["url"])
-#print(len(returns))
-#print(np.ndim(returns))
-#print(returns)
-df2=pd.DataFrame(returns,columns=['ids','met','mass'])
+print(len(returns))
+print(np.ndim(returns))
+print(returns)
+df2=pd.DataFrame(returns,columns=['ids','met','mass','radius'])
 print(df2)
-df2.to_csv('faster.csv')
+df2.to_csv('rad.csv')
 end=time.time()
 print("parallel time = {}".format(end-start))
 
@@ -74,17 +76,21 @@ start2=time.time
 ids = []
 GFM_met = []
 mass = []
+radius = []
 ticker = 0
+total = len(df['url'])
+print(total)
 for i in df['url']:
     subdata= get(i)
     ids.append(subdata['id'])
     mass.append(subdata['mass_gas'])
     GFM_met.append(subdata['gasmetallicity'])
-    print("Subhalo pc {}".format((ticker/200)*100))
+    radius.append(subdata['halfmassrad'])
+    print("Subhalo number {} \n".format((ticker/total))*100)
     ticker=ticker+1
 
 df3 = pd.DataFrame({"id":ids, "met":GFM_met, "mass":mass})
-
+df3.to_csv("rad.csv")
 
 
 end2 = time.time()

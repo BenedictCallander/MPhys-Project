@@ -15,7 +15,6 @@ from joblib import Parallel, delayed
 import os
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-from sklearn.preprocessing import MinMaxScaler
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 
 def get(path, params = None):
