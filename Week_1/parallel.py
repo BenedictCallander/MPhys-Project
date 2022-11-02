@@ -52,19 +52,27 @@ df = pd.read_csv("parallel.csv")
 
 
 def gfm_get (url):
-    subdata = get(url)
-    ids=(subdata['id'])
-    mass=(subdata['mass_gas'])
-    GFM_met=(subdata['gasmetallicity'])
-    radius = subdata['halfmassrad']
-    print(ids)
-    return ids, GFM_met, mass,radius
+    try:
+        subdata = get(url)
+        ids=(subdata['id'])
+        mass=(subdata['mass_gas'])
+        GFM_met=(subdata['gasmetallicity'])
+        radius = subdata['halfmassrad']
+        sfr = subdata['sfr']
+        print(ids)
+    except:
+        print("Connection refused by the server..")
+        print("Let me sleep for 5 seconds")
+        print("ZZzzzz...")
+        time.sleep(5)
+        print("Was a nice sleep, now let me continue...")
+    return ids, GFM_met, mass,radius,sfr
 
-returns = Parallel(n_jobs=-1)(delayed(gfm_get)(url) for url in df["url"])
+returns = Parallel(n_jobs=20)(delayed(gfm_get)(url) for url in df["url"])
 print(len(returns))
 print(np.ndim(returns))
 print(returns)
-df2=pd.DataFrame(returns,columns=['ids','met','mass','radius'])
+df2=pd.DataFrame(returns,columns=['ids','met','mass','radius','sfr'])
 print(df2)
 df2.to_csv('rad.csv')
 end=time.time()
