@@ -15,6 +15,7 @@ from scipy.optimize import curve_fit
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 baseurl='https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/'
+
 def get(path, params = None):
     '''
     API request function - expansion upon requests.get() to provide error codes and .hdf5 file reading 
@@ -40,6 +41,8 @@ def get(path, params = None):
 
     return r
 
+
+
 class APIutils:
     def __init__(self, url,):
         self.url=url
@@ -64,5 +67,5 @@ class APIutils:
         plt.close()
 
 
-plot1=APIutils(baseurl)    
+plot1=APIutils(baseurl)
 plot1.masssfrplot("?limit=17553&sfr__gt=0.0", "testing.png")
