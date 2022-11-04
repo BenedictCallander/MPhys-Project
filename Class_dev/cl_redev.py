@@ -344,13 +344,13 @@ def met_plot(i):
     sub1.radial_calc()
     dfg = sub1.dataframegen('gas')
     dfs = sub1.dataframegen('star')
-    dfg2=sub1.height_filter(dfg)
-    dfs2=sub1.height_filter(dfs)
+    #dfg2=sub1.height_filter(dfg)
+    #dfs2=sub1.height_filter(dfs)
     #dfg2 = sub1.rad_normalise(dfg2)
-    sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-    sub1plot.plot3d()
+    sub1plot = visualisation(dfg, dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
+    sub1plot.visual('gas','mass',4,1)
     return print(".") 
-met_plot(3052)
+met_plot(11)
 #returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
 #'''
 

@@ -12,6 +12,8 @@ import time
 from joblib import Parallel, delayed
 from scipy.signal import medfilt
 from scipy.optimize import curve_fit 
+from scipy.signal import savgol_filter
+import illustris_python as il
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 baseurl='https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/'
@@ -41,6 +43,12 @@ def get(path, params = None):
 
     return r
 
+def linear_fit(a,x,b):
+    f = (a*x)+b
+    return f
+def sq_fit(x,a,b,c):
+    f = (a*(x**2))+(b*x)+c
+    return f
 
 
 class APIutils:
@@ -68,7 +76,7 @@ class APIutils:
 
 
 class galaxy:
-    def __init__(self,simID,snapID,subID,SFRYN):
+    def __init__(self,simID,snapID,subID):
         np.seterr(divide='ignore', invalid='ignore')
         #object creation requires only 3 input parameters for galaxy selection 
         self.simID = simID #simulation used (TNG100/TNG50)
@@ -113,10 +121,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        if (SFRYN=='Y'):
-            hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        elif(SFRYN=='N'):
-            hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -194,14 +200,140 @@ class galaxy:
 
     def df_gen(self):
         #gas data -> dataframe -> dfg
-        self.dfg = pd.DataFrame({"x":self.pgas_coo[:,0], "y": self.pgas_coo[:,1],"z":self.pgas_coo[:,2],"rad":self.gas_radial,"m":self.pgas_dens,"met":(12+np.log10(self.pgas_met))})
+        self.dfg = pd.DataFrame({"x":self.pgas_coo[:,0], "y": self.pgas_coo[:,1],"z":self.pgas_coo[:,2],"rad":self.gas_radial,"m":self.pgas_m,"met":(12+np.log10(self.pgas_met)),"dens":self.pgas_dens})
         #star data -> dataframe -> dfs
         self.dfs = pd.DataFrame({"x":self.pstar_coo[:,0], "y": self.pstar_coo[:,1],"z":self.pstar_coo[:,2],"rad":self.star_radial,"m":self.pstar_m,"met":(12+np.log10(self.pstar_met))})
 
 
-    def rad_norm(self,factor):
+    def rad_norm(self,factor,YN):
         #normalise dataframe radial values -> all subhalos will have identical x scale set by factor input 
+        
         self.dfg = self.dfg.round(3)
-        self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.min())/(self.dfg.rad.max()-self.dfg.rad.min()))
+        if YN=='Y':
+            self.dfg = self.dfg[self.dfg['z']<0.1*self.stellarphotometricsrad]
+            self.dfs = self.dfs[self.dfs['z']<0.1*self.stellarphotometricsrad]
+            self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.min())/(self.dfg.rad.max()-self.dfg.rad.min()))
         #
-        self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.min())/(self.dfs.rad.max()-self.dfs.rad.min()))
+            self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.min())/(self.dfs.rad.max()-self.dfs.rad.min()))
+        elif YN=='N':
+            self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.min())/(self.dfg.rad.max()-self.dfg.rad.min()))
+        #
+            self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.min())/(self.dfs.rad.max()-self.dfs.rad.min()))
+
+    def fit_lin(self,dfin,pc):
+        annuli = pc*self.crit_dist
+        popt,pcov = curve_fit(linear_fit,dfin['rad'],dfin['met'])
+        #apply curve_fit function to particle data, for either linear or curved fit, 
+        dfin.sort_values(by='rad', inplace=True)
+        dfin = dfin[dfin['rad']<annuli]
+        medfit = medfilt(dfin['met'],kernel_size=21) 
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
+        plt.plot(dfin['rad'], medfit,'g-')
+        #plt.plot(dfin['rad'], dfin['met'],'g+')
+        plt.plot(dfin['rad'], linear_fit(dfin['rad'],*popt),'r--')
+        plt.xlim(0,(10*pc))
+        plt.ylim(8,12)
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10$(O/H)$")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        plt.tick_params(axis='both',which='both',direction='inout',length=15)
+        filename = ("rad/lin_fit_{}.png".format(self.subID))
+        plt.savefig(filename)
+        plt.close()
+    
+    def quad_fit(self,dfin,pc):
+        annuli = pc*self.crit_dist
+        popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
+        #apply curve_fit function to particle data, for either linear or curved fit, 
+        dfin.sort_values(by='rad', inplace=True)
+        dfin = dfin[dfin['rad']<annuli]
+        medfit = medfilt(dfin['met'],kernel_size=21) 
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
+        plt.plot(dfin['rad'], medfit,'g-')
+        #plt.plot(dfin['rad'], dfin['met'],'g+')
+        plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')
+        plt.xlim(0,(10*pc))
+        plt.ylim(8,12)
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10$(O/H)$")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        plt.tick_params(axis='both',which='both',direction='inout',length=15)
+        filename = ("quadpng/lin_fit_{}.png".format(self.subID))
+        plt.savefig(filename)
+        plt.close()
+
+    def savgol(self,dfin,pc, iter):
+    
+        annuli = pc*self.crit_dist
+        #apply curve_fit function to particle data, for either linear or curved fit, 
+        dfin.sort_values(by='rad', inplace=True)
+        dfin = dfin[dfin['rad']<annuli]
+        medfit = medfilt(dfin['met'],kernel_size=21) 
+        
+        interp_savgol = savgol_filter(dfin['met'], window_length=101, polyorder=3)
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
+        plt.plot(dfin['rad'], medfit,'b-')
+        plt.plot(dfin['rad'], dfin['met'],'g+')
+        plt.plot(dfin['rad'], interp_savgol,'r--')
+        plt.xlim(0,(10*pc))
+        plt.ylim(8,12)
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10$(O/H)$")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        plt.tick_params(axis='both',which='both',direction='inout',length=15)
+        filename = ("newpng/lin_fit_{}_{}.png".format(self.subID,iter))
+        plt.savefig(filename)
+        plt.close()
+    
+    def gas_vis(self, dfin, decp, pc):
+        df = dfin.round(decp)
+        annuli = pc* self.crit_dist
+        df = df[df['rad']<annuli]
+        df_valid = df.groupby(['x','y'])['dens'].sum().reset_index()
+        plt.figure(figsize=(20,12))
+        plt.style.use('dark_background')
+        plt.scatter(-df['x'], -df['y'], c= (np.log10(df['dens'])), cmap = 'inferno', vmin=(min(np.log10(df_valid['dens']))),vmax =(max(np.log10(df_valid['dens']))))
+        plt.colorbar(label='log10(Gas Mass)')
+        filename = ("vispng/gasvis_{}.png".format(self.subID))
+        plt.savefig(filename)
+        plt.close()
+
+'''
+df_in = pd.read_csv("rad.csv")
+
+valid_id = df_in[df_in['sfr']>10e-1]
+valid_id = valid_id[valid_id['radius']>9]
+valid_id.to_csv("remove.csv")
+valid_id = list(valid_id['ids'])
+'''
+invalids =[]
+def runlist(i):
+    try:
+        sub1 = galaxy("TNG50-1", 99, i)
+        if sub1.test==0:
+            print("sub invalid")
+            invalids.append(i)
+        else:
+            sub1.galcen()
+            sub1.ang_mom_align('gas')
+            sub1.rad_gen()
+            sub1.df_gen()
+            #sub1.rad_norm(10,'N')
+            sub1.gas_vis(sub1.dfg,1,1)
+            print("Subhalo {} done".format(i))
+    
+    except OSError:
+        print("corrupted file skipped")
+        invalids.append(i)
+    #except KeyError:
+    #    print("keyerror - skipped")
+    #    invalids.append(i)
+
+runlist(11)
+#returns = Parallel(n_jobs=20)(delayed(runlist)(i) for i in valid_id)
