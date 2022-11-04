@@ -210,7 +210,7 @@ class galaxy:
         plt.ylabel("12+log10$(O/H)$")
         plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
         plt.tick_params(axis='both',which='both',direction='inout',length=15)
-        filename = ("rad/lin_fit_{}.png".format(self.subID))
+        filename = ("lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
         
@@ -237,6 +237,22 @@ class galaxy:
         filename = ("savpng/lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
+    def bootleg_fit(self, runs):
+        avals = []
+        bvals = []
+        pcov0 = []
+        pcov1 = []
+        for i in range(runs):
+            df = self.dfg.sample(frac=0.1, replace=False)
+            popt,pcov = curve_fit(linear_fit,df['rad'],df['met'])
+            avals.append(popt[0])
+            bvals.append(popt[1])
+            pcov0.append(pcov[0])
+            pcov1.append(pcov[1])
+        return avals,bvals,pcov0, pcov1
+
+
+
 
 
 
@@ -249,7 +265,7 @@ valid_id.to_csv("remove.csv")
 valid_id = list(valid_id['ids'])
 print(len(valid_id))
 #'''
-'''
+
 sub1 = galaxy("TNG50-1", 99, 8,'Y')
 sub1.galcen()
 sub1.ang_mom_align('gas')
@@ -257,9 +273,13 @@ sub1.rad_gen()
 sub1.df_gen()
 sub1.rad_norm(10)
 sub1.savgol(sub1.dfg,0.75)
-
+avals,bvals,pcov0,pcov1=sub1.bootleg_fit(20)
+sub1.fit_lin(sub1.dfg, 1)
+print("Min a {} : Max a: {} Mean a {}".format(min(avals),max(avals),np.mean(avals)))
+print("Min b {} : Max b: {} Mean b {}".format(min(bvals),max(bvals),np.mean(bvals)))
 
 '''
+
 invalids =[]
 def runlist(i):
     try:
@@ -293,6 +313,7 @@ for j in filenames:
         os.remove(j)
     except OSError:
         print('%%%woo')
+'''
 
 end = time.time()
 print("Programme Runtime = {}".format(end-start))
