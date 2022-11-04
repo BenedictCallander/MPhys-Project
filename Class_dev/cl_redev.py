@@ -1,3 +1,4 @@
+#%%
 from itertools import groupby
 import logging
 from random import random # http logging for debugging purpouses
@@ -139,11 +140,9 @@ class galaxy:
         
         self.pgas_coo=np.dot(A,self.pgas_coo.T).T # change co-ordinates
         self.pgas_vel = np.dot(A,self.pgas_vel.T).T
-
         #
         # Apply same process to stellar particle type
         #
-        
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
         self.pstar_vel=np.dot(A,self.pstar_vel.T).T 
     def radial_calc(self):
@@ -310,6 +309,18 @@ class visualisation:
             filename = 'metgradSTAR_{}_sub_{}.png'.format(self.simID, self.subID)
             plt.savefig(filename)
             plt.close()
+    def  plot3d(self):
+        df = self.df_g
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        ax.scatter(df['x'], df['y'], df['z'], cmap = 'inferno')
+        plt.savefig("3d.png")
+        plt.show()
+        plt.close()
+
+
+
+
+
 galaxy_df = pd.read_csv("test1.csv")
 valid_galaxies = galaxy_df[galaxy_df['mass']<9.5]
 
@@ -337,7 +348,7 @@ def met_plot(i):
     dfs2=sub1.height_filter(dfs)
     #dfg2 = sub1.rad_normalise(dfg2)
     sub1plot = visualisation(dfg2, dfs2,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-    sub1plot.visual('gas','mass',4,1)
+    sub1plot.plot3d()
     return print(".") 
 met_plot(3052)
 #returns = Parallel(n_jobs=15)(delayed(met_plot)(i) for i in valid_galaxies['id'])
@@ -345,3 +356,5 @@ met_plot(3052)
 
 end = time.time()
 print("runtime {}".format(end-start))
+
+# %%
