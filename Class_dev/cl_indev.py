@@ -213,7 +213,30 @@ class galaxy:
         filename = ("lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
-        
+    def quad_fit(self,dfin,pc):
+        annuli = pc*self.crit_dist
+        popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
+        #apply curve_fit function to particle data, for either linear or curved fit, 
+        dfin.sort_values(by='rad', inplace=True)
+        dfin = dfin[dfin['rad']<annuli]
+        medfit = medfilt(dfin['met'],kernel_size=21) 
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
+        plt.plot(dfin['rad'], medfit,'g-')
+        #plt.plot(dfin['rad'], dfin['met'],'g+')
+        plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')
+        plt.xlim(0,(10*pc))
+        plt.ylim(8,12)
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10$(O/H)$")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        plt.tick_params(axis='both',which='both',direction='inout',length=15)
+        filename = ("quadpng/lin_fit_{}.png".format(self.subID))
+        plt.savefig(filename)
+        plt.close()
+
+
     def savgol(self,dfin,pc):
         annuli = pc*self.crit_dist
         #apply curve_fit function to particle data, for either linear or curved fit, 
@@ -265,7 +288,7 @@ valid_id.to_csv("remove.csv")
 valid_id = list(valid_id['ids'])
 print(len(valid_id))
 #'''
-
+'''
 sub1 = galaxy("TNG50-1", 99, 8,'Y')
 sub1.galcen()
 sub1.ang_mom_align('gas')
@@ -293,7 +316,7 @@ def runlist(i):
             sub1.rad_gen()
             sub1.df_gen()
             sub1.rad_norm(10)
-            sub1.savgol(sub1.dfg,0.75)
+            sub1.quad_fit(sub1.dfg,0.75)
             print("Subhalo {} done".format(i))
     
     except OSError:
@@ -313,7 +336,7 @@ for j in filenames:
         os.remove(j)
     except OSError:
         print('%%%woo')
-'''
+
 
 end = time.time()
 print("Programme Runtime = {}".format(end-start))

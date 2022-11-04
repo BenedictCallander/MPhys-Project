@@ -216,7 +216,30 @@ class galaxy:
         filename = ("rad/lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
-        
+    
+    def quad_fit(self,dfin,pc):
+        annuli = pc*self.crit_dist
+        popt,pcov = curve_fit(sq_fit,dfin['rad'],dfin['met'])
+        #apply curve_fit function to particle data, for either linear or curved fit, 
+        dfin.sort_values(by='rad', inplace=True)
+        dfin = dfin[dfin['rad']<annuli]
+        medfit = medfilt(dfin['met'],kernel_size=21) 
+
+        plt.figure(figsize=(15,10))
+        #sort dataframe values by radial value -> plot clarity for line plotting
+        plt.plot(dfin['rad'], medfit,'g-')
+        #plt.plot(dfin['rad'], dfin['met'],'g+')
+        plt.plot(dfin['rad'], sq_fit(dfin['rad'],*popt),'r--')
+        plt.xlim(0,(10*pc))
+        plt.ylim(8,12)
+        plt.xlabel("Radial Distance (Normalised Code Units)")
+        plt.ylabel("12+log10$(O/H)$")
+        plt.title("Metallicity Gradient for {}({}-snap-{})".format(self.subID, self.simID, self.snapID))
+        plt.tick_params(axis='both',which='both',direction='inout',length=15)
+        filename = ("quadpng/lin_fit_{}.png".format(self.subID))
+        plt.savefig(filename)
+        plt.close()
+
     def savgol(self,dfin,pc, iter):
         annuli = pc*self.crit_dist
         #apply curve_fit function to particle data, for either linear or curved fit, 
