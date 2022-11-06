@@ -13,6 +13,7 @@ from scipy.signal import medfilt
 from scipy.optimize import curve_fit
 from joblib import Parallel, delayed
 import os
+
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 from sklearn.preprocessing import MinMaxScaler
@@ -116,8 +117,6 @@ class galaxy:
         self.pstar_vel   = self.pstar_vel * self.conv_kms2kpcyr
         self.pstar_met = stars['GFM_Metallicity'][hstar]
 
-
-
     def galcen(self):
         self.pgas_coo -= self.centre[None,:]
         self.pstar_coo -= self.centre[None,:]
@@ -164,15 +163,11 @@ class galaxy:
         self.pstar_coo=np.dot(A,self.pstar_coo.T).T  #change coordinates
         self.pstar_vel=np.dot(A,self.pstar_vel.T).T
 
-
-
     def rad_gen(self):
         self.gas_radial = np.sqrt((self.pgas_coo[:,0]**2)+(self.pgas_coo[:,1]**2))
         #print(self.gas_radial)
         self.star_radial = np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]**2))
         #print(self.str_radial)
-
-
 
     def df_gen(self):
         #gas data -> dataframe -> dfg
@@ -186,7 +181,6 @@ class galaxy:
         self.dfg.rad = factor*((self.dfg.rad-self.dfg.rad.min())/(self.dfg.rad.max()-self.dfg.rad.min()))
         #
         self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.min())/(self.dfs.rad.max()-self.dfs.rad.min()))
-
 
 
     def fit_lin(self,dfin):
@@ -207,8 +201,22 @@ class galaxy:
         filename = ("fitpng/lin_fit_{}.png".format(self.subID))
         plt.savefig(filename)
         plt.close()
-        
-        
+    
+    def bootstrap(self,dfin,runs,frac):
+        popt1=[] ; popt2=[] ; pcov1=[]; pcov2 =[]
+        datatest = dfin
+        for i in range (runs):
+            sample = datatest.sample(frac = frac, replace = False)
+            popt,pcov = curve_fit(linear_fit, sample['rad'], sample['met'])
+            popt1.append(popt[0])
+            popt2.append(popt[1])
+            pcov1.append(pcov[0])
+            pcov2.append(pcov[1])
+        print("Bootstrapping Results for {} runs of {} frac".format(runs,frac))
+        print("Gradient : Min : {}   Max::: {}   Mean {}".format(min(popt1),max(popt1), np.mean(popt1)))
+        print("Intercept Min: {}   Max: {}   Mean: {}".format(min(popt2),max(popt2), np.mean(popt2)))
+        print("Range of Gradient {:.20f}    Intercept {:.20f}".format((max(popt1)-min(popt1)),(max(popt2)-min(popt2))))
+
         
         
 
@@ -334,6 +342,15 @@ valid_id = df_in[df_in['sfr']>10e-1]
 valid_id = list(valid_id['id'])
 print(len(valid_id))
 #'''
+
+sub = galaxy("TNG50-1",99, 117743)
+sub.galcen()
+sub.ang_mom_align("gas")
+sub.rad_gen()
+sub.df_gen()
+sub.rad_norm(10)
+sub.bootstrap(sub.dfg,20,0.1)
+
 '''
 sub1 = galaxy("TNG50-1", 99, 117743)
 sub1.galcen()
@@ -342,7 +359,7 @@ sub1.rad_gen()
 sub1.df_gen()
 sub1.rad_norm(100)
 sub1.fit_lin(sub1.dfg)
-'''
+
 invalids =[]
 def runlist(i):
     try:
@@ -376,6 +393,6 @@ for j in filenames:
         os.remove(j)
     except OSError:
         print('%%%woo')
-
+'''
 end = time.time()
 print("Programme Runtime = {}".format(end-start))
