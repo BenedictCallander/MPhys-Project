@@ -275,9 +275,7 @@ class galaxy:
         return avals,bvals,pcov0, pcov1
 
 
-
 #561001
-
 
 #'''
 df_in = pd.read_csv("rad.csv")
@@ -318,7 +316,7 @@ def runlist(i):
             sub1.rad_norm(10)
             sub1.quad_fit(sub1.dfg,0.75)
             print("Subhalo {} done".format(i))
-    
+
     except OSError:
         print("corrupted file skipped")
         invalids.append(i)
@@ -340,3 +338,6 @@ for j in filenames:
 
 end = time.time()
 print("Programme Runtime = {}".format(end-start))
+
+
+#check curve_fit parameter limits

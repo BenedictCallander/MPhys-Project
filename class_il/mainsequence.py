@@ -36,9 +36,9 @@ def get(path, params = None):
 
     return r
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
+baseurl = "https://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/"
 sq = '?sfr__gt=0.0'
-sfr_q = "?limit=17553&sfr__gt=0.0"
+sfr_q = "?limit=105181&sfr__gt=0.0"
 all_q = "?limit=5688113"
 
 
@@ -62,18 +62,20 @@ for i,id in enumerate(all_ids):
 mass=[]
 sfr=[]
 
-sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(17553)]
+sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(105181)]
 mass_sfr = []
 sfr_sfr = []
 for i,id in enumerate(sfr_ids):
     mass_sfr.append(sfrsubs['results'][i]['mass_log_msun'])
     sfr_sfr.append(sfrsubs['results'][i]['sfr'])
-    
+
+
+
 plt.figure(figsize=(15,10))
-plt.plot(sfr_sfr, mass_sfr,'b.')
+plt.plot(sfr_sfr, mass_sfr,'g+')
 plt.xlabel('SFR')
 plt.ylabel('Mass (log10 Msun)')
-plt.savefig('SFR_M_TNG100-1.png')
+plt.savefig('SFR_M_TNG100-1_70.png')
 plt.close()
 
 end = time.time()

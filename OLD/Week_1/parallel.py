@@ -25,14 +25,14 @@ def get(path, params = 'None'):
         return filename # return the filename string
     return r
 #'''
-base_url = "http://www.tng-project.org/api/TNG50-1/snapshots/z=0/subhalos/"
+base_url = "http://www.tng-project.org/api/TNG100-1/snapshots/70/subhalos/"
 massive_ids = []
 
-search_q = "?limit=17553&sfr__gt=0.0"
+search_q = "?limit=105181&sfr__gt=0.0"
 vurl = base_url+search_q
 valid_subs = get(vurl)
 print(vurl)
-valid_ids = [ valid_subs['results'][i]['id'] for i in range(17553)]
+valid_ids = [ valid_subs['results'][i]['id'] for i in range(105181)]
 valid_urls = []
 
 idvals=[]
@@ -49,7 +49,7 @@ df.to_csv("parallel.csv")
 
 start = time.time()
 df = pd.read_csv("parallel.csv")
-
+def gfm_get
 
 def gfm_get (url):
     try:
