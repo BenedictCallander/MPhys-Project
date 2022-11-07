@@ -16,13 +16,35 @@ from scipy.signal import medfilt
 from scipy.optimize import curve_fit
 from joblib import Parallel, delayed
 import os
+from scipy.signal import savgol_filter
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 pd.options.mode.chained_assignment = None  # default='warn'
+def get(path, params = None):
+    #utility function for API reading 
 
+    #Make API request - 
+    # Path: url to api page 
+    #Params - misc ; Headers = api key 
+    r = requests.get(path, params=params, headers=headers)
 
+    #HTTP code - raise error if code return is not 200 (success)
+    r.raise_for_status()
+    
+    #detect content type (json or hdf5) - run appropriate download programme
+    
+    if r.headers['content-type'] == 'application/json':
+        return r.json() # parse json responses automatically
+
+    if 'content-disposition' in r.headers:
+        filename = r.headers['content-disposition'].split("filename=")[1]
+        with open(filename, 'wb') as f:
+            f.write(r.content)
+        return filename # return the filename string
+
+    return r
 
 class UTILITY:
     def get(path, params = None):
@@ -57,6 +79,9 @@ class UTILITY:
         f = (a*(x**2))+(b*x)+c
         return f
 
+#
+# GALAXY CLASS -> contains all subhalo analysis functions 
+#
 
 class galaxy:
     def __init__(self,simID,snapID,subID):
@@ -210,7 +235,7 @@ class galaxy:
 
         return dfout
 
-    def AIC_test(self):
+    def AIC_test(self,dfin,breakpoint):
         '''
         Pseudocode 
 
@@ -226,18 +251,67 @@ class galaxy:
         conditional statement to determine which fit is better according to AIC 
         return statement/value which inidcates which fit is better -> also catalogue other data? 
         '''
-        
-    def fit_linear(self,dfin):
+
+        med_data = medfilt(dfin['rad'], kernel_size=21)
+        popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],dfin['met'])
+
+        y1 = UTILITY.linear_fit(dfin['rad'],*popt)
+
+        break1 = dfin[dfin['rad']<breakpoint]
+        break2 = dfin[dfin['rad']>breakpoint]
+        x1 = list(break1['rad'])
+        x2 = list(break2['rad'])
+
+        popt1,pcov1= curve_fit(UTILITY.linear_fit, break1['rad'],break1['met'])
+        popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'], break2['met'])
+
+        p1 = UTILITY.linear_fit(break1['rad'],*popt1)
+        p1.append(UTILITY.linear_fit(break2['rad'],*popt2))
+
+
+        RSS_linear = np.sum((med_data-(y1**2)))
+        RSS_broken = np.sum((dfin['rad']-(p1**2)))
+
+        AIC_L = 4+(len(y1)*np.log(RSS_linear))
+        AIC_B = 8+(len(p1)*np.log(RSS_broken))
+
+        print("AIC VALUES: \n ")
+        print("Linear {}".format(AIC_L))
+        print("Broken {}".format(AIC_B))
+
+        if AIC_L>AIC_B:
+            val = 0
+        elif AIC_B>AIC_L:
+            val=1
+        return val
+    
+    def fit_linear(self,dfin, pc):
         '''
         Pseudocode
+        INPUTS:
+        - dfin -> subhalo dataframe
+        - pc -> annuli pc (0.1->1)
         Calculate linear fit (f(x) = a*x+b)
         Take input of dataframe and fit linear trendline using scipy curve_fit 
         (popt,pcov) (popt[0] = gradient) , (popt[1]=intercept)
 
         return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
         '''
+        annuli = pc
+        dfin = dfin[dfin['rad']<pc]     
+        popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],dfin['met'])
+        med_data = medfilt(dfin['met'],kernel_size = 21)
+
+        plt.figure(figsize=(20,12))
+        plt.plot(dfin['rad'], med_data, 'r-')
+        plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
+        plt.xlabel("Radius (Normalised Code Units)")
+        plt.ylabel("12+$log_{10} (\frac{O}{H})$")
+        filename = 'linearfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
+        plt.savefig(filename)
+        plt.close()
     
-    def fit_quad(self,dfin):
+    def fit_quad(self,dfin,pc):
         '''
         Pseudocode
         Calculate quadratic fit (f(x)=a*x**2 + b*x + c)
@@ -248,8 +322,21 @@ class galaxy:
         return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
 
         '''
+        annuli = pc
+        dfin = dfin[dfin['rad']<pc]     
+        popt,pcov = curve_fit(UTILITY.sq_fit, dfin['rad'],dfin['met'])
+        med_data = medfilt(dfin['met'],kernel_size = 21)
+
+        plt.figure(figsize=(20,12))
+        plt.plot(dfin['rad'], med_data, 'r-')
+        plt.plot(dfin['rad'], UTILITY.sq_fit(dfin['rad'],*popt))
+        plt.xlabel("Radius (Normalised Code Units)")
+        plt.ylabel("12+$log_{10} (\frac{O}{H})$")
+        filename = 'quadraticfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
+        plt.savefig(filename)
+        plt.close()
     
-    def broken_fit(self,dfin,breakpoint):
+    def broken_fit(self,dfin,breakpoint,pc):
         '''
         Pseudocode
         Inputs:
@@ -268,8 +355,24 @@ class galaxy:
         plot data with broken fit overlaid (use median filter for metallicity data?)
         
         '''
+        annuli = pc
+        med_data = medfilt(dfin['met'], kernel_size=21)
+
+        break1 = dfin[dfin['rad']<breakpoint]
+        break2 = dfin[dfin['rad']>breakpoint]
+
+        popt1,pcov1 = curve_fit(UTILITY.linear_fit, break1['rad'],break1['met'])
+        popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'],break2['met'])
+
+        plt.figure(figsize=(20,12))
+        plt.plot(dfin['rad'], med_data, 'r--')
+        plt.plot(break1['rad'], UTILITY.linear_fit(break1['rad'],*popt1), 'g-')
+        plt.plot(break2['rad'], UTILITY.linear_fit(break2['rad'],*popt2), 'g-')
+        filename = 'breakfit/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
+        plt.savefig(filename)
+        plt.close()
     
-    def savgol_smooth(self,dfin):
+    def savgol_smooth(self,dfin,pc,scatter_q):
         '''
         Pseudocode
 
@@ -282,8 +385,23 @@ class galaxy:
 
         Optional Extras -> could include conditions to plot additional information onto graph such as linear/broken/quadratic fits? 
         '''
-    
-    def bootstrap_test(self,dfin,type):
+        annuli = pc
+        dfin.sort_value(by='rad',inplace=True)
+        dfin=dfin[dfin['rad']<annuli]
+        interp_savgol = savgol_filter(dfin['met'],window_length=101,polyorder=3)
+        plt.figure(figsize=(15,10))
+        if scatter_q=='Y':
+            plt.plot(dfin['rad'],dfin['met'],c='g',marker = '+', markersize=2)
+        elif scatter_q=='N':
+            print("No scatter plot")
+        plt.plot(dfin['rad'], interp_savgol, 'r--')
+        plt.xlabel("Radius (Normalised Code Units)")
+        plt.ylabel("12+$log_{10} (\frac{O}{H})$")
+        filename = 'savgolfits/sub_{}_savgol_snap_{}'.format(self.subID, self.snapID)
+        plt.savefig(filename)
+        plt.close()
+
+    def bootstrap_test(self,dfin,runs,frac):
         '''
         Pseudocode 
 
@@ -294,8 +412,18 @@ class galaxy:
         compare means, range 
 
         '''
-    
-    def gas_visualisation(self, dfin, decp):
+        avals = []; bvals = [] ; pcov0 = []; pcov1=[]
+        df = dfin
+        for i in range(runs):
+            sample = df.sample(frac=frac, replace=False)
+            popt,pcov = curve_fit(UTILITY.linear_fit,sample['rad'],sample['met'])
+            avals.append(popt[0])
+            bvals.append(popt[1])
+            pcov0.append(pcov[0])
+            pcov1.append(pcov[1])
+        return avals,bvals,pcov0, pcov1
+ 
+    def gas_visualisation(self, dfin, decp,pc):
         '''
         Psuedocode
         Inputs -> dataframe containing gas density data (aligned to z axis)
@@ -305,4 +433,29 @@ class galaxy:
         plot visual by scatter of density values -> see other codes for plot syntax
         
         '''
+        df = dfin.round(decp)
+        annuli = pc
+        df= df[df['rad']<annuli]
+        df = df.groupby(['x','y'])['dens'].sum().reset_index()
+        plt.figure(figsize=(20,12), dpi=500)
+        plt.style.use('dark_background')
+        plt.scatter(df['x'],-df['y'],c=(np.log10(df['m'])),cmap='inferno', vmin=(min(np.log10(df['m']))),vmax =(max(np.log10(df['m']))))
+        plt.xlabel('$\Delta x$ [kpc/h]')
+        plt.ylabel('$\Delta y$ [kpc/h]')
+        plt.colorbar(label='log10(Gas Mass)')
+        plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+        filename = 'visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+        plt.savefig(filename)
+        plt.close()
+
+
     
+'''
+sub = galaxy("TNG50-1",99,8)
+sub.galcen()
+sub.ang_mom_align('gas')
+sub.rad_transform()
+dfg = sub.df_gen('gas','comb')
+dfg2 = sub.rad_norm(dfg,10)
+sub.AIC_test(dfg2,3)
+'''
