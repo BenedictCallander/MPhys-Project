@@ -182,7 +182,6 @@ class galaxy:
         #
         self.dfs.rad = factor*((self.dfs.rad-self.dfs.rad.min())/(self.dfs.rad.max()-self.dfs.rad.min()))
 
-
     def fit_lin(self,dfin):
 
         #popt,pcov = curve_fit(linear_fit,dfin['rad'],dfin['met'])
