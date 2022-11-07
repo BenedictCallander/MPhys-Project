@@ -111,7 +111,9 @@ class galaxy:
         #pull all data for specific subhalo 
         all_fields= il.groupcat.loadSingle(basePath, snapID, subhaloID = subID)
         self.test=all_fields['SubhaloMassInRadType'][ptNumGas]
-        
+        self.tot_met = all_fields['SubhaloGasMetallicity']
+        self.m_tot = all_fields['SubhaloMass']
+        self.totsfr = all_fields['SubhaloSFR']
         self.lMgas  = np.log10( all_fields['SubhaloMassInRadType'][ptNumGas]/hubble ) + 10.
         self.lMstar = np.log10( all_fields['SubhaloMassInRadType'][ptNumStars]/hubble ) + 10.
         # Coordinate of particle with minimum binding energy (converted from ckpc/h to kpc)
@@ -206,9 +208,9 @@ class galaxy:
             elif (quant =='dens'):
                 df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "dens":self.pgas_dens})
             elif (quant =='met'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "met":self.pgas_met})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "met":12+np.log10(self.pgas_met)})
             elif (quant =='comb'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "mass":self.pgas_m, "dens":self.pgas_dens, "met": self.pgas_met})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "mass":self.pgas_m, "dens":self.pgas_dens, "met": 12+np.log10(self.pgas_met)})
         elif (type =='star'):
             if (quant == 'mass'):
                 df = pd.DataFrame({"x":self.pstar_coo[:,0], "y":self.pstar_coo[:,1], "z": self.pstar_coo[:,2], "rad": self.star_radial, "mass": self.pstar_m})
@@ -266,12 +268,13 @@ class galaxy:
         popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'], break2['met'])
 
         p1 = UTILITY.linear_fit(break1['rad'],*popt1)
-        p1.append(UTILITY.linear_fit(break2['rad'],*popt2))
+        p2 = np.append(p1,UTILITY.linear_fit(break2['rad'],*popt2))
 
 
-        RSS_linear = np.sum((med_data-(y1**2)))
-        RSS_broken = np.sum((dfin['rad']-(p1**2)))
-
+        RSS_linear = np.sum((dfin['met']-(y1))**2)
+        RSS_broken = np.sum((dfin['met']-(p2))**2)
+        print(RSS_broken)
+        print(RSS_linear)
         AIC_L = 4+(len(y1)*np.log(RSS_linear))
         AIC_B = 8+(len(p1)*np.log(RSS_broken))
 
@@ -281,10 +284,12 @@ class galaxy:
 
         if AIC_L>AIC_B:
             val = 0
+            return val
+
         elif AIC_B>AIC_L:
             val=1
-        return val
-    
+            return val
+
     def fit_linear(self,dfin, pc):
         '''
         Pseudocode
@@ -307,7 +312,7 @@ class galaxy:
         plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10} (\frac{O}{H})$")
-        filename = 'linearfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
+        filename = 'Visuals/linearfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
         plt.savefig(filename)
         plt.close()
     
@@ -356,19 +361,29 @@ class galaxy:
         
         '''
         annuli = pc
-        med_data = medfilt(dfin['met'], kernel_size=21)
+        dfin.sort_values(by='rad',inplace = True)
+        med_data1 = medfilt(dfin['met'], kernel_size=21)
 
         break1 = dfin[dfin['rad']<breakpoint]
         break2 = dfin[dfin['rad']>breakpoint]
+        print(len(break1['rad']))
+        print(len(break2['rad']))
 
         popt1,pcov1 = curve_fit(UTILITY.linear_fit, break1['rad'],break1['met'])
         popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'],break2['met'])
+        
+        p1 = UTILITY.linear_fit(break1['rad'],*popt1)
+        p1=np.append(p1,UTILITY.linear_fit(break2['rad'],*popt2))
+        
 
         plt.figure(figsize=(20,12))
-        plt.plot(dfin['rad'], med_data, 'r--')
-        plt.plot(break1['rad'], UTILITY.linear_fit(break1['rad'],*popt1), 'g-')
-        plt.plot(break2['rad'], UTILITY.linear_fit(break2['rad'],*popt2), 'g-')
-        filename = 'breakfit/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
+        plt.plot(dfin['rad'], med_data1, 'b--')
+        plt.plot(dfin['rad'],p1, 'g-')
+        plt.xlim(0,10)
+        plt.ylim(9.5,11)
+        plt.xlabel("Radius (Normalised Code Units)")
+        plt.ylabel("12+$log_{10}$ $(O/H)$")
+        filename = 'Visuals/breakfit/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
     
@@ -386,7 +401,7 @@ class galaxy:
         Optional Extras -> could include conditions to plot additional information onto graph such as linear/broken/quadratic fits? 
         '''
         annuli = pc
-        dfin.sort_value(by='rad',inplace=True)
+        dfin.sort_values(by='rad',inplace=True)
         dfin=dfin[dfin['rad']<annuli]
         interp_savgol = savgol_filter(dfin['met'],window_length=101,polyorder=3)
         plt.figure(figsize=(15,10))
@@ -396,8 +411,8 @@ class galaxy:
             print("No scatter plot")
         plt.plot(dfin['rad'], interp_savgol, 'r--')
         plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10} (\frac{O}{H})$")
-        filename = 'savgolfits/sub_{}_savgol_snap_{}'.format(self.subID, self.snapID)
+        plt.ylabel("12+$log_{10}$ $(O/H)$")
+        filename = 'Visuals/savgolfits/sub_{}_savgol_snap_{}'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
 
@@ -444,18 +459,89 @@ class galaxy:
         plt.ylabel('$\Delta y$ [kpc/h]')
         plt.colorbar(label='log10(Gas Mass)')
         plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-        filename = 'visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+        filename = 'Visuals/visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
         plt.savefig(filename)
         plt.close()
-
-
     
+    def gen_slope(self,dfin):
+        df = dfin
+        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'])
+        met = self.tot_met
+        mass = self.m_tot
+        sfr = self.totsfr
+        return (popt[0],met,mass,sfr)
+
+
 '''
-sub = galaxy("TNG50-1",99,8)
+sub = galaxy("TNG50-1",99,117260)
 sub.galcen()
 sub.ang_mom_align('gas')
 sub.rad_transform()
 dfg = sub.df_gen('gas','comb')
 dfg2 = sub.rad_norm(dfg,10)
+dfg2 = sub.z_filter(dfg2)
 sub.AIC_test(dfg2,3)
+#sub.broken_fit(dfg2,3,10)
+#sub.savgol_smooth(dfg2,10,'Y')
 '''
+
+df_in = pd.read_csv("test1.csv")
+df_in = df_in[df_in['sfr']>0]
+valid_id = list(df_in['id'])
+
+#valid_id = df_in[df_in['sfr']>10e-1]
+#valid_id = valid_id[valid_id['radius']>9]
+#valid_id=valid_id[valid_id['mass']<9]
+#valid_id = list(valid_id['ids'])
+
+def slopeplot_dataget(i):
+    
+    try:
+        sub = galaxy("TNG50-1",99,i)
+        sub.galcen()
+        sub.ang_mom_align('gas')
+        sub.rad_transform()
+        dfg = sub.df_gen('gas','comb')
+        dfg2 = sub.rad_norm(dfg,10)
+        dfg2 = sub.z_filter(dfg2)
+        slope,met,mass,sfr = sub.gen_slope(dfg2)
+        id = i
+        print("subhalo {} calculated".format(i))
+        return (slope,met,mass,id,sfr)
+
+    except ValueError:
+        return print("value-error")
+    except KeyError:
+        return print("keyerror")
+    except OSError:
+        return print('OSerror')
+
+xval = np.linspace(7.5,15,100)
+def line(a,x,b):
+    y = a*(10**(x*b))
+    return y
+
+#'''
+#returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
+#df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
+df2=pd.read_csv("slopeplot.csv")
+plt.figure(figsize=(20,12))
+plt.plot(xval, line(-10e-4,xval,10e-5), 'r-')
+plt.scatter((df_in['mass']),(df_in['sfr']),c=df2['slope'],cmap='viridis',vmin=-0.2)
+plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
+plt.yscale('log')
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+plt.xlim(7.5,13)
+plt.ylabel("Log(Subhalo SFR)",fontsize=20)
+plt.title("Galaxy Classification with Metallicity gradient visualisation",fontsize=20)
+plt.colorbar().set_label(label = "Metallicity Linear Fit Slope",size=20)
+plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+plt.savefig("slope.png")
+plt.close()
+#'''
+
+
+end = time.time()
+print('runtime = {}s'.format(end-start))
