@@ -21,36 +21,41 @@ headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 pd.options.mode.chained_assignment = None  # default='warn'
-def get(path, params = None):
-    #utility function for API reading 
 
-    #Make API request - 
-    # Path: url to api page 
-    #Params - misc ; Headers = api key 
-    r = requests.get(path, params=params, headers=headers)
 
-    #HTTP code - raise error if code return is not 200 (success)
-    r.raise_for_status()
-    
-    #detect content type (json or hdf5) - run appropriate download programme
-    
-    if r.headers['content-type'] == 'application/json':
-        return r.json() # parse json responses automatically
 
-    if 'content-disposition' in r.headers:
-        filename = r.headers['content-disposition'].split("filename=")[1]
-        with open(filename, 'wb') as f:
-            f.write(r.content)
-        return filename # return the filename string
+class UTILITY:
+    def get(path, params = None):
+        #utility function for API reading 
 
-    return r
+        #Make API request - 
+        # Path: url to api page 
+        #Params - misc ; Headers = api key 
+        r = requests.get(path, params=params, headers=headers)
 
-def linear_fit(a,x,b):
-    f = (a*x)+b
-    return f
-def sq_fit(x,a,b,c):
-    f = (a*(x**2))+(b*x)+c
-    return f
+        #HTTP code - raise error if code return is not 200 (success)
+        r.raise_for_status()
+        
+        #detect content type (json or hdf5) - run appropriate download programme
+        
+        if r.headers['content-type'] == 'application/json':
+            return r.json() # parse json responses automatically
+
+        if 'content-disposition' in r.headers:
+            filename = r.headers['content-disposition'].split("filename=")[1]
+            with open(filename, 'wb') as f:
+                f.write(r.content)
+            return filename # return the filename string
+
+        return r
+
+    def linear_fit(a,x,b):
+        f = (a*x)+b
+        return f
+
+    def sq_fit(x,a,b,c):
+        f = (a*(x**2))+(b*x)+c
+        return f
 
 
 class galaxy:
@@ -168,7 +173,7 @@ class galaxy:
     def rad_transform(self):
         self.gas_radial = np.sqrt((self.pgas_coo[:,0]**2)+(self.pgas_coo[:,1]**2))
         self.star_radial = np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]))
-    
+
     def df_gen(self,type,quant):
         if (type == 'gas'):
             if (quant == 'mass'):
@@ -215,6 +220,89 @@ class galaxy:
 
         calculate split fit for first part (popt1, pcov1 (for first half))
 
-        calculate split fit for second part 
+        calculate split fit for second part (popt2,pcov2 (for second half))
+
+        calculate RSS values and AIC values for each method, 
+        conditional statement to determine which fit is better according to AIC 
+        return statement/value which inidcates which fit is better -> also catalogue other data? 
+        '''
+        
+    def fit_linear(self,dfin):
+        '''
+        Pseudocode
+        Calculate linear fit (f(x) = a*x+b)
+        Take input of dataframe and fit linear trendline using scipy curve_fit 
+        (popt,pcov) (popt[0] = gradient) , (popt[1]=intercept)
+
+        return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
+        '''
+    
+    def fit_quad(self,dfin):
+        '''
+        Pseudocode
+        Calculate quadratic fit (f(x)=a*x**2 + b*x + c)
+        Take input of dataframe and fit quadratic trendline using scipy curve_fit 
+        popt = [a,b,c]
+
+
+        return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
+
+        '''
+    
+    def broken_fit(self,dfin,breakpoint):
+        '''
+        Pseudocode
+        Inputs:
+        Dataframe (generated in galaxy class )
+        breakpoint (the point at which break in linear fit is placed)
+
+        process
+        split DF into 2 
+        radfilt 1 = dfin[dfin['rad']<breakpoint]
+        radfilt 2 = dfin[dfin['rad']>breakpoint]
+
+        calculate popt, pcov linear fit for both datapoints 
+
+        save popt, pcov values ?
+
+        plot data with broken fit overlaid (use median filter for metallicity data?)
+        
+        '''
+    
+    def savgol_smooth(self,dfin):
+        '''
+        Pseudocode
+
+        Takes input of dataframe with 'rad' and 'met' keywords, which represent radius and metlalicity 
+        Calculates a Savitzky-Golay filter -> used to smooth metallicity data for clearer representation of the gradient 
+
+        WARN - values calculated by the Savitzky-Golay filter cannot be used to calculate scientific results 
+
+        return -> plot png file saved to directory with ID, simID and snapID as filename/title
+
+        Optional Extras -> could include conditions to plot additional information onto graph such as linear/broken/quadratic fits? 
+        '''
+    
+    def bootstrap_test(self,dfin,type):
+        '''
+        Pseudocode 
+
+        Takes input of dataframe and applies bootstrapping depending on type (either linear or quadratic)
+
+        samples dataframe keeping only fraction of values (random) each time -> 
+
+        compare means, range 
+
+        '''
+    
+    def gas_visualisation(self, dfin, decp):
+        '''
+        Psuedocode
+        Inputs -> dataframe containing gas density data (aligned to z axis)
+
+        flattens gas density data by decp (0 = 1kpc box, 1 .1kpc , 2 = .01kpc etc)
+        
+        plot visual by scatter of density values -> see other codes for plot syntax
+        
         '''
     
