@@ -202,22 +202,55 @@ class galaxy:
         self.star_radial = np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]))
 
     def df_gen(self,type,quant):
+        #series of logical statements read two input parameters to generate dataframe suited for request type 
         if (type == 'gas'):
             if (quant == 'mass'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "mass":self.pgas_m})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],
+                                   "y":self.pgas_coo[:,1],
+                                   "z":self.pgas_coo[:,2],
+                                   "rad": self.gas_radial,
+                                   "mass":self.pgas_m})
             elif (quant =='dens'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "dens":self.pgas_dens})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],
+                                   "y":self.pgas_coo[:,1],
+                                   "z":self.pgas_coo[:,2],
+                                   "rad": self.gas_radial,
+                                   "dens":self.pgas_dens})
             elif (quant =='met'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "met":12+np.log10(self.pgas_met)})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],
+                                   "y":self.pgas_coo[:,1],
+                                   "z":self.pgas_coo[:,2],
+                                   "rad": self.gas_radial,
+                                   "met":12+np.log10(self.pgas_met)})
             elif (quant =='comb'):
-                df = pd.DataFrame({"x":self.pgas_coo[:,0],"y":self.pgas_coo[:,1], "z":self.pgas_coo[:,2], "rad": self.gas_radial, "mass":self.pgas_m, "dens":self.pgas_dens, "met": 12+np.log10(self.pgas_met)})
+                df = pd.DataFrame({"x":self.pgas_coo[:,0],
+                                   "y":self.pgas_coo[:,1],
+                                   "z":self.pgas_coo[:,2],
+                                   "rad": self.gas_radial,
+                                   "mass":self.pgas_m,
+                                   "dens":self.pgas_dens,
+                                   "met": 12+np.log10(self.pgas_met)})
         elif (type =='star'):
             if (quant == 'mass'):
-                df = pd.DataFrame({"x":self.pstar_coo[:,0], "y":self.pstar_coo[:,1], "z": self.pstar_coo[:,2], "rad": self.star_radial, "mass": self.pstar_m})
+                df = pd.DataFrame({"x":self.pstar_coo[:,0],
+                                   "y":self.pstar_coo[:,1],
+                                   "z": self.pstar_coo[:,2],
+                                   "rad": self.star_radial,
+                                   "mass": self.pstar_m})
             elif (quant =='met'):
-                df = pd.DataFrame({"x":self.pstar_coo[:,0], "y":self.pstar_coo[:,1], "z": self.pstar_coo[:,2], "rad": self.star_radial, "met": self.pstar_met})
+                df = pd.DataFrame({"x":self.pstar_coo[:,0],
+                                   "y":self.pstar_coo[:,1],
+                                   "z": self.pstar_coo[:,2],
+                                   "rad": self.star_radial,
+                                   "met": self.pstar_met})
             elif (quant =='comb'):
-                df = pd.DataFrame({"x":self.pstar_coo[:,0], "y":self.pstar_coo[:,1], "z": self.pstar_coo[:,2], "rad": self.star_radial, "mass": self.pstar_m, "met": self.pstar_met})
+                df = pd.DataFrame({"x":self.pstar_coo[:,0],
+                                   "y":self.pstar_coo[:,1],
+                                   "z": self.pstar_coo[:,2],
+                                   "rad": self.star_radial,
+                                   "mass": self.pstar_m,
+                                   "met": self.pstar_met})
+        
         self.df = df
         return df
 
@@ -485,15 +518,16 @@ sub.AIC_test(dfg2,3)
 #sub.savgol_smooth(dfg2,10,'Y')
 '''
 
-df_in = pd.read_csv("test1.csv")
-df_in = df_in[df_in['sfr']>0]
-valid_id = list(df_in['id'])
+#df_in = pd.read_csv("test1.csv")
+#df_in = df_in[df_in['sfr']>0]
+#valid_id = list(df_in['id'])
 
 #valid_id = df_in[df_in['sfr']>10e-1]
 #valid_id = valid_id[valid_id['radius']>9]
 #valid_id=valid_id[valid_id['mass']<9]
 #valid_id = list(valid_id['ids'])
-
+dfin = pd.read_csv("testing2.csv")
+valid_id= list(dfin['id'])
 def slopeplot_dataget(i):
     
     try:
@@ -516,23 +550,26 @@ def slopeplot_dataget(i):
     except OSError:
         return print('OSerror')
 
-xval = np.linspace(7.5,15,100)
-def line(a,x,b):
-    y = a*(10**(x*b))
-    return y
+xval = np.linspace(0,13,100)
+def line(m,x,b):
+    y = 10**((m*x)+b)
+    return y 
 
-#'''
-#returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
-#df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
+returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
+df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
+df2.to_csv("mainseq2.csv")
+print(len(df2['mass']))
+'''
 df2=pd.read_csv("slopeplot.csv")
 plt.figure(figsize=(20,12))
-plt.plot(xval, line(-10e-4,xval,10e-5), 'r-')
-plt.scatter((df_in['mass']),(df_in['sfr']),c=df2['slope'],cmap='viridis',vmin=-0.2)
+plt.plot(xval, line(2,xval,-20.5), 'r-', label = "y=$10^{mx+b}$")
+plt.scatter((df_in['mass']),(df_in['sfr']),c=df2['slope'],cmap='viridis',vmin=-0.2,label = 'Subhalos')
 plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
 plt.yscale('log')
 plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
+plt.yticks(fontsize=15); plt.legend(loc='upper right')
 plt.xlim(7.5,13)
+plt.ylim(10e-6,10e2)
 plt.ylabel("Log(Subhalo SFR)",fontsize=20)
 plt.title("Galaxy Classification with Metallicity gradient visualisation",fontsize=20)
 plt.colorbar().set_label(label = "Metallicity Linear Fit Slope",size=20)
@@ -540,7 +577,7 @@ plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewi
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 plt.savefig("slope.png")
 plt.close()
-#'''
+'''
 
 
 end = time.time()
