@@ -17,11 +17,10 @@ from scipy.optimize import curve_fit
 from joblib import Parallel, delayed
 import os
 from scipy.signal import savgol_filter
-
+import pwlf
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
-pd.options.mode.chained_assignment = None  # default='warn'
 def get(path, params = None):
     #utility function for API reading 
 
@@ -78,6 +77,8 @@ class UTILITY:
     def sq_fit(x,a,b,c):
         f = (a*(x**2))+(b*x)+c
         return f
+    def piecewise_linear(x, x0, y0, k1, k2):
+            return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
 
 #
 # GALAXY CLASS -> contains all subhalo analysis functions 
@@ -86,6 +87,8 @@ class UTILITY:
 class galaxy:
     def __init__(self,simID,snapID,subID):
         np.seterr(divide='ignore', invalid='ignore')
+        pd.options.mode.chained_assignment = None  # default='warn'
+
         #object creation requires only 3 input parameters for galaxy selection 
         self.simID = simID #simulation used (TNG100/TNG50)
         self.snapID = snapID #snapshot of study - can be either number of z= (z= required in parenthesis )
@@ -97,7 +100,7 @@ class galaxy:
         hubble =0.7
         
         snap_util =get(baseurl) #use api to easily read snapshot information
-        redshift = 2.00202813925285
+        redshift = snap_util['redshift']
         self.redshift =redshift  # store redshift value as attribute
         
         scalefac = 1./(1.+redshift) #calculate scale factor
@@ -250,7 +253,6 @@ class galaxy:
                                    "rad": self.star_radial,
                                    "mass": self.pstar_m,
                                    "met": self.pstar_met})
-        
         self.df = df
         return df
 
@@ -336,6 +338,7 @@ class galaxy:
         return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
         '''
         annuli = pc
+        dfin.sort_values(by='rad',inplace=True)
         dfin = dfin[dfin['rad']<pc]   
         popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],dfin['met'])
         med_data = medfilt(dfin['met'],kernel_size = 21)
@@ -345,6 +348,7 @@ class galaxy:
         plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10} (\frac{O}{H})$")
+        plt.ylim(0.9*min(med_data),1.1*max(med_data))
         filename = 'Visuals/linearfit/33/sub_{}_met_snap={}'.format(self.subID,self.snapID)
         plt.savefig(filename)
         plt.close()
@@ -396,27 +400,29 @@ class galaxy:
         annuli = pc
         dfin.sort_values(by='rad',inplace = True)
         med_data1 = medfilt(dfin['met'], kernel_size=21)
-
-        break1 = dfin[dfin['rad']<breakpoint]
-        break2 = dfin[dfin['rad']>breakpoint]
-        print(len(break1['rad']))
-        print(len(break2['rad']))
-
-        popt1,pcov1 = curve_fit(UTILITY.linear_fit, break1['rad'],break1['met'])
-        popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'],break2['met'])
+        x0 = np.array([min(dfin['rad']), breakpoint, max(dfin['rad'])])
+        break1 = list(dfin[dfin['rad']<breakpoint])
+        break2 = list(dfin[dfin['rad']>=breakpoint])
+        my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], dfin['met'])
+        my_pwlf.fit_with_breaks(x0)
         
-        p1 = UTILITY.linear_fit(break1['rad'],*popt1)
-        p1=np.append(p1,UTILITY.linear_fit(break2['rad'],*popt2))
+        xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=10000)
+        yHat = my_pwlf.predict(xHat)
+        '''
+        popt1,pcov1 = curve_fit(UTILITY.linear_fit, break1['rad'],break1['met'])[0]
+        popt2,pcov2 = curve_fit(UTILITY.linear_fit, break2['rad'],break2['met'])[0]
         
-
+        p1 = (popt1*break1)+pcov1
+        p1=np.append(p1,((popt2*break2)+pcov2))
+        
+        '''
+        
         plt.figure(figsize=(20,12))
         plt.plot(dfin['rad'], med_data1, 'b--')
-        plt.plot(dfin['rad'],p1, 'g-')
-        plt.xlim(0,10)
-        plt.ylim(9.5,11)
+        plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'Visuals/breakfit/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
+        filename = 'Visuals/breakfit/33/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
     
@@ -527,6 +533,8 @@ sub.AIC_test(dfg2,3)
 #valid_id=valid_id[valid_id['mass']<9]
 #valid_id = list(valid_id['ids'])
 dfin = pd.read_csv("tng30subhalos.csv")
+dfin = dfin[dfin['mass']<10]
+dfin = dfin[dfin['sfr']>10e-5]
 valid_id= list(dfin['id'])
 def slopeplot_dataget(i):
     
@@ -536,10 +544,9 @@ def slopeplot_dataget(i):
         sub.ang_mom_align('gas')
         sub.rad_transform()
         dfg = sub.df_gen('gas','comb')
-        dfg2 = sub.rad_norm(dfg,10)
-        dfg2 = sub.z_filter(dfg2)
-        dfg2.sort_values(by='rad',inplace=True)
-        sub.fit_linear(dfg2, 1)
+        dfg2 = sub.z_filter(dfg)
+        dfg2 = sub.rad_norm(dfg2,10)
+        sub.broken_fit(dfg2,5,10)
         return print("subhalo {} plotted".format(i))
 
     except ValueError:
