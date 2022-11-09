@@ -14,21 +14,21 @@ from scipy.optimize import curve_fit
 from joblib import Parallel, delayed
 import os
 from scipy.signal import savgol_filter
-
-df = pd.read_csv('mainseq2.csv')
-df2 = pd.read_csv('testing2.csv')
-
+df = pd.read_csv('tng30subhalos.csv')
+df1 = pd.read_csv('mainseq3.csv')
+print(np.mean(df1['slope']))
 plt.figure(figsize=(20,12))
-plt.scatter((df2['mass']),(12+np.log10(df['met'])), c = (df['slope']), cmap = 'viridis', vmin=-0.15, label = 'Main Sequence Subhalos')
+plt.scatter((df['mass']),df['sfr'], c = (df1['slope']), cmap = 'viridis',vmin=-0.5, vmax = 0.0,label = 'Main Sequence Subhalos')
 plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
-plt.ylabel("12+ $log_{10}$ ${O}/{H}$",fontsize=20)
-#plt.xscale('log')
-plt.ylim(7.5,12)
+plt.ylabel("log(SFR)")
+#plt.ylabel("12+ $log_{10}$ ${O}/{H}$",fontsize=20)
+plt.yscale('log')
+#plt.ylim(7.5,12)
 plt.title("Mass Metallicity Relation for Main Sequence Subhalos:",fontsize=20)
 plt.colorbar().set_label(label = "Metallicity Linear Fit Slope",size=20)
 plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15); plt.legend(loc='upper right')
-plt.savefig('met.png')
+plt.savefig('slope4.png')
 plt.close()
