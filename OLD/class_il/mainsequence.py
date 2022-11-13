@@ -37,9 +37,9 @@ def get(path, params = None):
     return r
 
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/33/subhalos/"
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/67/subhalos/"
 sq = '?sfr__gt=0.0'
-sfr_q = "?limit=77655&sfr__gt=0.0"
+sfr_q = "?limit=6244619&sfr__gt=0.0"
 
 
 sfrurl = baseurl+sfr_q
@@ -52,7 +52,7 @@ print(allsub['count'])
 
 print(sfrsubs['count'])
 >>105181
-all_ids = [ allsubs['results'][i]['id'] for i in range(4716081)]
+all_ids = [ allsubs['results'][i]['id'] for i in range(6244619)]
 
 for i,id in enumerate(all_ids):
     mass.append(allsubs['results'][i]['mass_log_msun'])
@@ -61,7 +61,7 @@ for i,id in enumerate(all_ids):
 mass=[]
 sfr=[]
 
-sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(77655)]
+sfr_ids = [ sfrsubs['results'][i]['id'] for i in range(6244619)]
 mass_sfr = []
 sfr_sfr = []
 urls = []
@@ -76,13 +76,13 @@ df_analysis = pd.DataFrame({
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('tng30subhalos.csv')
+df_analysis.to_csv('tng67subhalos.csv')
 plt.figure(figsize=(15,10))
 plt.plot(mass_sfr, (sfr_sfr),'g+')
 plt.yscale('log')
 plt.ylabel('log(SFR)')
 plt.xlabel('Mass (log10 Msun)')
-plt.savefig('SFR_M_TNG50-1_33.png')
+plt.savefig('SFR_M_TNG50-1_67.png')
 plt.close()
 
 end = time.time()
