@@ -81,6 +81,7 @@ class UTILITY:
 
     def piecewise_linear(x, x0, y0, k1, k2):
             return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
+        
 
 #
 # GALAXY CLASS -> contains all subhalo analysis functions 

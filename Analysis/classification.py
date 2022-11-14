@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt 
 import illustris_python as il
+import seaborn as sns 
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
@@ -37,8 +38,8 @@ def get(path, params = None):
     return r
 
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/33/subhalos/"
-sfr_q = "?limit=77655&sfr__gt=0.0"
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
+sfr_q = "?limit=17553&sfr__gt=0.0"
 
 
 sfrurl = baseurl+sfr_q
@@ -61,21 +62,26 @@ df_analysis = pd.DataFrame({
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('tng99subhalos.csv')
+df_analysis.to_csv('csv/tng99subhalos.csv')
 
 xval = np.linspace(0,13,100)
 def line(m,x,b):
     y = 10**((m*x)+b)
     return y 
+def line2(m,x,b):
+    y = (m*x) + b
+    return y 
+
 plt.figure(figsize=(15,10))
-plt.plot(mass_sfr, (sfr_sfr),'g+')
-plt.plot(xval, line(2,xval,-20.5), 'r-', label = "y=$10^{mx+b}$")
-plt.yscale('log')
+plt.plot(mass_sfr,np.log10(sfr_sfr),'g+')
+sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
+plt.plot(xval, line2(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
+#plt.yscale('log')
 plt.ylabel('log(SFR)')
-plt.ylim(10e-6,10e2)
+plt.ylim(-6.5,2)
 plt.xlim(7,14)
 plt.xlabel('Mass (log10 Msun)')
-plt.savefig('SFR_M_TNG50-1_99.png')
+plt.savefig('png/classification/SFR_M_TNG50-1_99.png')
 plt.close()
 
 end = time.time()
