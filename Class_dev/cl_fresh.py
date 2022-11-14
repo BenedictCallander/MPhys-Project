@@ -526,12 +526,11 @@ sub.AIC_test(dfg2,3)
 #valid_id = valid_id[valid_id['radius']>9]
 #valid_id=valid_id[valid_id['mass']<9]
 #valid_id = list(valid_id['ids'])
-dfin = pd.read_csv("testing2.csv")
+dfin = pd.read_csv("csv/tng67subhalos.csv")
 valid_id= list(dfin['id'])
 def slopeplot_dataget(i):
-    
     try:
-        sub = galaxy("TNG50-1",99,i)
+        sub = galaxy("TNG50-1",67,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
@@ -557,8 +556,8 @@ def line(m,x,b):
 
 returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
-df2.to_csv("mainseq2.csv")
-print(len(df2['mass']))
+df2.to_csv("tng67slopes.csv")
+
 '''
 df2=pd.read_csv("slopeplot.csv")
 plt.figure(figsize=(20,12))

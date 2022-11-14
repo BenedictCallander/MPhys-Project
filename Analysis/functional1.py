@@ -1,7 +1,4 @@
 #
-# Functional refresh of class -> reduce code alteration required for 
-#
-#
 # Fresh Development -> eliminate bugs and restructure programme 
 #
 import logging
@@ -519,22 +516,13 @@ dfg2 = sub.z_filter(dfg2)
 sub.AIC_test(dfg2,3)
 #sub.broken_fit(dfg2,3,10)
 #sub.savgol_smooth(dfg2,10,'Y')
-
-#df_in = pd.read_csv("test1.csv")
-#df_in = df_in[df_in['sfr']>0]
-#valid_id = list(df_in['id'])
-
-#valid_id = df_in[df_in['sfr']>10e-1]
-#valid_id = valid_id[valid_id['radius']>9]
-#valid_id=valid_id[valid_id['mass']<9]
-#valid_id = list(valid_id['ids'])
 '''
 
-dfin = pd.read_csv("testing2.csv")
+dfin = pd.read_csv("csv/tng33subhalos.csv")
 valid_id= list(dfin['id'])
-def slopeplot_dataget(i): 
+def slopeplot_dataget(i):
     try:
-        sub = galaxy("TNG50-1",99,i)
+        sub = galaxy("TNG50-1",33,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
@@ -552,6 +540,8 @@ def slopeplot_dataget(i):
         return print("keyerror")
     except OSError:
         return print('OSerror')
+    except TypeError:
+        return print('TypeError')
 
 xval = np.linspace(0,13,100)
 def line(m,x,b):
@@ -560,28 +550,7 @@ def line(m,x,b):
 
 returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
-df2.to_csv("mainseq2.csv")
-print(len(df2['mass']))
-'''
-df2=pd.read_csv("slopeplot.csv")
-plt.figure(figsize=(20,12))
-plt.plot(xval, line(2,xval,-20.5), 'r-', label = "y=$10^{mx+b}$")
-plt.scatter((df_in['mass']),(df_in['sfr']),c=df2['slope'],cmap='viridis',vmin=-0.2,label = 'Subhalos')
-plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
-plt.yscale('log')
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15); plt.legend(loc='upper right')
-plt.xlim(7.5,13)
-plt.ylim(10e-6,10e2)
-plt.ylabel("Log(Subhalo SFR)",fontsize=20)
-plt.title("Galaxy Classification with Metallicity gradient visualisation",fontsize=20)
-plt.colorbar().set_label(label = "Metallicity Linear Fit Slope",size=20)
-plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-plt.savefig("slope.png")
-plt.close()
-'''
-
+df2.to_csv("tng33slopes.csv")
 
 end = time.time()
 print('runtime = {}s'.format(end-start))
