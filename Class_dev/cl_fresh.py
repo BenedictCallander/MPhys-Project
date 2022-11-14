@@ -1,22 +1,22 @@
 #
 # Fresh Development -> eliminate bugs and restructure programme 
 #
-from itertools import groupby
 import logging
-from random import random
-from re import sub # http logging for debugging purpouses
-import time #runtime calculation import numpy as np #data handling 
-import requests #obtain data from API server
-import h5py #binary file manipulation
-import pandas as pd 
-import numpy as np 
-import matplotlib.pyplot as plt 
-import illustris_python as il
-from scipy.signal import medfilt
-from scipy.optimize import curve_fit
-from joblib import Parallel, delayed
 import os
-from scipy.signal import savgol_filter
+import time  # runtime calculation import numpy as np #data handling
+from itertools import groupby
+from random import random
+from re import sub  # http logging for debugging purpouses
+
+import h5py  # binary file manipulation
+import illustris_python as il
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import requests  # obtain data from API server
+from joblib import Parallel, delayed
+from scipy.optimize import curve_fit
+from scipy.signal import medfilt, savgol_filter
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
