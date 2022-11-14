@@ -1,23 +1,24 @@
 #
 # Fresh Development -> eliminate bugs and restructure programme 
 #
-from itertools import groupby
 import logging
-from random import random
-from re import sub # http logging for debugging purpouses
-import time #runtime calculation import numpy as np #data handling 
-import requests #obtain data from API server
-import h5py #binary file manipulation
-import pandas as pd 
-import numpy as np 
-import matplotlib.pyplot as plt 
-import illustris_python as il
-from scipy.signal import medfilt
-from scipy.optimize import curve_fit
-from joblib import Parallel, delayed
 import os
-from scipy.signal import savgol_filter
+import time  # runtime calculation import numpy as np #data handling
+from itertools import groupby
+from random import random
+from re import sub  # http logging for debugging purpouses
+
+import h5py  # binary file manipulation
+import illustris_python as il
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pwlf
+import requests  # obtain data from API server
+from joblib import Parallel, delayed
+from scipy.optimize import curve_fit
+from scipy.signal import medfilt, savgol_filter
+
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 #basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
@@ -77,6 +78,7 @@ class UTILITY:
     def sq_fit(x,a,b,c):
         f = (a*(x**2))+(b*x)+c
         return f
+
     def piecewise_linear(x, x0, y0, k1, k2):
             return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
 
@@ -134,8 +136,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -546,7 +548,7 @@ def slopeplot_dataget(i):
         dfg = sub.df_gen('gas','comb')
         dfg2 = sub.z_filter(dfg)
         dfg2 = sub.rad_norm(dfg2,10)
-        sub.broken_fit(dfg2,5,10)
+        sub.broken_fit(dfg2,3,10)
         return print("subhalo {} plotted".format(i))
 
     except ValueError:
