@@ -284,8 +284,6 @@ class galaxy:
         conditional statement to determine which fit is better according to AIC 
         return statement/value which inidcates which fit is better -> also catalogue other data? 
         '''
-
-        med_data = medfilt(dfin['rad'], kernel_size=21)
         popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],dfin['met'])
 
         y1 = UTILITY.linear_fit(dfin['rad'],*popt)
@@ -294,27 +292,22 @@ class galaxy:
         my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], dfin['met'])
         my_pwlf.fit_with_breaks(x0)
         
-        xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=10000)
+        xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=len(dfin['met']))
         yHat = my_pwlf.predict(xHat)
-    
-
         RSS_linear = np.sum((dfin['met']-(y1))**2)
         RSS_broken = np.sum((dfin['met']-(yHat))**2)
         print(RSS_broken)
         print(RSS_linear)
-        AIC_L = 4+(len(y1)*np.log(RSS_linear))
-        AIC_B = 8+(len(yHat)*np.log(RSS_broken))
-
-        print("AIC VALUES: \n ")
-        print("Linear {}".format(AIC_L))
-        print("Broken {}".format(AIC_B))
-        
-
-        if AIC_L>AIC_B:
-            val = 0
-        elif AIC_B>AIC_L:
-            val=1
-        return val
+        linear = 4+(len(y1)*np.log(RSS_linear))
+        broken = 8+(len(yHat)*np.log(RSS_broken))
+        linear = abs(linear)
+        broken = abs(broken)
+        if linear>broken:
+            val = 1
+            return val
+        else:
+            val = 2
+            return val
 
     def fit_linear(self,dfin, pc):
         '''
@@ -529,9 +522,7 @@ def slopeplot_dataget(i):
         id = i
         print("subhalo {} calculated".format(i))
         return (slope,met,mass,id,sfr,AICval)
-    except OSError:
-        return print('OSerror')
-    '''
+        #return AICval
     except ValueError:
         return print("value-error")
     except KeyError:
@@ -540,9 +531,7 @@ def slopeplot_dataget(i):
         return print('OSerror')
     except TypeError:
         return print('TypeError')
-    '''
-#0 = linear>broken
-#1 = broken>linear
+#1 (linear > broken)
 xval = np.linspace(0,13,100)
 def line(m,x,b):
     y = 10**((m*x)+b)

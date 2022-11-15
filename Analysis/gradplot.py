@@ -150,13 +150,6 @@ fig.colorbar(im6, cax=cax6, orientation='vertical')
 fig.colorbar(im7, cax=cax7, orientation='vertical')
 fig.colorbar(im8, cax=cax8, orientation='vertical')
 
-'''
-cmap = mpl.cm.cool
-norm = mpl.colors.Normalize(vmin=-0.4, vmax=0.2)
-
-fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),cax=ax0, orientation='horizontal', label='Some Units')
-'''
-
 fig.tight_layout()
 fig.subplots_adjust(top=0.9)
 fig.suptitle("Redshift progression of galaxy classification and metallicity slope", fontsize=20)
