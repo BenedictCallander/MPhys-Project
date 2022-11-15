@@ -518,11 +518,11 @@ sub.AIC_test(dfg2,3)
 #sub.savgol_smooth(dfg2,10,'Y')
 '''
 
-dfin = pd.read_csv("csv/tng33subhalos.csv")
+dfin = pd.read_csv("csv/tng99subhalos.csv")
 valid_id= list(dfin['id'])
 def slopeplot_dataget(i):
     try:
-        sub = galaxy("TNG50-1",33,i)
+        sub = galaxy("TNG50-1",99,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
@@ -550,7 +550,7 @@ def line(m,x,b):
 
 returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr'])
-df2.to_csv("tng33slopes.csv")
+df2.to_csv("csv/tng99slopes.csv")
 
 end = time.time()
 print('runtime = {}s'.format(end-start))
