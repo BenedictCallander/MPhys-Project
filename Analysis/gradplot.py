@@ -35,9 +35,8 @@ xvals = np.linspace(0,13,100)
 def line(m,x,b):
     y = pow(10,((m*x)+b))
     return y 
-'''
 plt.figure(figsize=(20,12))
-plt.scatter((df['mass']),df['sfr'], c = (df1['slope']), cmap = 'viridis', vmin=-0.25,vmax = 0.05, label = 'Main Sequence Subhalos')
+plt.scatter((df4['mass']),df4['sfr'], c = (df5['AICval']), cmap = 'Set1', label = 'Main Sequence Subhalos')
 plt.plot(xvals,line(2,xvals,-20.5),'r-')
 plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
 plt.ylabel("log(SFR)", fontsize =20)
@@ -51,13 +50,11 @@ plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewi
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15); plt.legend(loc='upper right')
-filename = 'png/slopegrads/slope_33.png'
+filename = 'png/slopegrads/AIC99.png'
 plt.savefig(filename)
 plt.close()
+
 '''
-
-    
-
 fig,((ax0,ax1,ax2),(ax3,ax4,ax5),(ax6,ax7,ax8)) = plt.subplots(nrows = 3, ncols = 3,figsize=(30,24))
 
 divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider2 = make_axes_locatable(ax2);divider3 = make_axes_locatable(ax3)
@@ -117,7 +114,7 @@ ax5.set_xlim(7.5,12)
 
 ax6.set_yscale('log')
 ax6.set_title("Snap_033: Z=2")
-im6 = ax6.scatter((MS1['mass']),MS1['sfr'], c = (MS1['slope']), cmap = 'viridis',vmax = 0.1, label = 'Main Sequence Subhalos')
+im6 = ax6.scatter((MS1['mass']),MS1['sfr'], c = np.log10(abs(MS1['slope'])), cmap = 'viridis', label = 'Main Sequence Subhalos')
 ax6.plot(xvals,line(2,xvals,-20.5),'r-')
 ax6.set_ylim(10e-6, 10e2)
 ax6.set_xlim(7.5,12)
@@ -125,7 +122,7 @@ ax6.set_ylabel("log(SFR)")
 
 ax7.set_yscale('log')
 ax7.set_title("Snap_033: Z=2")
-im7 = ax7.scatter((MS2['mass']),MS2['sfr'], c = (MS2['slope']), cmap = 'viridis',  label = 'Main Sequence Subhalos')
+im7 = ax7.scatter((MS2['mass']),MS2['sfr'], c = np.log10(abs(MS2['slope'])), cmap = 'viridis',  label = 'Main Sequence Subhalos')
 ax7.plot(xvals,line(2,xvals,-20.5),'r-')
 ax7.set_ylim(10e-6, 10e2)
 ax7.set_xlim(7.5,12)
@@ -133,7 +130,7 @@ ax7.set_ylabel("log(SFR)")
 
 ax8.set_yscale('log')
 ax8.set_title("Snap_033: Z=2")
-im8 = ax8.scatter((MS3['mass']),MS3['sfr'], c = (MS3['slope']), cmap = 'viridis', label = 'Main Sequence Subhalos')
+im8 = ax8.scatter((MS3['mass']),MS3['sfr'], c = np.log10(abs(MS3['slope'])), cmap = 'viridis', label = 'Main Sequence Subhalos')
 ax8.plot(xvals,line(2,xvals,-20.5),'r-')
 ax8.set_ylim(10e-6, 10e2)
 ax8.set_xlim(7.5,12)
@@ -154,3 +151,4 @@ fig.tight_layout()
 fig.subplots_adjust(top=0.9)
 fig.suptitle("Redshift progression of galaxy classification and metallicity slope", fontsize=20)
 fig.savefig('png/slopegrads/combined.png')
+'''

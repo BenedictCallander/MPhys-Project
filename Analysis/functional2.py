@@ -296,18 +296,16 @@ class galaxy:
         yHat = my_pwlf.predict(xHat)
         RSS_linear = np.sum((dfin['met']-(y1))**2)
         RSS_broken = np.sum((dfin['met']-(yHat))**2)
-        print(RSS_broken)
-        print(RSS_linear)
+        #print(RSS_broken)
+        #print(RSS_linear)
         linear = 4+(len(y1)*np.log(RSS_linear))
         broken = 8+(len(yHat)*np.log(RSS_broken))
         linear = abs(linear)
         broken = abs(broken)
         if linear>broken:
-            val = 1
-            return val
+            return 1
         else:
-            val = 2
-            return val
+            return 2
 
     def fit_linear(self,dfin, pc):
         '''
@@ -506,11 +504,13 @@ sub.AIC_test(dfg2,3)
 #sub.savgol_smooth(dfg2,10,'Y')
 '''
 
-dfin = pd.read_csv("csv/tng99subhalos.csv")
+dfin = pd.read_csv("csv/tng33subhalos.csv")
+dfin=dfin[dfin['sfr']>0]
 valid_id= list(dfin['id'])
+errcount = []
 def slopeplot_dataget(i):
     try:
-        sub = galaxy("TNG50-1",99,i)
+        sub = galaxy("TNG50-1",33,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
@@ -524,12 +524,16 @@ def slopeplot_dataget(i):
         return (slope,met,mass,id,sfr,AICval)
         #return AICval
     except ValueError:
+        errcount.append(i)
         return print("value-error")
     except KeyError:
+        errcount.append(i)
         return print("keyerror")
     except OSError:
+        errcount.append(i)
         return print('OSerror')
     except TypeError:
+        errcount.append(i)
         return print('TypeError')
 #1 (linear > broken)
 xval = np.linspace(0,13,100)
@@ -539,7 +543,11 @@ def line(m,x,b):
 
 returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr','AICval'])
-df2.to_csv("csv/tng99slopes.csv")
+df2.to_csv("csv/tng33slopes.csv")
+import BCUTILS
+BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
+print("error count = {}".format(len(errcount)))
+print("Out of total Subhalo count {}".format(len(valid_id)))
 
 end = time.time()
 print('runtime = {}s'.format(end-start))
