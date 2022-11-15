@@ -304,8 +304,10 @@ class galaxy:
         broken = abs(broken)
         if linear>broken:
             return 1
-        else:
+        elif linear<broken:
             return 2
+        else:
+            return 3
 
     def fit_linear(self,dfin, pc):
         '''
@@ -541,7 +543,7 @@ def line(m,x,b):
     y = 10**((m*x)+b)
     return y 
 
-returns = Parallel(n_jobs=25)(delayed(slopeplot_dataget)(i) for i in valid_id)
+returns = Parallel(n_jobs=40)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr','AICval'])
 df2.to_csv("csv/tng33slopes.csv")
 import BCUTILS

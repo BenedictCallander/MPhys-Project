@@ -51,7 +51,6 @@ def MSfilter(dfin,dfcombin, saveloc):
                       valid subhalos to a list
         *Data Restructuring -> uses list of Main Sequence subhalo IDS to filter dataframes such that only valid subhalos remain, inserts columns for slope
                         and AIC value for these dataframes and saves output to file 
-                        
     OUTPUTS:
         * Data for Main Sequence subhalos saved in .csv format to location specified by saveloc
         * Upon completion saved file path is printed 
@@ -125,5 +124,4 @@ def mass_met_plot(dfin,slopescat):
     plt.figure(figsize=(20,12))
     if slopescat =='Y':
         plt.scatter(dfin['mass'], dfin['met'], c= dfin['slope'], )
-
 
