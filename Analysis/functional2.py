@@ -133,8 +133,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -231,7 +231,8 @@ class galaxy:
                                    "rad": self.gas_radial,
                                    "mass":self.pgas_m,
                                    "dens":self.pgas_dens,
-                                   "met": 12+np.log10(self.pgas_met)})
+                                   "met":(self.pgas_met),
+                                   "met2":(self.pgas_met)})
         elif (type =='star'):
             if (quant == 'mass'):
                 df = pd.DataFrame({"x":self.pstar_coo[:,0],
@@ -364,6 +365,24 @@ class galaxy:
         plt.savefig(filename)
         plt.close()
     
+    def breakfit(self,dfin,breakpoint, annul):
+        annuli = annul 
+        dfin.sort_values(by='rad', inplace = True)
+        rad = list(dfin['rad'])
+        met = list(dfin['met'])
+        arr = np.array((rad,met))
+        interp_savgol = savgol_filter(dfin['met'],window_length=101,polyorder=3)
+        print(arr)
+        def piecewise_linear(x, x0, y0, k1, k2):
+            return np.piecewise(x, [x>breakpoint],[lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
+        p,e = curve_fit(piecewise_linear, rad,met)
+        xd = np.linspace(0, 10, 100)
+        plt.figure(figsize=(20,12))
+        plt.plot(rad,interp_savgol,'b-')
+        plt.plot(xd, piecewise_linear(xd, *p),'r--')
+        plt.savefig('test1.png')
+        plt.close()
+    
     def broken_fit(self,dfin,breakpoint,pc):
         '''
         Pseudocode
@@ -409,7 +428,7 @@ class galaxy:
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
         filename = 'Visuals/breakfit/33/sub_{}_snapshot_{}.png'.format(self.subID, self.snapID)
-        plt.savefig(filename)
+        plt.savefig('test2.png')
         plt.close()
     
     def savgol_smooth(self,dfin,pc,scatter_q):
@@ -510,9 +529,10 @@ class galaxy:
         return (popt[0],met,mass,sfr)
 
 dfin = pd.read_csv("csv/tng33subhalos.csv")
-dfin=dfin[dfin['sfr']>0]
+dfin=dfin[dfin['sfr']>0.001]
 valid_id= list(dfin['id'])
-
+errorcodes = []
+error_i = []
 def slopeplot_dataget(i):
     try:
         sub = galaxy("TNG50-1",33,i)
@@ -522,26 +542,42 @@ def slopeplot_dataget(i):
         dfg = sub.df_gen('gas','comb')
         dfg2 = sub.rad_norm(dfg,10)
         dfg2 = sub.z_filter(dfg2)
+        #sub.breakfit(dfg2, 3, 10)
+        #sub.broken_fit(dfg2, 3, 10)
+
         AICval = sub.AIC_test(dfg2,0.5)
         idval = i
         slope,met,mass,sfr = sub.gen_slope(dfg2)
         print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
         return (slope,met,mass,idval,sfr,AICval)
-    except ValueError:
+    except ValueError as e:
+        errorcodes.append(str(e))
+        error_i.append(i)
         return print("value-error")
-    except KeyError:
+    except KeyError as e:
+        errorcodes.append(str(e))
+        error_i.append(i)
         return print("keyerror")
-    except OSError:
+    except OSError as e:
+        errorcodes.append(str(e))
+        error_i.append(i)
         return print('OSerror')
-    except TypeError:
+    except TypeError as e:
+        errorcodes.append(str(e))
+        error_i.append(i)
         return print('TypeError')
 #1 (linear > broken)
+#'''
 xval = np.linspace(0,13,100)
-
 returns = Parallel(n_jobs= -1)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr','AICval'])
 df2.to_csv("csv/tng33slopes.csv")
-
+df3 = pd.DataFrame({
+    "id":error_i,
+    "errorcode": errorcodes
+})
+df3.to_csv("csv/error33.csv")
+#'''
 #import BCUTILS
 #BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
 end = time.time()

@@ -38,8 +38,8 @@ def get(path, params = None):
     return r
 
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
-sfr_q = "?limit=17553&sfr__gt=0.01"
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/33/subhalos/"
+sfr_q = "?limit=77655&sfr__gt=0.001"
 
 
 sfrurl = baseurl+sfr_q
@@ -62,8 +62,8 @@ df_analysis = pd.DataFrame({
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('csv/tng991subhalos.csv')
-
+df_analysis.to_csv('csv/tng33subhalos.csv')
+'''
 xval = np.linspace(0,13,100)
 def line(m,x,b):
     y = 10**((m*x)+b)
@@ -83,7 +83,7 @@ plt.xlim(7,14)
 plt.xlabel('Mass (log10 Msun)')
 plt.savefig('png/classification/SFR_M_TNG50-1_991.png')
 plt.close()
-
+'''
 end = time.time()
 print("runtime :{}".format(end-start))
 # %%

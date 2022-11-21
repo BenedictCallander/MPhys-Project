@@ -38,19 +38,19 @@ def get(path, params = None):
 
     return r
 
-url96762 = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/96762/"
-sub = get(url96762)
+url8 = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/8/"
+sub = get(url8)
 
 #mpb1 - main progenitor branch 1 
-mpb1 ="hdf5/sublink_mpb_0.hdf5"
-#get(sub['trees']['sublink_mpb'] )
- # file saved, mpb1 contains the filename
+mpb1 = "hdf5/sublink_mpb_8.hdf5"
+#get(sub['trees']['sublink_mpb'])
+# file saved, mpb1 contains the filename
 
 f = h5py.File(mpb1,'r')
 #print(f.keys())
 #print(f['SnapNum'][:])
-mpb2 ="hdf5/lhalotree_mpb_0.hdf5"
-#get( sub['trees']['lhalotree_mpb'] )
+mpb2 = "hdf5/lhalotree_mpb_8.hdf5"
+#get(sub['trees']['lhalotree_mpb'] )
 # # file saved, mpb2 contains the filename
 
 f = h5py.File(mpb2, 'r')
@@ -72,7 +72,6 @@ sub96762_ids = pd.DataFrame({
     "snapnum": snapnum,
     "subID": subid
 })
-
 
 
 def url_constructor(snap,subid):
@@ -105,7 +104,7 @@ sample = df2.sample(frac=0.1, replace=False)
 
 plt.figure(figsize = (20,12))
 plt.plot(df2['mass'], df2['sfr'], 'g.', ms = 3)
-plt.scatter(df['mass'], df['sfr'],c = df['snapshot'], cmap = 'viridis', s=20)
+plt.scatter(df['mass'], df['sfr'],c = df['snapshot'], cmap = 'magma', s=40)
 plt.yscale('log')
 plt.xlabel("snapshot", fontsize = 20)
 plt.ylabel("Mass (Log_MSUN)", fontsize = 20)
