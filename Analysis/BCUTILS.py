@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests  # obtain data from API server
-import seaborn as sns
-
+import seaborn as sns 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 
@@ -109,7 +108,7 @@ def subhalo_classification(snapshot,contours):
         sns.kdeplot(x=mass, y=np.log10(sfr))
     elif contours =='N':
         print('No Contours selected')
-    plt.plot(xvals, line(2,xvals,-20), 'r-', label = "y=$10^{mx+b}$")
+    plt.plot(xvals, line(2,xvals,-20.5), 'r-', label = "y=$10^{mx+b}$")
     #plt.yscale('log')
     plt.ylabel('log(SFR)')
     plt.ylim(-6.5,2)
@@ -118,10 +117,4 @@ def subhalo_classification(snapshot,contours):
     plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
     plt.close()
 
-def mass_met_plot(dfin,slopescat):
-    df = dfin
-    
-    plt.figure(figsize=(20,12))
-    if slopescat =='Y':
-        plt.scatter(dfin['mass'], dfin['met'], c= dfin['slope'], )
 

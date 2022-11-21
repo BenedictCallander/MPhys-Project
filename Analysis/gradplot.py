@@ -36,13 +36,13 @@ def line(m,x,b):
     y = pow(10,((m*x)+b))
     return y 
 plt.figure(figsize=(20,12))
-plt.scatter((df4['mass']),df4['sfr'], c = (df5['AICval']), cmap = 'Set1', label = 'Main Sequence Subhalos')
+plt.scatter((df['mass']),df['sfr'], c = (df1['AICval']), cmap = 'Set1', label = 'Main Sequence Subhalos')
 plt.plot(xvals,line(2,xvals,-20.5),'r-')
 plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
 plt.ylabel("log(SFR)", fontsize =20)
 #plt.ylabel("12+ $log_{10}$ ${O}/{H}$",fontsize=20)
 plt.yscale('log')
-plt.ylim(10e-6, 10e2)
+plt.ylim(10e-4, 10e2)
 plt.xlim(7.5,12)
 plt.title("Subhalo Classification snapshot 33",fontsize=20)
 plt.colorbar().set_label(label = "Metallicity Linear Fit Slope",size=20)
@@ -50,7 +50,7 @@ plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewi
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15); plt.legend(loc='upper right')
-filename = 'png/slopegrads/AIC99.png'
+filename = 'png/slopegrads/AIC33.png'
 plt.savefig(filename)
 plt.close()
 

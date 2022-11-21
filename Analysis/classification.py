@@ -39,7 +39,7 @@ def get(path, params = None):
 
 
 baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
-sfr_q = "?limit=17553&sfr__gt=0.0"
+sfr_q = "?limit=17553&sfr__gt=0.01"
 
 
 sfrurl = baseurl+sfr_q
@@ -62,7 +62,7 @@ df_analysis = pd.DataFrame({
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('csv/tng99subhalos.csv')
+df_analysis.to_csv('csv/tng991subhalos.csv')
 
 xval = np.linspace(0,13,100)
 def line(m,x,b):
@@ -74,14 +74,14 @@ def line2(m,x,b):
 
 plt.figure(figsize=(15,10))
 plt.plot(mass_sfr,np.log10(sfr_sfr),'g+')
-sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
+#sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
 plt.plot(xval, line2(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
-#plt.yscale('log')
+plt.yscale('log')
 plt.ylabel('log(SFR)')
 plt.ylim(-6.5,2)
 plt.xlim(7,14)
 plt.xlabel('Mass (log10 Msun)')
-plt.savefig('png/classification/SFR_M_TNG50-1_99.png')
+plt.savefig('png/classification/SFR_M_TNG50-1_991.png')
 plt.close()
 
 end = time.time()

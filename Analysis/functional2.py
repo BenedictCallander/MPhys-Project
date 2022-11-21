@@ -1,7 +1,7 @@
 #
 # Fresh Development -> eliminate bugs and restructure programme 
 #
-
+import os 
 import time  # runtime calculation import numpy as np #data handling
 from random import random
 from re import sub  # http logging for debugging purpouses
@@ -11,15 +11,15 @@ import numpy as np
 import pandas as pd
 import requests  # obtain data from API server
 import pwlf
-
+import gc 
 from joblib import Parallel, delayed
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-#basePath='/x/Physics/AstroPhysics/Shared-New/DATA/IllustrisTNG/TNG100-1/output'
 pd.options.mode.chained_assignment = None  # default='warn'
+
 def get(path, params = None):
     #utility function for API reading 
 
@@ -43,6 +43,10 @@ def get(path, params = None):
         return filename # return the filename string
 
     return r
+
+def line(m,x,b):
+    y = 10**((m*x)+b)
+    return y 
 
 class UTILITY:
     def get(path, params = None):
@@ -459,7 +463,7 @@ class galaxy:
             pcov1.append(pcov[1])
         return avals,bvals,pcov0, pcov1
  
-    def gas_visualisation(self, dfin, decp,pc):
+    def gas_visualisation(self, dfin, decp):
         '''
         Psuedocode
         Inputs -> dataframe containing gas density data (aligned to z axis)
@@ -470,21 +474,34 @@ class galaxy:
         
         '''
         df = dfin.round(decp)
-        annuli = pc
-        df= df[df['rad']<annuli]
         df = df.groupby(['x','y'])['dens'].sum().reset_index()
         plt.figure(figsize=(20,12), dpi=500)
         plt.style.use('dark_background')
-        plt.scatter(df['x'],-df['y'],c=(np.log10(df['m'])),cmap='inferno', vmin=(min(np.log10(df['m']))),vmax =(max(np.log10(df['m']))))
+        plt.hist2d(df['x'],df['y'],weights = np.log10(df['dens']), bins=[1000,1000],cmap='magma')
+        #plt.scatter(df['x'],-df['y'],c=(np.log10(df['m'])),cmap='inferno', vmin=(min(np.log10(df['m']))),vmax =(max(np.log10(df['m']))))
         plt.xlabel('$\Delta x$ [kpc/h]')
         plt.ylabel('$\Delta y$ [kpc/h]')
-        plt.colorbar(label='log10(Gas Mass)')
+        #plt.colorbar(label='log10(Gas Mass)')
         plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-        filename = 'Visuals/visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+        #filename = 'Visuals/visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+        filename = 'histtest.png'
         plt.savefig(filename)
         plt.close()
     
     def gen_slope(self,dfin):
+        '''
+        INPUTS:
+            *self (base level subhlao object properties accesed)
+            
+        PROCESSES:
+            *Calculates linear fit for subhalo metallicity gradient - without plotting and saves gradient value 
+            
+        OUTPUTS:
+            * M value of linear fit to metallicity gradient
+            * Total mass of subhalo 
+            * Total metallicity of subhalo 
+            * Total SFR of subhalo 
+        '''
         df = dfin
         popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'])
         met = self.tot_met
@@ -492,24 +509,10 @@ class galaxy:
         sfr = self.totsfr
         return (popt[0],met,mass,sfr)
 
-
-'''
-sub = galaxy("TNG50-1",99,117260)
-sub.galcen()
-sub.ang_mom_align('gas')
-sub.rad_transform()
-dfg = sub.df_gen('gas','comb')
-dfg2 = sub.rad_norm(dfg,10)
-dfg2 = sub.z_filter(dfg2)
-sub.AIC_test(dfg2,3)
-#sub.broken_fit(dfg2,3,10)
-#sub.savgol_smooth(dfg2,10,'Y')
-'''
-
 dfin = pd.read_csv("csv/tng33subhalos.csv")
 dfin=dfin[dfin['sfr']>0]
 valid_id= list(dfin['id'])
-errcount = []
+
 def slopeplot_dataget(i):
     try:
         sub = galaxy("TNG50-1",33,i)
@@ -519,37 +522,31 @@ def slopeplot_dataget(i):
         dfg = sub.df_gen('gas','comb')
         dfg2 = sub.rad_norm(dfg,10)
         dfg2 = sub.z_filter(dfg2)
-        AICval = sub.AIC_test(dfg2,0.4)
+        AICval = sub.AIC_test(dfg2,0.5)
+        idval = i
         slope,met,mass,sfr = sub.gen_slope(dfg2)
-        id = i
-        print("subhalo {} calculated".format(i))
-        return (slope,met,mass,id,sfr,AICval)
-        #return AICval
+        print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
+        return (slope,met,mass,idval,sfr,AICval)
     except ValueError:
-        errcount.append(i)
         return print("value-error")
     except KeyError:
-        errcount.append(i)
         return print("keyerror")
     except OSError:
-        errcount.append(i)
         return print('OSerror')
     except TypeError:
-        errcount.append(i)
         return print('TypeError')
 #1 (linear > broken)
 xval = np.linspace(0,13,100)
-def line(m,x,b):
-    y = 10**((m*x)+b)
-    return y 
 
-returns = Parallel(n_jobs=40)(delayed(slopeplot_dataget)(i) for i in valid_id)
+returns = Parallel(n_jobs= -1)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr','AICval'])
 df2.to_csv("csv/tng33slopes.csv")
-import BCUTILS
-BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
-print("error count = {}".format(len(errcount)))
-print("Out of total Subhalo count {}".format(len(valid_id)))
 
+#import BCUTILS
+#BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
 end = time.time()
 print('runtime = {}s'.format(end-start))
+#482105 freeze 1 ~200 secs
+#530687 freeze 2 at 258 seconds 
+#728228 freeze at 516 secpmsd
+#644697 freeze at 720 seconds (15 threads as opposed to 45)
