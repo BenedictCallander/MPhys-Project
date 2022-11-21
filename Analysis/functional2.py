@@ -98,8 +98,10 @@ class galaxy:
         
         hubble =0.7
         
-        snap_util =get(baseurl) #use api to easily read snapshot information
-        redshift = 0
+        #use api to easily read snapshot information
+        #redshift = 0 (snap 99) 
+        redshift =  2.00202813925285 #(snap 33)
+        #redshift = 0.503047523244883
         self.redshift =redshift  # store redshift value as attribute
         
         scalefac = 1./(1.+redshift) #calculate scale factor
@@ -133,7 +135,7 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
@@ -292,7 +294,7 @@ class galaxy:
         popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],dfin['met'])
 
         y1 = UTILITY.linear_fit(dfin['rad'],*popt)
-        
+        AIC = 1
         x0 = np.array([min(dfin['rad']), breakpoint, max(dfin['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], dfin['met'])
         my_pwlf.fit_with_breaks(x0)
@@ -529,13 +531,13 @@ class galaxy:
         return (popt[0],met,mass,sfr)
 
 dfin = pd.read_csv("csv/tng33subhalos.csv")
-dfin=dfin[dfin['sfr']>0.001]
+dfin=dfin[dfin['sfr']>0.00001]
 valid_id= list(dfin['id'])
 errorcodes = []
-error_i = []
+
 def slopeplot_dataget(i):
     try:
-        sub = galaxy("TNG50-1",33,i)
+        sub = galaxy("TNG50-1",67,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
@@ -544,45 +546,33 @@ def slopeplot_dataget(i):
         dfg2 = sub.z_filter(dfg2)
         #sub.breakfit(dfg2, 3, 10)
         #sub.broken_fit(dfg2, 3, 10)
-
         AICval = sub.AIC_test(dfg2,0.5)
         idval = i
         slope,met,mass,sfr = sub.gen_slope(dfg2)
         print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
         return (slope,met,mass,idval,sfr,AICval)
     except ValueError as e:
-        errorcodes.append(str(e))
-        error_i.append(i)
-        return print("value-error")
+        return errorcodes.append(str(e))
     except KeyError as e:
-        errorcodes.append(str(e))
-        error_i.append(i)
-        return print("keyerror")
+        return errorcodes.append(str(e))
     except OSError as e:
-        errorcodes.append(str(e))
-        error_i.append(i)
-        return print('OSerror')
+        return errorcodes.append(str(e))
     except TypeError as e:
-        errorcodes.append(str(e))
-        error_i.append(i)
-        return print('TypeError')
+        return errorcodes.append(str(e))
+
+
 #1 (linear > broken)
 #'''
 xval = np.linspace(0,13,100)
-returns = Parallel(n_jobs= -1)(delayed(slopeplot_dataget)(i) for i in valid_id)
+returns = Parallel(n_jobs= 45)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass','id','sfr','AICval'])
 df2.to_csv("csv/tng33slopes.csv")
 df3 = pd.DataFrame({
-    "id":error_i,
     "errorcode": errorcodes
 })
-df3.to_csv("csv/error33.csv")
+df3.to_csv("csv/error67.csv")
 #'''
-#import BCUTILS
-#BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
+import BCUTILS
+BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
 end = time.time()
 print('runtime = {}s'.format(end-start))
-#482105 freeze 1 ~200 secs
-#530687 freeze 2 at 258 seconds 
-#728228 freeze at 516 secpmsd
-#644697 freeze at 720 seconds (15 threads as opposed to 45)
