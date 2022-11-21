@@ -531,13 +531,12 @@ class galaxy:
         return (popt[0],met,mass,sfr)
 
 dfin = pd.read_csv("csv/tng33subhalos.csv")
-dfin=dfin[dfin['sfr']>0.00001]
 valid_id= list(dfin['id'])
 errorcodes = []
 
 def slopeplot_dataget(i):
     try:
-        sub = galaxy("TNG50-1",67,i)
+        sub = galaxy("TNG50-1",33,i)
         sub.galcen()
         sub.ang_mom_align('gas')
         sub.rad_transform()
