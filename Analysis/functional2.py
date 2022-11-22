@@ -509,27 +509,6 @@ class galaxy:
         plt.savefig(filename)
         plt.close()
     
-    def gen_slope(self,dfin):
-        '''
-        INPUTS:
-            *self (base level subhlao object properties accesed)
-            
-        PROCESSES:
-            *Calculates linear fit for subhalo metallicity gradient - without plotting and saves gradient value 
-            
-        OUTPUTS:
-            * M value of linear fit to metallicity gradient
-            * Total mass of subhalo 
-            * Total metallicity of subhalo 
-            * Total SFR of subhalo 
-        '''
-        df = dfin
-        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'])
-        met = self.tot_met
-        mass = self.m_tot
-        sfr = self.totsfr
-        return (popt[0],met,mass,sfr)
-    
     def slopegen(self,breakpoint):
         '''
         Pseudocode 
@@ -581,8 +560,8 @@ class galaxy:
 dfin = pd.read_csv("csv/tng99subhalos.csv")
 valid_id= list(dfin['id'])
 errorcodes = []
-
 def slopeplot_dataget(i):
+    f = open("errors.txt","w")
     try:
         sub = galaxy("TNG50-1",99,i)
         sub.galcen()
@@ -596,19 +575,23 @@ def slopeplot_dataget(i):
         print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
         return (slope,met,mass,idval,sfr)
     except ValueError as e:
-        return errorcodes.append(str(e))
+        f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        return print("ValueError", str(e))
     except KeyError as e:
-        return errorcodes.append(str(e))
+        f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        return print ("KeyError", str(e))
     except OSError as e:
-        return errorcodes.append(str(e))
+        f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        return print("OSError", str(e))
     except TypeError as e:
-        return errorcodes.append(str(e))
+        f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        return print("Type Error", str(e))
+    
 
 
 #1 (linear > broken)
 #'''
-xval = np.linspace(0,13,100)
-returns = Parallel(n_jobs= 45)(delayed(slopeplot_dataget)(i) for i in valid_id)
+returns = Parallel(n_jobs= -1)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
 df2.insert(5,'massplot', dfin['mass'],True)
 df2.to_csv("csv/complete/tng99slopes.csv")

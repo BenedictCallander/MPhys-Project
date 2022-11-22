@@ -158,10 +158,14 @@ class UTILITY:
         geturl = baseurl+"?limit={}&sfr__gt=0.0".format(limit)
         idget = get(geturl)
         ids = [idget['results'][i]['id'] for i in range(limit)]
-        return ids
+        mass = []
+        for i,id in enumerate(ids):
+            mass.append(idget['results'][i]['mass_log_msun'])
+        return (ids,mass)
     def line(m,x,b):
         y = 10**((m*x)+b)
         return y 
+
 
         
         

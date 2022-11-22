@@ -16,6 +16,8 @@ start =time.time()
 
 class subhalo:
     def __init__(self,simID,snapID,subID):
+        np.seterr(divide='ignore', invalid='ignore')
+
         '''
         Subhalo Class -> repeat creation of subhalo object and analyis tools to determine properties, fit gradients and statistical analysis 
          
@@ -26,16 +28,24 @@ class subhalo:
         
         hubble = 0.7
         #check snapID value to obtain correct redshift and scale factor 
-        if snapID is 99:
+        
+        '''
+        if snapID == 99:
             redshift = 0.0
-        elif snapID is 67:
+            self.redshift = redshift
+        elif snapID == 67:
             redshift =0.503047523244883
-        elif snapID is 33:
+            self.redshift = redshift
+        elif snapID == 33:
             redshift = 2.00202813925285
+            self.redshift = redshift
         else:
             data = BCUTILS.get(baseurl)
             redshift = data['redshift']
-        self.redshift = redshift
+            self.redshift = redshift
+        '''
+        redshift=0
+        self.redshift=redshift
         scalefac = 1./(1.+redshift) #calculate scale factor
         ptNumGas = il.snapshot.partTypeNum('gas') #obtain part index value to properly query TNG data
         ptNumStars = il.snapshot.partTypeNum('stars')
@@ -141,7 +151,7 @@ class subhalo:
             
     def rad_transform(self):
         self.gas_radial = np.sqrt((self.pgas_coo[:,0]**2)+(self.pgas_coo[:,1]**2))
-        self.star_radial = np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]))
+        self.star_radial = np.sqrt((self.pstar_coo[:,0]**2)+(self.pstar_coo[:,1]**2))
 
     def df_gen(self,type,quant):
         #series of logical statements read two input parameters to generate dataframe suited for request type 
@@ -270,7 +280,8 @@ class subhalo:
 #
 #Moving to more accessory functions -> graph plotting with fitting and gas density visualisation
 #
-    
+
+
     def fit_linear(self,dfin, pc):
         '''
         Pseudocode
@@ -400,5 +411,32 @@ class subhalo:
         plt.savefig(filename)
         plt.close()
         
-ids = UTILITY.get_ids(99)
-print(ids)
+ids,mass = UTILITY.get_ids(99)
+ids = list(ids)
+errorcodes=[]
+def slopeplot_dataget(i):
+    try:
+        sub = subhalo("TNG50-1",99,i)
+        sub.galcen()
+        sub.ang_mom_align('gas')
+        sub.rad_transform()
+        dfg = sub.df_gen('gas','comb')
+        dfg2 = sub.rad_norm(dfg,10)
+        dfg2 = sub.z_filter(dfg2)
+        idval = i
+        slope,met,mass,sfr = sub.slopegen(5)
+        print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
+        return (slope,met,mass,idval,sfr)
+    except ValueError as e:
+        return errorcodes.append(str(e))
+    except KeyError as e:
+        return errorcodes.append(str(e))
+    except OSError as e:
+        return errorcodes.append(str(e))
+    except TypeError as e:
+        return errorcodes.append(str(e))
+
+returns = Parallel(n_jobs= 25)(delayed(slopeplot_dataget)(i) for i in ids)
+df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
+df2.insert(5,'massplot',mass,True)
+df2.to_csv("csv/complete/tng99slopes1.csv")
