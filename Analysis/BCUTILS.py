@@ -74,6 +74,7 @@ def MSfilter(dfin,dfcombin, saveloc):
     df3 = df_in[df_in['id'].isin(valids)]
     df3.insert(2,"slope",dfslope['slope'],True)
     df3.insert(3,"AIC", dfslope['AICval'],True)
+    df3.insert(4,"met", dfslope['met'],True)
     df3.to_csv(saveloc)
     return print("dataframe saved to: ", saveloc)
 
@@ -116,5 +117,6 @@ def subhalo_classification(snapshot,contours):
     plt.xlabel('Mass (log10 Msun)')
     plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
     plt.close()
-
-
+dfin = pd.read_csv("csv/tng99subhalos.csv")
+df2=pd.read_csv("csv/tng99slopes.csv")
+MSfilter(dfin,df2,'csv/tng99MAIN.csv')
