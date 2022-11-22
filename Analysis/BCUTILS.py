@@ -117,6 +117,51 @@ def subhalo_classification(snapshot,contours):
     plt.xlabel('Mass (log10 Msun)')
     plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
     plt.close()
-dfin = pd.read_csv("csv/tng99subhalos.csv")
-df2=pd.read_csv("csv/tng99slopes.csv")
-MSfilter(dfin,df2,'csv/tng99MAIN.csv')
+
+class UTILITY:
+    def get(path, params = None):
+        #utility function for API reading 
+
+        #Make API request - 
+        # Path: url to api page 
+        #Params - misc ; Headers = api key 
+        r = requests.get(path, params=params, headers=headers)
+
+        #HTTP code - raise error if code return is not 200 (success)
+        r.raise_for_status()
+        
+        #detect content type (json or hdf5) - run appropriate download programme
+        
+        if r.headers['content-type'] == 'application/json':
+            return r.json() # parse json responses automatically
+
+        if 'content-disposition' in r.headers:
+            filename = r.headers['content-disposition'].split("filename=")[1]
+            with open(filename, 'wb') as f:
+                f.write(r.content)
+            return filename # return the filename string
+
+        return r
+
+    def linear_fit(a,x,b):
+        f = (a*x)+b
+        return f
+
+    def sq_fit(x,a,b,c):
+        f = (a*(x**2))+(b*x)+c
+        return f
+    
+    def get_ids(snapID):
+        baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/".format(snapID)
+        util = get(baseurl+"?sfr__gt=0.0")
+        limit = util['count']
+        geturl = baseurl+"?limit={}&sfr__gt=0.0".format(limit)
+        idget = get(geturl)
+        ids = [idget['results'][i]['id'] for i in range(limit)]
+        return ids
+    def line(m,x,b):
+        y = 10**((m*x)+b)
+        return y 
+
+        
+        
