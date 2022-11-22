@@ -17,6 +17,7 @@ import os
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.signal import savgol_filter
 import matplotlib as mpl
+
 df = pd.read_csv('csv/tng33subhalos.csv')
 df1 = pd.read_csv('csv/tng33slopes.csv')
 dfalt1= pd.read_csv('csv/tng33slopes.csv')
@@ -67,8 +68,16 @@ plt.savefig(filename)
 plt.close()
 
 '''
-fig,((ax0,ax1,ax2),(ax3,ax4,ax5),(ax6,ax7,ax8)) = plt.subplots(nrows = 3, ncols = 3,figsize=(30,24))
 
+
+font = {'family': 'serif',
+        'weight': 'normal',
+        'size': 16,
+        }
+
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["mathtext.fontset"] = "dejavuserif"
+fig,((ax0,ax1,ax2),(ax3,ax4,ax5),(ax6,ax7,ax8)) = plt.subplots(nrows = 3, ncols = 3,figsize=(30,24))
 divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider2 = make_axes_locatable(ax2);divider3 = make_axes_locatable(ax3)
 divider4 = make_axes_locatable(ax4);divider5 = make_axes_locatable(ax5);divider6 = make_axes_locatable(ax6)
 divider7 = make_axes_locatable(ax7);divider8 = make_axes_locatable(ax8)
@@ -88,7 +97,8 @@ im0 = ax0.scatter((df['mass']),df['sfr'], c = (df1['slope']), cmap = 'magma',lab
 ax0.plot(xvals,line(2,xvals,-20.5),'r-')
 ax0.set_ylim(10e-6, 10e2)
 ax0.set_xlim(7.5,12)
-ax0.set_ylabel("log(SFR)")
+ax0.set_ylabel("log(SFR) $log_{10}$", math_fontfamily='stix')
+
 
 ax1.set_yscale('log')
 ax1.set_title("Snap_067: Z=0.5")
@@ -162,5 +172,4 @@ fig.tight_layout()
 fig.subplots_adjust(top=0.9)
 fig.suptitle("Redshift progression of galaxy classification and metallicity slope", fontsize=20)
 fig.savefig('png/slopegrads/combined2.png')
-'''
-'''
+
