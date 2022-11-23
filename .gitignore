@@ -28,3 +28,5 @@ Class_dev/Images_BACKUP/quadpng/*png
 Class_dev/Images_BACKUP/*png
 OLD/Galaxy_class_dev/illustris_python
 OLD/class_il/inspect.csv
+*.txt
+*.csv
