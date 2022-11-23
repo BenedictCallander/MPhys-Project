@@ -74,12 +74,11 @@ def MSfilter(dfin,dfcombin, saveloc):
     dfslope = dfslope[dfslope['id'].isin(valids)]
     df3 = df_in[df_in['id'].isin(valids)]
     df3.insert(2,"slope",dfslope['slope'],True)
-    df3.insert(3,"AIC", dfslope['AICval'],True)
-    df3.insert(4,"met", dfslope['met'],True)
+    df3.insert(3,"met", dfslope['met'],True)
     df3.to_csv(saveloc)
     return print("dataframe saved to: ", saveloc)
 
-def subhalo_classification(snapshot,contours):
+def subhalo_classification(snapshot):
     if snapshot == 33:
         baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/33/subhalos/"
         search_q = "?limit=77655&sfr__gt=0.0"
@@ -103,7 +102,14 @@ def subhalo_classification(snapshot,contours):
         mass.append(subs['results'][i]['mass_log_msun'])
         sfr.append(subs['results'][i]['sfr'])
         urls.append(subs['results'][i]['url'])
-    
+    df = pd.DataFrame({
+        "mass":mass,
+        "sfr": sfr,
+        "id": ids,
+        "urls": urls
+    })
+    return df
+    '''
     plt.figure(figsize=(20,12))
     plt.plot(mass,np.log10(sfr),'g+')
     if contours=='Y':
@@ -118,6 +124,7 @@ def subhalo_classification(snapshot,contours):
     plt.xlabel('Mass (log10 Msun)')
     plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
     plt.close()
+    '''
 
 class UTILITY:
     def get(path, params = None):
@@ -163,6 +170,7 @@ class UTILITY:
         for i,id in enumerate(ids):
             mass.append(idget['results'][i]['mass_log_msun'])
         return (ids,mass)
+    
     def line(m,x,b):
         y = 10**((m*x)+b)
         return y 
@@ -175,6 +183,5 @@ class UTILITY:
                 with open(f, "rb") as infile:
                     outfile.write(infile.read())
 
-UTILITY.filecombine()
 
         

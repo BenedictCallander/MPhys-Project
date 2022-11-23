@@ -75,6 +75,7 @@ class subtree:
         self.histdf = df
         self.snapnum=snapnum
         self.subid= subid
+        
     def get_history(self,i):
         url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(self.snapnum[i], self.subid[i])
         sub = get(url)
