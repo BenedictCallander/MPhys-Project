@@ -24,15 +24,15 @@ MS1 = pd.read_csv('csv/tng33MAIN.csv')
 MS2 = pd.read_csv('csv/tng67MAIN.csv')
 MS3 = pd.read_csv('csv/tng99MAIN.csv')
 
-'''
-df.slope = 10*((df.slope-df.slope.min())/(df.slope.max()-df.slope.min()))
-df2.slope = 10*((df2.slope-df2.slope.min())/(df2.slope.max()-df2.slope.min()))
-df3.slope = 10*((df3.slope-df3.slope.min())/(df3.slope.max()-df3.slope.min()))
+#'''
+df.slope = ((df.slope-df.slope.min())/(df.slope.max()-df.slope.min()))
+df2.slope = ((df2.slope-df2.slope.min())/(df2.slope.max()-df2.slope.min()))
+df3.slope = ((df3.slope-df3.slope.min())/(df3.slope.max()-df3.slope.min()))
 
-MS1.slope = 10*((MS1.slope-MS1.slope.min())/(MS1.slope.max()-MS1.slope.min()))
-MS2.slope = 10*((MS2.slope-MS2.slope.min())/(MS2.slope.max()-MS2.slope.min()))
-MS3.slope = 10*((MS3.slope-MS3.slope.min())/(MS3.slope.max()-MS3.slope.min()))
-'''
+MS1.slope = ((MS1.slope-MS1.slope.min())/(MS1.slope.max()-MS1.slope.min()))
+MS2.slope = ((MS2.slope-MS2.slope.min())/(MS2.slope.max()-MS2.slope.min()))
+MS3.slope = ((MS3.slope-MS3.slope.min())/(MS3.slope.max()-MS3.slope.min()))
+#'''
 xvals = np.linspace(0,13,100)
 
 def line(m,x,b):
@@ -84,14 +84,14 @@ cax8 = divider8.append_axes('right', size='5%', pad=0.05)
 
 ax0.set_yscale('log')
 ax0.set_title("Snap_033: Z=2")
-im0 = ax0.scatter((df['mass']),df['sfr'], c = (df['slope']), cmap = 'magma', label = 'Subhalos')
+im0 = ax0.scatter((df['mass']),df['sfr'], c = (df['slope']), cmap = 'magma',vmin =0.4, vmax =0.6, label = 'Subhalos')
 ax0.plot(xvals,line(2,xvals,-20.5),'r-')
 ax0.set_ylim(10e-6, 10e2)
 ax0.set_xlim(7.5,12)
 ax0.set_ylabel("log(SFR) $log_{10}$", math_fontfamily='stix') ; ax0.set_xlabel("Mass $log_{10} M_{sun}$")
 
 ax1.set_yscale('log') ; ax1.set_title("Snap_067: Z=0.5")
-im1= ax1.scatter((df2['mass']),df2['sfr'], c = (df2['slope']), cmap = 'magma', label = 'Subhalos')
+im1= ax1.scatter((df2['mass']),df2['sfr'], c = (df2['slope']), cmap = 'magma',vmin =0.4, vmax =0.6, label = 'Subhalos')
 ax1.plot(xvals,line(2,xvals,-20.5),'r-')
 ax1.set_ylim(10e-6, 10e2);ax1.set_xlim(7.5,12)
 ax1.set_ylabel("log(SFR) $log_{10}$", math_fontfamily='stix') ; ax1.set_xlabel("Mass $log_{10} M_{sun}$")
@@ -108,7 +108,7 @@ ax3.set_ylabel("12+$log_{10}(O/H)$")
 ax3.set_xlabel("Mass $log_{10} M_{sun}$")
 #ax3.set_yscale('log')
 ax3.set_title("Metallicity 33: Z=2")
-im3 = ax3.scatter((df['mass']),12+np.log10(df['met']), c = (df['slope']), cmap = 'magma', label = 'Main Sequence Subhalos')
+im3 = ax3.scatter((df['mass']),12+np.log10(df['met']), c = (df['slope']), cmap = 'magma',vmin =0.4, vmax =0.6, label = 'Main Sequence Subhalos')
 ax3.set_ylim(0,12)
 ax3.set_xlim(7.5,12)
 

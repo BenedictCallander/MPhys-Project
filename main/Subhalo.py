@@ -1,10 +1,10 @@
-#
 # Subhalo.py 
 # \-> contains subhalo class and subsequent analysis function (which runs all desired operations on each subhalo object)
 # Created:17/11/2022 
 # Author: Benedict Callander 
 # Respository https://github.com/btcallander/MPhys-Project (private)
 #
+
 
 #Plotting, numerical functions and dataset manipulation
 import matplotlib.pyplot as plt
@@ -30,7 +30,6 @@ from joblib import Parallel, delayed
 #specific functions for fitting utilities
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
-
 
 #set basic constants during initialisation for easy 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
@@ -103,6 +102,7 @@ class UTILITY:
 # GALAXY CLASS -> contains all subhalo analysis functions 
 #
 
+
 class subhalo:
     def __init__(self,simID,snapID,subID):
         r'''
@@ -163,6 +163,7 @@ class subhalo:
         # Adopt the 3D half-stellar-mass radius
         self.Rhalf  = all_fields['SubhaloHalfmassRadType'][ptNumStars]/hubble / (1. + redshift)  
         self.stellarphotometricsrad = all_fields['SubhaloStellarPhotometricsRad']
+        
         # [units: proper kpc] (quantified in 3D)
         # Load all the relevant particle level info
         gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses','Density','Velocities', 'StarFormationRate','GFM_Metallicity'])
