@@ -576,22 +576,19 @@ def slopeplot_dataget(i):
         return (slope,met,mass,idval,sfr)
     except ValueError as e:
         f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        return print("ValueError", str(e))
+        return print('e')
     except KeyError as e:
         f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        return print ("KeyError", str(e))
+        return print('e')
     except OSError as e:
         f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        return print("OSError", str(e))
+        return print('e')
     except TypeError as e:
         f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        return print("Type Error", str(e))
-    
-
-
+        return print('e')
 #1 (linear > broken)
 #'''
-returns = Parallel(n_jobs= -1)(delayed(slopeplot_dataget)(i) for i in valid_id)
+returns = Parallel(n_jobs= 60)(delayed(slopeplot_dataget)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
 df2.insert(5,'massplot', dfin['mass'],True)
 df2.to_csv("csv/complete/tng99slopes.csv")
