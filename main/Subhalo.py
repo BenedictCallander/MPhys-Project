@@ -181,8 +181,6 @@ class subhalo:
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
         hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas1  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas2  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.test = len(hcoldgas)
         #print(len(hcoldgas1), len(hcoldgas2))
         #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
@@ -663,7 +661,7 @@ class subhalo:
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
-sim = 33
+sim = 99
 dfin = BCUTILS.subhalo_classification(sim)
 valid_id = list(dfin['id'])
 
@@ -686,8 +684,8 @@ def subhalo_analysis(i):
 
     '''
     try:
-        sub = subhalo("TNG50-1",sim,i)
-        if sub.test<5:
+        sub = subhalo("TNG50-1",99,i)
+        if sub.test<1:
             return print("not enough Gas Cells to continue")
         else:  
             sub.galcen()
@@ -728,15 +726,15 @@ def subhalo_analysis(i):
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 60)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
 df2.insert(5,'massplot', dfin['mass'],True)
-df2.to_csv("csv/tng33slopes.csv")
+df2.to_csv("csv/tng99slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
-BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
+BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
 
 end = time.time()
 print('runtime = {}s'.format(end-start))
