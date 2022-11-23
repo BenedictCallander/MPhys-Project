@@ -30,3 +30,4 @@ OLD/Galaxy_class_dev/illustris_python
 OLD/class_il/inspect.csv
 *.txt
 *.csv
+*.pyc
