@@ -31,4 +31,14 @@ OLD/class_il/inspect.csv
 *.txt
 *.csv
 *.pyc
-main/illustris_python/*
+main/illustris_python/*pyc
+
+main/illustris_python/__pycache__/__init__.cpython-37.pyc
+main/illustris_python/__pycache__/groupcat.cpython-37.pyc
+main/illustris_python/__pycache__/lhalotree.cpython-37.pyc
+main/illustris_python/__pycache__/snapshot.cpython-37.pyc
+main/illustris_python/__pycache__/sublink.cpython-37.pyc
+main/illustris_python/__pycache__/util.cpython-37.pyc
+main/pwlf/__pycache__/__init__.cpython-37.pyc
+main/pwlf/__pycache__/pwlf.cpython-37.pyc
+main/pwlf/__pycache__/version.cpython-37.pyc

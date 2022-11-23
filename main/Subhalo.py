@@ -423,7 +423,7 @@ class galaxy:
         plt.plot(xd, piecewise_linear(xd, *p),'r--')
         plt.savefig('test1.png')
         plt.close()
-    
+
     def broken_fit(self,dfin,breakpoint,pc):
         '''
         Pseudocode
@@ -441,7 +441,7 @@ class galaxy:
         save popt, pcov values ?
 
         plot data with broken fit overlaid (use median filter for metallicity data?)
-        
+    
         '''
         annuli = pc
         dfin.sort_values(by='rad',inplace = True)
