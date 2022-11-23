@@ -14,13 +14,14 @@ import pwlf
 
 #Read data from web API and monitor HTTP traffic 
 import requests  
+import logging 
 
 #specialised functions to query Illustris TNG data 
 import illustris_python as il
 
 #Own module containing utility functions 
 import BCUTILS
-
+from BCUTILS import UTILITY #reduce syntax on main file 
 
 # runtime calculation 
 import time
@@ -88,9 +89,6 @@ class UTILITY:
         '''
         y = 10**((m*x)+b)
         return y 
-    def linear_fit(a,x,b):
-        f = (a*x)+b
-        return f
 
     def sq_fit(x,a,b,c):
         '''
@@ -104,6 +102,13 @@ class UTILITY:
 #
 
 class subhalo:
+    r'''
+    Subhalo: Class to create individual subhalo objects, data from the Illustris TNG HydroDynamical Simulation
+    (https://www.tng-project.org/about/)
+    Contains analysis functions:
+    |galcen|ang_mom_align|rad_transform|df_gen|rad_norm|z_filter|combfilter|AIC_test|fit_linear|fit_quad|broken_fit|savgol_smooth|
+    |bootstrap_test|gas_visualisation|slopegen|
+    '''
     def __init__(self,simID,snapID,subID):
         r'''
         Initialise subhalo object
@@ -173,8 +178,9 @@ class subhalo:
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
         hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas1  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas2  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.test = len(hcoldgas)
-        #print(hcoldgas)
         #print(len(hcoldgas1), len(hcoldgas2))
         #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
@@ -365,7 +371,6 @@ class subhalo:
     def combfilter(self,dfin,scale):
         r'''
         Combined filter and normalisation to aid computational efficiency 
-
         '''
         df = dfin
         scaleheight = 0.1* self.stellarphotometricsrad
@@ -377,15 +382,10 @@ class subhalo:
     def AIC_test(self,dfin,breakpoint):
         r'''
         Function to determine whether linear or broken fit provides better representation of subhalo metallicity gradient 
-
         Calculate linear fit (popt,pcov and apply linear fit and radial data)
-
         save fit data -> calculate RSS between met value and 
-
         calculate split fit for first part (popt1, pcov1 (for first half))
-
         calculate split fit for second part (popt2,pcov2 (for second half))
-
         calculate RSS values and AIC values for each method, 
         conditional statement to determine which fit is better according to AIC 
         return statement/value which inidcates which fit is better -> also catalogue other data? 
@@ -418,19 +418,12 @@ class subhalo:
     def fit_linear(self,dfin, pc):
         r'''
         fit linear regression to subhalo metallicity gradient (y=m*x+c)
-
         INPUTS:
-
         Self:
-
         access to subhalo object properties 
-
         Dfin:
-
         Allows for specification of dataframe (if certain filter processes have been performed)
-
         PC:
-
         Max Radial distance of consideration (annuli)
         '''
         annuli = pc
@@ -455,7 +448,6 @@ class subhalo:
         Take input of dataframe and fit quadratic trendline using scipy curve_fit 
         popt = [a,b,c]
         return -> plot png file saved to directory with ID, simulation and snapshot as filename/title
-
         '''
         annuli = pc
         dfin = dfin[dfin['rad']<pc]     
@@ -475,7 +467,6 @@ class subhalo:
         r'''
         Pseudocode
         Inputs:
-
         Dataframe (can be inherited from subhalo object)
         breakpoint (the point at which break in linear fit is placed)
         '''
@@ -505,17 +496,12 @@ class subhalo:
         INPUTS:
         
         dfin: pandas DataFrame (must contain 'rad', 'met' columns)
-
         scatter_q: str
         
         'Y' or 'N' : determines whether scatterplot also included (demonstration purposes)
-
         Calculates a Savitzky-Golay filter -> used to smooth metallicity data for clearer representation of the gradient 
-
         WARN: values calculated by the Savitzky-Golay filter CANNOT be used to calculate scientific results 
-
         returns:  plot png file saved to directory with ID, simID and snapID as filename/title
-
         Optional Extras: could include conditions to plot additional information onto graph such as linear/broken/quadratic fits? 
         '''
         annuli = pc
@@ -537,25 +523,19 @@ class subhalo:
     def bootstrap_test(self,dfin,runs,frac):
         r'''
         statistical test to test impact of outliers on linear fit
-
         INPUTS:
         
         dfin: pandas DataFrame
         
         dataframe containing metallicity and radius data for subhalo 
-
         runs: int
         
         number of bootstrap tests to be run 
-
         frac: 0<frac<=1
-
         Fraction of datapoints to be sampled in each run 
-
         RETURNS:
         m,b, pcov[0],[1]
         gradient, intercept and goodness of fit parameters from curve_fit 
-
         '''
         avals = []; bvals = [] ; pcov0 = []; pcov1=[]
         df = dfin
@@ -571,7 +551,6 @@ class subhalo:
     def gas_visualisation(self, dfin, decp):
         r'''
         Inputs -> dataframe containing gas density data (aligned to z axis)
-
         flattens gas density data by decp (0 = 1kpc box, 1 .1kpc , 2 = .01kpc etc)
         
         plot visual by scatter of density values -> see other codes for plot syntax
@@ -597,7 +576,6 @@ class subhalo:
         slopegen: 
         
         Determine best fit (linear,broken) for subhalo Metallicity Gradient, and return gradient (inner gradient returned in case of broken fit)
-
         INPUTS:
         
         self: self
@@ -606,13 +584,9 @@ class subhalo:
         
         breakpoint: position of breakpoint in piecewise linear fit (constant)
         
-
         save fit data -> calculate RSS between met value and 
-
         calculate split fit for first part (popt1, pcov1 (for first half))
-
         calculate split fit for second part (popt2,pcov2 (for second half))
-
         calculate RSS values and AIC values for each method, 
         conditional statement to determine which fit is better according to AIC 
         return statement/value which inidcates which fit is better -> also catalogue other data? 
@@ -654,7 +628,7 @@ class subhalo:
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
-sim = 99
+sim = 33
 dfin = BCUTILS.subhalo_classification(sim)
 valid_id = list(dfin['id'])
 
@@ -663,12 +637,18 @@ valid_id = list(dfin['id'])
 #--------------------------------------------------------------------------------------------------------------------------------------|
 
 def subhalo_analysis(i):
-    
+    '''
+    Function containing subhalo object creation
+    Include subhalo class functions as desired to perform analysis on subhalo objects
+    INPUTS: 
+    i:
+    subhalo ID number 
+    '''
     try:
-        sub = subhalo("TNG50-1",99,i)
-        if sub.test<4:
-            print("not enough gas cells to continue")
-        else:
+        sub = subhalo("TNG50-1",sim,i)
+        if sub.test<5:
+            return print("not enough Gas Cells to continue")
+        else:  
             sub.galcen()
             sub.ang_mom_align('gas')
             sub.rad_transform()
@@ -676,46 +656,46 @@ def subhalo_analysis(i):
             dfg2 = sub.combfilter(dfg,10)
             idval = i
             slope,met,mass,sfr = sub.slopegen(5,dfg2)
-            print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
+            print("subhalo {} calculated: current runtime time: {}".format(i, (time.time()-start)))
             return (slope,met,mass,idval,sfr)
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close
-        return print(e)
+        return print('e')
     except KeyError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close        
-        return print(e)
+        return print('e')
     except OSError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close         
-        return print(e)
+        return print('e')
     except TypeError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close         
-        return print(e)
+        return print('e')
 
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-returns = Parallel(n_jobs= 60)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
 df2.insert(5,'massplot', dfin['mass'],True)
-df2.to_csv("csv/tng99slopes.csv")
+df2.to_csv("csv/tng33slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
-BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
+BCUTILS.MSfilter(dfin,df2,'csv/tng33MAIN.csv')
 
 end = time.time()
 print('runtime = {}s'.format(end-start))
