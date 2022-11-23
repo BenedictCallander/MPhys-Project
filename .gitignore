@@ -31,3 +31,4 @@ OLD/class_il/inspect.csv
 *.txt
 *.csv
 *.pyc
+main/illustris_python/*
