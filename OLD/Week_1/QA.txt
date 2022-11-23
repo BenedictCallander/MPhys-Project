@@ -1,6 +1,0 @@
-12+?
-
-
-
-
-gfmmetallicity = f['PartType0']
