@@ -21,7 +21,6 @@ import illustris_python as il
 #Own module containing utility functions 
 import BCUTILS
 
-
 # runtime calculation 
 import time
 
@@ -88,6 +87,7 @@ class UTILITY:
         '''
         y = 10**((m*x)+b)
         return y 
+    
     def linear_fit(a,x,b):
         f = (a*x)+b
         return f
@@ -136,6 +136,7 @@ class subhalo:
         #use api to easily read snapshot information
         redshift = 0 if self.snapID is 99 else 0.5 if self.snapID is 67 else 2 if snapID is 33 else print("invalid snapID: Not on Noether")
         
+        #
         #redshift = 0 for snap99
         #redshift = 2.00202813925285 for snap 33
         #redshift = 0.503047523244883 for snap 67
@@ -146,7 +147,7 @@ class subhalo:
         #
         # Read Subhalo level info 
         #
-
+        
         ptNumGas = il.snapshot.partTypeNum('gas') #determine index designation for each particle type
         ptNumStars = il.snapshot.partTypeNum('stars')
         #pull all data for specific subhalo 
@@ -163,13 +164,13 @@ class subhalo:
         self.Rhalf  = all_fields['SubhaloHalfmassRadType'][ptNumStars]/hubble / (1. + redshift)  
         self.stellarphotometricsrad = all_fields['SubhaloStellarPhotometricsRad']
         # [units: proper kpc] (quantified in 3D)
-        
         # Load all the relevant particle level info
         gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses','Density','Velocities', 'StarFormationRate','GFM_Metallicity'])
         # dimensions and units (see https://www.tng-project.org/data/docs/specifications/#parttype0):
         # Coordinates (N,3) ckpc/h   where ckps stands for co-moving kpc
         # Masses      (N)   10**10 Msun/h
-        # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
+        # Velocities  (N,3) km sqrt(scalefac)        
+        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
         hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
@@ -447,7 +448,7 @@ class subhalo:
         filename = 'sub_{}_met_snap={}'.format(self.subID,self.snapID)
         plt.savefig(filename)
         plt.close()
-    
+
     def fit_quad(self,dfin,pc):
         r'''
         Pseudocode
@@ -606,7 +607,6 @@ class subhalo:
         
         breakpoint: position of breakpoint in piecewise linear fit (constant)
         
-
         save fit data -> calculate RSS between met value and 
 
         calculate split fit for first part (popt1, pcov1 (for first half))
@@ -649,7 +649,6 @@ class subhalo:
         else:
             return (popt[0],met,mass,sfr)
 
-
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
@@ -663,7 +662,6 @@ valid_id = list(dfin['id'])
 #--------------------------------------------------------------------------------------------------------------------------------------|
 
 def subhalo_analysis(i):
-    
     try:
         sub = subhalo("TNG50-1",99,i)
         if sub.test<4:

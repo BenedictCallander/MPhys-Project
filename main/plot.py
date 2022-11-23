@@ -17,15 +17,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.signal import savgol_filter
 import matplotlib as mpl
 
-df = pd.read_csv('csv/tng99slopes.csv')
+df = pd.read_csv('csv/tng33slopes.csv')
 df2 = pd.read_csv('csv/tng67slopes.csv')
-df3 = pd.read_csv('csv/tngslopes.csv')
-df = 1
-df2 = 2
-df3 = 2
-MS1 = pd.read_csv('csv/tng33MSQ.csv')
-MS2 = pd.read_csv('csv/tng67MSQ.csv')
-MS3 = pd.read_csv('csv/tng99MSQ.csv')
+df3 = pd.read_csv('csv/tng99slopes.csv')
+MS1 = pd.read_csv('csv/tng33MAIN.csv')
+MS2 = pd.read_csv('csv/tng67MAIN.csv')
+MS3 = pd.read_csv('csv/tng99MAIN.csv')
+
+'''
 df.slope = 10*((df.slope-df.slope.min())/(df.slope.max()-df.slope.min()))
 df2.slope = 10*((df2.slope-df2.slope.min())/(df2.slope.max()-df2.slope.min()))
 df3.slope = 10*((df3.slope-df3.slope.min())/(df3.slope.max()-df3.slope.min()))
@@ -33,7 +32,7 @@ df3.slope = 10*((df3.slope-df3.slope.min())/(df3.slope.max()-df3.slope.min()))
 MS1.slope = 10*((MS1.slope-MS1.slope.min())/(MS1.slope.max()-MS1.slope.min()))
 MS2.slope = 10*((MS2.slope-MS2.slope.min())/(MS2.slope.max()-MS2.slope.min()))
 MS3.slope = 10*((MS3.slope-MS3.slope.min())/(MS3.slope.max()-MS3.slope.min()))
-
+'''
 xvals = np.linspace(0,13,100)
 
 def line(m,x,b):
@@ -83,24 +82,23 @@ cax6 = divider6.append_axes('right', size='5%', pad=0.05);cax7 = divider7.append
 cax8 = divider8.append_axes('right', size='5%', pad=0.05)
 
 
-
 ax0.set_yscale('log')
 ax0.set_title("Snap_033: Z=2")
-im0 = ax0.scatter((df['mass']),df['sfr'], c = (df['slope']), cmap = 'magma',vmax =7,vmin=5, label = 'Subhalos')
+im0 = ax0.scatter((df['mass']),df['sfr'], c = (df['slope']), cmap = 'magma', label = 'Subhalos')
 ax0.plot(xvals,line(2,xvals,-20.5),'r-')
 ax0.set_ylim(10e-6, 10e2)
 ax0.set_xlim(7.5,12)
 ax0.set_ylabel("log(SFR) $log_{10}$", math_fontfamily='stix') ; ax0.set_xlabel("Mass $log_{10} M_{sun}$")
 
 ax1.set_yscale('log') ; ax1.set_title("Snap_067: Z=0.5")
-im1= ax1.scatter((df2['mass']),df2['sfr'], c = (df2['slope']), cmap = 'magma',vmin = 7,  label = 'Subhalos')
+im1= ax1.scatter((df2['mass']),df2['sfr'], c = (df2['slope']), cmap = 'magma', label = 'Subhalos')
 ax1.plot(xvals,line(2,xvals,-20.5),'r-')
 ax1.set_ylim(10e-6, 10e2);ax1.set_xlim(7.5,12)
 ax1.set_ylabel("log(SFR) $log_{10}$", math_fontfamily='stix') ; ax1.set_xlabel("Mass $log_{10} M_{sun}$")
 
 ax2.set_yscale('log')
 ax2.set_title("Snap_099: Z=0")
-im2 = ax2.scatter((df4['mass']),df4['sfr'], c = (df3['slope']), cmap = 'magma',vmin =7, label = 'Subhalos')
+im2 = ax2.scatter((df3['mass']),df3['sfr'], c = (df3['slope']), cmap = 'magma',label = 'Subhalos')
 ax2.plot(xvals,line(2,xvals,-20.5),'r-')
 ax2.set_ylim(10e-6, 10e2)
 ax2.set_xlim(7.5,12)
@@ -110,13 +108,13 @@ ax3.set_ylabel("12+$log_{10}(O/H)$")
 ax3.set_xlabel("Mass $log_{10} M_{sun}$")
 #ax3.set_yscale('log')
 ax3.set_title("Metallicity 33: Z=2")
-im3 = ax3.scatter((df['mass']),12+np.log10(dfalt1['met']), c = (df['slope']), cmap = 'magma',vmin=5,vmax=7, label = 'Main Sequence Subhalos')
+im3 = ax3.scatter((df['mass']),12+np.log10(df['met']), c = (df['slope']), cmap = 'magma', label = 'Main Sequence Subhalos')
 ax3.set_ylim(0,12)
 ax3.set_xlim(7.5,12)
 
 #ax4.set_yscale('log')
 ax4.set_title("Metallicity 67: Z=0.5")
-im4 = ax4.scatter((df2['mass']),12+np.log10(dfalt3['met']), c = (df2['slope']), cmap = 'magma',vmin=6, label = 'Main Sequence Subhalos')
+im4 = ax4.scatter((df2['mass']),12+np.log10(df2['met']), c = (df2['slope']), cmap = 'magma', label = 'Main Sequence Subhalos')
 ax4.set_ylabel("12+$log_{10}(O/H)$")
 ax4.set_xlabel("Mass $log_{10} M_{sun}$")
 ax4.set_ylim(0,12)
@@ -126,13 +124,13 @@ ax4.set_xlim(7.5,12)
 ax5.set_ylabel("12+$log_{10}(O/H)$")
 ax5.set_xlabel("Mass $log_{10} M_{sun}$")
 ax5.set_title(" Metallicity 99: Z=0 ")
-im5 = ax5.scatter((df4['mass']),12+np.log10(dfalt5['met']), c = (df3['slope']), cmap = 'magma',vmin=6, label = 'Main Sequence Subhalos')
+im5 = ax5.scatter((df3['mass']),12+np.log10(df3['met']), c = (df3['slope']), cmap = 'magma', label = 'Main Sequence Subhalos')
 ax5.set_ylim(0,12)
 ax5.set_xlim(7.5,12)
 
 ax6.set_yscale('log')
 ax6.set_title("Snap_033: Z=2")
-im6 = ax6.scatter((MS1['mass']),MS1['sfr'], c = MS1['slope'], cmap = 'magma',vmax =5, label = 'Main Sequence Subhalos')
+im6 = ax6.scatter((MS1['mass']),MS1['sfr'], c = MS1['slope'], cmap = 'magma', label = 'Main Sequence Subhalos')
 ax6.plot(xvals,line(2,xvals,-20.5),'r-')
 ax6.set_ylim(10e-6, 10e2)
 ax6.set_xlim(7.5,12)
@@ -140,7 +138,7 @@ ax6.set_ylabel("$log_{10}$(SFR)") ; ax6.set_xlabel("Mass $log_{10} M_{sun}$")
 
 ax7.set_yscale('log')
 ax7.set_title("Snap_033: Z=2")
-im7 = ax7.scatter((MS2['mass']),MS2['sfr'], c = MS2['slope'], cmap = 'magma', vmin = min(MS2['slope']), vmax = max(MS2['slope']), label = 'Main Sequence Subhalos')
+im7 = ax7.scatter((MS2['mass']),MS2['sfr'], c = MS2['slope'], cmap = 'magma',label = 'Main Sequence Subhalos')
 ax7.plot(xvals,line(2,xvals,-20.5),'r-')
 ax7.set_ylim(10e-6, 10e2)
 ax7.set_xlim(7.5,12)
@@ -148,7 +146,7 @@ ax7.set_ylabel("$log_{10}$(SFR)") ; ax7.set_xlabel("Mass $log_{10} M_{sun}$")
 
 ax8.set_yscale('log')
 ax8.set_title("Snap_033: Z=2")
-im8 = ax8.scatter((MS3['mass']),MS3['sfr'], c =MS3['slope'], cmap = 'magma',vmin = min(MS3['slope']), vmax = max(MS3['slope']), label = 'Main Sequence Subhalos')
+im8 = ax8.scatter((MS3['mass']),MS3['sfr'], c =MS3['slope'], cmap = 'magma', label = 'Main Sequence Subhalos')
 ax8.plot(xvals,line(2,xvals,-20.5),'r-')
 ax8.set_ylim(10e-6, 10e2)
 ax8.set_xlim(7.5,12)
@@ -168,5 +166,5 @@ fig.colorbar(im8, cax=cax8, orientation='vertical')
 fig.tight_layout()
 fig.subplots_adjust(top=0.9)
 fig.suptitle("Redshift progression of galaxy classification and metallicity slope", fontsize=20)
-fig.savefig('png/slopegrads/combined3.png')
+fig.savefig('combined3.png')
 
