@@ -5,7 +5,6 @@
 # Respository https://github.com/btcallander/MPhys-Project (private)
 #
 
-
 #Plotting, numerical functions and dataset manipulation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -102,7 +101,6 @@ class UTILITY:
 # GALAXY CLASS -> contains all subhalo analysis functions 
 #
 
-
 class subhalo:
     def __init__(self,simID,snapID,subID):
         r'''
@@ -187,6 +185,7 @@ class subhalo:
         self.pgas_sfr   = gas['StarFormationRate'][hcoldgas]
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
         self.pgas_dens = gas['Density'][hcoldgas]
+        self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
         #print(all_fields.keys())
         # Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities','GFM_Metallicity' ])
@@ -306,7 +305,8 @@ class subhalo:
                                    "mass":self.pgas_m,
                                    "dens":self.pgas_dens,
                                    "met":(self.pgas_met),
-                                   "met2":(self.pgas_met/self.pgas_dens)})
+                                   "met2":(self.pgas_met ),
+                                   "sfr":self.pgas_sfr})
         elif (type =='star'):
             if (quant == 'mass'):
                 df = pd.DataFrame({"x":self.pstar_coo[:,0],
@@ -435,20 +435,20 @@ class subhalo:
 
         Max Radial distance of consideration (annuli)
         '''
-        annuli = pc
-        dfin = dfin[dfin['rad']<pc]  
         dfin.sort_values(by='rad',inplace = True)   
-        popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],12+np.log10(dfin['met2']))
-        med_data = medfilt(12+np.log10(dfin['met2']),kernel_size = 21)
+        popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],np.log10(dfin['met2'])+12,sigma=1/dfin['sfr'])
+        med_data = medfilt(np.log10(dfin['met2'])+12,kernel_size = 21)
 
         plt.figure(figsize=(20,12))
         plt.plot(dfin['rad'], med_data, 'r-')
         plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
         plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}O/H)$")
-        filename = 'sub_{}_met_snap={}'.format(self.subID,self.snapID)
+        plt.ylabel("12+$log_{10}O/H)$ (SFR Normalised)")
+        filename = 'linfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
         plt.savefig(filename)
         plt.close()
+        print("gradient {}".format(popt[0]))
+        return popt[0]
 
     def fit_quad(self,dfin,pc):
         r'''
@@ -481,14 +481,17 @@ class subhalo:
         Dataframe (can be inherited from subhalo object)
         breakpoint (the point at which break in linear fit is placed)
         '''
-        annuli = pc
         dfin.sort_values(by='rad',inplace = True)
         med_data1 = medfilt(12+np.log10(dfin['met2']), kernel_size=21)
-        x0 = np.array([min(dfin['rad']), breakpoint, max(dfin['rad'])])
+        x0 = np.array([min(dfin['rad']), breakpoint,5, max(dfin['rad'])])
         break1 = list(dfin[dfin['rad']<breakpoint])
         break2 = list(dfin[dfin['rad']>=breakpoint])
-        my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], 12+np.log10(dfin['met2']))
+        my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], 12+np.log10(dfin['met2']),weights=1/dfin['sfr'])
         my_pwlf.fit_with_breaks(x0)
+        slope1 = my_pwlf.slopes[0]
+        slope2 = my_pwlf.slopes[1]
+        slope3 = my_pwlf.slopes[2]
+        print("inner: {}, middle:{}, outer:{}".format(slope1,slope2,slope3))
         
         xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
@@ -498,9 +501,10 @@ class subhalo:
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
+        filename = 'brfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
+        return slope1
     
     def savgol_smooth(self,dfin,pc,scatter_q):
         r'''
@@ -619,14 +623,16 @@ class subhalo:
         return statement/value which inidcates which fit is better -> also catalogue other data? 
         '''
         df=dfin
-        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'])
+        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'],sigma=1/df['sfr'])
 
         y1 = UTILITY.linear_fit(df['rad'],*popt)
         AIC = 1
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
-        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], df['met'],disp_res = True)
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], df['met'],weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
-        brokenslope = my_pwlf.slopes[0]
+        brokenslope = my_pwlf.slopes[1]
+        extra1 = my_pwlf.slopes[0]
+        extra2 = my_pwlf.slopes[1]
         
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=len(df['met']))
         yHat = my_pwlf.predict(xHat)
@@ -640,22 +646,21 @@ class subhalo:
         broken = abs(broken)
         
         met = self.tot_met
-        mass = self.m_tot
         sfr = self.totsfr
         
         if linear>broken:
-            return (brokenslope,met,mass,sfr)
+            return (brokenslope,met,sfr,extra1,extra2)
         elif broken>linear:
-            return (popt[0],met,mass,sfr)
+            return (popt[0],met,sfr,extra1,extra2)
         else:
-            return (popt[0],met,mass,sfr)
+            return (popt[0],met,sfr,extra1,extra2)
 
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = BCUTILS.subhalo_classification(sim)
+dfin = pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
@@ -664,7 +669,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -674,9 +679,9 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             idval = i
-            slope,met,mass,sfr = sub.slopegen(5,dfg2)
+            slope,met,sfr,inside,outside = sub.slopegen(5,dfg2)
             print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
-            return (slope,met,mass,idval,sfr)
+            return (slope,met,idval,sfr,inside,outside)
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
@@ -706,15 +711,111 @@ def subhalo_analysis(i):
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-returns = Parallel(n_jobs= 60)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['slope','met','mass(wrongunits)','id','sfr'])
-df2.insert(5,'massplot', dfin['mass'],True)
-df2.to_csv("csv/tng99slopes.csv")
+def subhalo_slope_fitplots(i):
+    try:
+        sub = subhalo("TNG50-1",99,i)
+        if sub.test<4:
+            print("not enough gas cells to continue")
+        else:
+            sub.galcen()
+            sub.ang_mom_align('gas')
+            sub.rad_transform()
+            dfg = sub.df_gen('gas','comb')
+            dfg2 = sub.combfilter(dfg,10)
+            idval = i
+            linslope=sub.fit_linear(dfg2,10)
+            brslope = sub.broken_fit(dfg2,2,10)
+            print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
+            return (linslope,brslope)
+    except ValueError as e:
+        #fname = "errors/errors{}.txt".format(i)
+        #f = open(fname,"w")
+        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        #f.close
+        return print(e)
+    except KeyError as e:
+        #fname = "errors/errors{}.txt".format(i)
+        #f = open(fname,"w")
+        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        #f.close        
+        return print(e)
+    except OSError as e:
+        #fname = "errors/errors{}.txt".format(i)
+        #f = open(fname,"w")
+        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        #f.close         
+        return print(e)
+    except TypeError as e:
+        #fname = "errors/errors{}.txt".format(i)
+        #f = open(fname,"w")
+        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
+        #f.close         
+        return print(e)
+
+
+returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
+df2=pd.DataFrame(returns,columns=['slope','met','id','sfr','inside','outside'])
+df2.insert(5,'mass', dfin['mass'],True)
+df2.dropna()
+df2.to_csv("csv/tng33MSslopes.csv")
+
+'''
+
+returns = Parallel(n_jobs= 20)(delayed(subhalo_slope_analysis)(i) for i in valid_id)
+df3=pd.DataFrame(returns,columns=['linslope','brokenslope'])
+
+linearslopes = list(df3['linslope'])
+brokenslopes = list(df3['brokenslope'])
+
+print("Linear min: {}   MAX: {}".format(min(linearslopes),max(linearslopes)))
+print("Broken min: {}   MAX: {}".format(min(brokenslopes),max(brokenslopes)))
+'''
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
-BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
-
 end = time.time()
 print('runtime = {}s'.format(end-start))
+'''
+BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
+
+Key Numbers: 
+
+Main sequence number of subhalos: 
+snap33:8162
+snap67:1581
+snap99:1409
+
+Main Sequence Line (y=10**(2x-20.5))
+
+Number of star forming subhalos: (total subhalos processed)
+
+snap33:77655
+snap67:26980
+snap99:17553
+
+
+Author 	    G(dex/kpc) 	    A8.5         	c
+Shaver 	    -0.05 ± 0.01 	8.77 ± 0.14 	-0.69
+Simpson 	-0.06 ± 0.02 	8.57 ± 0.15 	-0.56
+Afflerbach 	-0.06 ± 0.01 	8.61 ± 0.09 	-0.66
+Maciel   	-0.07 ± 0.01 	8.66 ± 0.06 	-0.70
+Fesen 	    -0.04 ± 0.03 	8.63 ± 0.32 	-0.31
+Composite 	-0.06 ± 0.01
+
+'''
+
+
+'''
+Keys for overview plots:
+
+SubhaloGasMetallicity -  Mass-weighted average metallicity (Mz/Mtot, 
+                        where Z = any element above He) of the gas cells bound to this Subhalo,
+                        but restricted to cells within twice the stellar half mass radius. 
+                        
+SubhaloMass -  Total mass of all member particle/cells which are bound to this Subhalo, of all types.
+                Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. 
+
+
+
+'''

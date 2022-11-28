@@ -91,7 +91,6 @@ def subhalo_classification(snapshot):
         baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
         search_q = "?limit=17553&sfr__gt=0.0"
         url = baseurl+ search_q
-    xvals = np.linspace(0,13,1000)
     
     subs = get(url)
     ids = [subs['results'][i]['id'] for i in range(subs['count'])]
