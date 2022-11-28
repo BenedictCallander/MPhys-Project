@@ -449,7 +449,48 @@ class subhalo:
         plt.close()
         print("gradient {}".format(popt[0]))
         return popt[0]
+    
+    def linfit2(self,dfin):
+        r'''
+        Linear fit using pwlf library 
+        
+        INPUTS:
+        
+        dfin: pandas DataFrame|
+        
+        dataframe containing radial and metallicity data for subhalo objects, column keywords ['rad'],['met']
+        
+        
+        OUTPUTS:
+        
+        slope: float
+        
+        slope of linear fit 
+        
+        png fit of metallicity data 
+        '''
+        
+        df = dfin
+        df.sort_values(by='rad',inplace=True)
+        x0 = np.array(df['rad'])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']), weights = 1/df['sfr'])
+        my_pwlf.fit(x0)
+        slope = my_pwlf.slopes[0]
+        median = medfilt(dfin['met2'], kernel_size=21)        
+        
+        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
+        yHat = my_pwlf.predict(xHat)
 
+        plt.figure(figsize=(20,12))
+        plt.xlabel("radius (Code Units)")
+        plt.ylabel("12+$log_{10}$(O/H)")
+        plt.plot(df['rad'],median,'r-')
+        filename = 'brfit/sub_{}_pwlf_linfit_snapshot_{}.png'.format(self.subID, self.snapID)
+        plt.savefig(filename)
+        plt.close()
+        
+        return slope
+    
     def fit_quad(self,dfin,pc):
         r'''
         Pseudocode
