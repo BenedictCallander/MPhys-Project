@@ -108,22 +108,25 @@ def subhalo_classification(snapshot):
         "urls": urls
     })
     return df
-    '''
-    plt.figure(figsize=(20,12))
-    plt.plot(mass,np.log10(sfr),'g+')
-    if contours=='Y':
-        sns.kdeplot(x=mass, y=np.log10(sfr))
-    elif contours =='N':
-        print('No Contours selected')
-    plt.plot(xvals, line(2,xvals,-20.5), 'r-', label = "y=$10^{mx+b}$")
-    #plt.yscale('log')
-    plt.ylabel('log(SFR)')
-    plt.ylim(-6.5,2)
-    plt.xlim(7,14)
-    plt.xlabel('Mass (log10 Msun)')
-    plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
-    plt.close()
-    '''
+
+
+
+'''
+plt.figure(figsize=(20,12))
+plt.plot(mass,np.log10(sfr),'g+')
+if contours=='Y':
+    sns.kdeplot(x=mass, y=np.log10(sfr))
+elif contours =='N':
+    print('No Contours selected')
+plt.plot(xvals, line(2,xvals,-20.5), 'r-', label = "y=$10^{mx+b}$")
+#plt.yscale('log')
+plt.ylabel('log(SFR)')
+plt.ylim(-6.5,2)
+plt.xlim(7,14)
+plt.xlabel('Mass (log10 Msun)')
+plt.savefig('png/classification/SFR_M_TNG50-1_{}.png'.format(snapshot))
+plt.close()
+'''
 
 class UTILITY:
     def get(path, params = None):

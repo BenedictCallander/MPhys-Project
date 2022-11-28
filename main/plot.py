@@ -20,20 +20,19 @@ import matplotlib as mpl
 df = pd.read_csv('csv/tng33slopes.csv')
 df2 = pd.read_csv('csv/tng67slopes.csv')
 df3 = pd.read_csv('csv/tng33MSslopes.csv')
+df3.dropna()
 MS1 = pd.read_csv('csv/tng33MAIN.csv')
 MS2 = pd.read_csv('csv/tng67MAIN.csv')
 MS3 = pd.read_csv('csv/tng99MAIN.csv')
 
-print(min(df3['inside']))
-print(max(df3['inside']))
-print(min(df3['outside']))
-print(max(df3['outside']))
-print(min(df3['slope']))
-print(max(df3['slope']))
-print(np.mean(df3['outside']))
+print("inside slopes {} -> {}".format(min(df3['inside']),max(df3['inside'])))
+print("outside slopes {} -> {}".format(min(df3['outside']),max(df3['outside'])))
+print("outside mean {}".format(np.mean(df3['outside'])))
+
 
 '''
 df3.slope = 10*((df3.slope-df3.slope.min())/(df3.slope.max()-df3.slope.min()))
+
 df3.outside = 10*((df3.outside-df3.outside.min())/(df3.outside.max()-df3.outside.min()))
 
 df.slope = ((df.slope-df.slope.min())/(df.slope.max()-df.slope.min()))
@@ -41,28 +40,30 @@ df2.slope = ((df2.slope-df2.slope.min())/(df2.slope.max()-df2.slope.min()))
 MS1.slope = ((MS1.slope-MS1.slope.min())/(MS1.slope.max()-MS1.slope.min()))
 MS2.slope = ((MS2.slope-MS2.slope.min())/(MS2.slope.max()-MS2.slope.min()))
 MS3.slope = ((MS3.slope-MS3.slope.min())/(MS3.slope.max()-MS3.slope.min()))
+
 '''
 
 xvals = np.linspace(0,13,100)
 def line(m,x,b):
     y = pow(10,((m*x)+b))
     return y 
+print(len(df3['inside']))
 plt.figure(figsize=(20,12))
-plt.scatter((df3['mass']),df3['sfr'], c = (df3['outside']), cmap = 'magma',vmax=0.07,label = 'Main Sequence Subhalos')
+plt.scatter((df3['mass']),df3['sfr'], c = df3['outside'], cmap = 'magma',vmin=-1.5,vmax=1,label = 'Main Sequence Subhalos')
 plt.plot(xvals,line(2,xvals,-20.5),'r-')
 plt.xlabel("Subhalo Mass (log Msun)", fontsize=20)
 plt.ylabel("log(SFR)", fontsize =20)
 #plt.ylabel("12+ $log_{10}$ ${O}/{H}$",fontsize=20)
 plt.yscale('log')
 plt.ylim(10e-4, 10e2)
-plt.xlim(7.5,12)
+plt.xlim(7.5,13)
 plt.title("Subhalo Classification snapshot 99",fontsize=20)
 plt.colorbar().set_label(label = "Outer Metallicity Gradient, Normalised",size=20)
 plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15); plt.legend(loc='upper right')
-filename = 'met_2_33.png'
+filename = 'met_3_33.png'
 plt.savefig(filename)
 plt.close()
 

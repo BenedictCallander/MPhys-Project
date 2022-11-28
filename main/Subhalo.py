@@ -524,15 +524,13 @@ class subhalo:
         '''
         df = df.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=21)
+        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
-        break1 = list(df[df['rad']<breakpoint])
-        break2 = list(df[df['rad']>=breakpoint])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
-        
+        '''
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
         plt.figure(figsize=(20,12))
@@ -543,6 +541,7 @@ class subhalo:
         filename = 'brfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
+        '''
         return(slope1,slope2)
     
     def savgol_smooth(self,dfin,pc,scatter_q):
@@ -748,16 +747,13 @@ class subhalo:
         fig.savefig("linear_broken{}".format(self.subID))
         fig.close()
         return (linslope,brokeninner,brokenouter)
-    
 
-        
-        
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("csv/tng99MAIN.csv")
+dfin = pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
@@ -766,7 +762,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -779,7 +775,7 @@ def subhalo_analysis(i):
             inside,outside = sub.broken_fit(dfg2,5)
             met = sub.tot_met
             sfr = sub.totsfr
-            print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
+            print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
             return (met,idval,sfr,inside,outside)
 
     except ValueError as e:
@@ -788,18 +784,21 @@ def subhalo_analysis(i):
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close
         return print(e)
+    
     except KeyError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close        
         return print(e)
+    
     except OSError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close         
         return print(e)
+    
     except TypeError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
@@ -857,7 +856,8 @@ def subhalo_slope_fitplots(i):
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv/tng99MSslopes.csv")
+df2.to_csv("csv/tng33MSslopes.csv")
+
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
@@ -906,8 +906,5 @@ Mathlin: Cares about the physics - must demonstrate complete and comprehensive k
         - what is the key physics in the intro 
         
         - clartity - GM not practicing astrophysicist so think of clarity and linguo
-        
-
-
 
 '''
