@@ -813,18 +813,14 @@ df2.insert(5,'mass', dfin['mass'],True)
 df2.dropna()
 df2.to_csv("csv/tng33MSslopes.csv")
 
-
-
-
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
+
 end = time.time()
 print('runtime = {}s'.format(end-start))
 
 '''
-
-
 Main sequence number of subhalos: 
 snap33:8162
 snap67:1581
@@ -838,7 +834,6 @@ snap33:77655
 snap67:26980
 snap99:17553
 
-
 Author 	    G(dex/kpc) 	    A8.5         	c
 Shaver 	    -0.05 ± 0.01 	8.77 ± 0.14 	-0.69
 Simpson 	-0.06 ± 0.02 	8.57 ± 0.15 	-0.56
@@ -848,7 +843,6 @@ Fesen 	    -0.04 ± 0.03 	8.63 ± 0.32 	-0.31
 Composite 	-0.06 ± 0.01
 
 '''
-
 
 
 '''
