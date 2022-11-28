@@ -514,7 +514,7 @@ class subhalo:
         plt.savefig(filename)
         plt.close()
     
-    def broken_fit(self,dfin,breakpoint,pc):
+    def broken_fit(self,df,breakpoint):
         r'''
         Pseudocode
         Inputs:
@@ -522,30 +522,28 @@ class subhalo:
         Dataframe (can be inherited from subhalo object)
         breakpoint (the point at which break in linear fit is placed)
         '''
-        dfin.sort_values(by='rad',inplace = True)
-        med_data1 = medfilt(12+np.log10(dfin['met2']), kernel_size=21)
-        x0 = np.array([min(dfin['rad']), breakpoint,5, max(dfin['rad'])])
-        break1 = list(dfin[dfin['rad']<breakpoint])
-        break2 = list(dfin[dfin['rad']>=breakpoint])
-        my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], 12+np.log10(dfin['met2']),weights=1/dfin['sfr'])
+        df = df.copy()
+        df.sort_values(by="rad",inplace = True)
+        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=21)
+        x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
+        break1 = list(df[df['rad']<breakpoint])
+        break2 = list(df[df['rad']>=breakpoint])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
-        slope3 = my_pwlf.slopes[2]
-        print("inner: {}, middle:{}, outer:{}".format(slope1,slope2,slope3))
         
-        xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=10000)
+        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
-        
         plt.figure(figsize=(20,12))
-        plt.plot(dfin['rad'], med_data1, 'b--')
+        plt.plot(df['rad'], med_data1, 'b--')
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
         filename = 'brfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
-        return slope1
+        return(slope1,slope2)
     
     def savgol_smooth(self,dfin,pc,scatter_q):
         r'''
@@ -710,12 +708,56 @@ class subhalo:
         gradchange = innerslope-outerslope
         
         return(innerslope, outerslope, gradchange)
+    
+    def weighted_slopegen(self,dfin,breakpoint):
+        df = dfin
+        x0=np.array([df['rad']])
+        x1 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
+        median = medfilt(df['met'],kernel_size=21)
+        linear = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']), weights = 1/df['sfr'])
+        broken = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']), weights = 1/df['sfr'])
+        
+        linear.fit(x0)
+        broken.fit_with_breaks(x1)
+
+        xHat = np.linspace(min(df['rad']), max(df['rad']), num=len(df['met']))
+
+        linY = linear.predict(xHat)
+        breakY = broken.predict(xHat)
+        
+        linslope = linear.slopes[0]
+        
+        brokeninner = broken.slopes[0]
+        brokenouter = broken.slopes[1]
+        
+        
+        fig,(ax0,ax1) = plt.subplots(nrows=1,ncols=2)
+        fig.suptitle("Linear and Broken weighted regressions for Metallicity Gradients")
+        
+        ax0.set_title("linear")
+        ax0.plot(xHat, linY, 'r-'); ax0.plot(df['rad'],median, 'b-')
+        ax0.set_xlabel("Radial Distance (Normalised Code Units)") 
+        ax0.set_ylabel("12+$log_{10}$(O/H)")
+        
+        
+        ax1.set_title("broken fit")
+        ax1.plot(xHat, breakY, 'r-'); ax1.plot(df['rad'],median, 'b-')
+        ax1.set_xlabel("Radial Distance (Normalised Code Units)")
+        ax1.set_ylabel("12+$log_{10}$(O/H)")
+        
+        fig.savefig("linear_broken{}".format(self.subID))
+        fig.close()
+        return (linslope,brokeninner,brokenouter)
+    
+
+        
+        
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("csv/tng33MAIN.csv")
+dfin = pd.read_csv("csv/tng99MAIN.csv")
 valid_id = list(dfin['id'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
@@ -724,7 +766,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -734,9 +776,12 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             idval = i
-            slope,met,sfr,inside,outside = sub.slopegen(5,dfg2)
+            inside,outside = sub.broken_fit(dfg2,5)
+            met = sub.tot_met
+            sfr = sub.totsfr
             print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
-            return (slope,met,idval,sfr,inside,outside)
+            return (met,idval,sfr,inside,outside)
+
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
@@ -777,11 +822,12 @@ def subhalo_slope_fitplots(i):
             sub.rad_transform()
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
-            idval = i
-            linslope=sub.fit_linear(dfg2,10)
-            brslope = sub.broken_fit(dfg2,2,10)
+            sub.weighted_slopegen(dfg2,5)
             print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
-            return (linslope,brslope)
+            return print("done")
+    except OSError as e:    
+        return print(e)
+    '''
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
@@ -806,17 +852,15 @@ def subhalo_slope_fitplots(i):
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close         
         return print(e)
+    '''
 
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['slope','met','id','sfr','inside','outside'])
+df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.dropna()
-df2.to_csv("csv/tng33MSslopes.csv")
-
+df2.to_csv("csv/tng99MSslopes.csv")
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
 #------------------------------------------------------------------------------------------------------------------------------|
-
 end = time.time()
 print('runtime = {}s'.format(end-start))
 

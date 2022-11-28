@@ -195,9 +195,13 @@ class visual:
         
         Aim -> create plot as seen in Hemmler et al with their example plot 
         
-        one larger plot 
+        one larger plot surrouneded by visualisations and gradient information 
         
         '''
+        
+        
+        fig,(ax0,ax1,ax2) = plt.subplots(ncols=3, nrows=1, figsize= (30,8))
+        
         
         
         
