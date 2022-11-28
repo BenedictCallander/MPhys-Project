@@ -667,7 +667,6 @@ class subhalo:
         popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'],sigma=1/df['sfr'])
 
         y1 = UTILITY.linear_fit(df['rad'],*popt)
-        AIC = 1
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], df['met'],weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -695,7 +694,22 @@ class subhalo:
             return (popt[0],met,sfr,extra1,extra2)
         else:
             return (popt[0],met,sfr,extra1,extra2)
-
+    
+    def shapechar(self,dfin):
+        df = dfin
+        x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], df['met'],weights=1/df['sfr'])
+        my_pwlf.fit_with_breaks(x0)
+        brokenslope = my_pwlf.slopes[1]
+        innerslope = my_pwlf.slopes[0]
+        outerslope = my_pwlf.slopes[1]
+        
+        xHat = np.linspace(min(df['rad']), max(df['rad']), num=len(df['met']))
+        yHat = my_pwlf.predict(xHat)
+        
+        gradchange = innerslope-outerslope
+        
+        return(innerslope, outerslope, gradchange)
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
@@ -800,16 +814,7 @@ df2.dropna()
 df2.to_csv("csv/tng33MSslopes.csv")
 
 
-'''
-returns = Parallel(n_jobs= 20)(delayed(subhalo_slope_analysis)(i) for i in valid_id)
-df3=pd.DataFrame(returns,columns=['linslope','brokenslope'])
 
-linearslopes = list(df3['linslope'])
-brokenslopes = list(df3['brokenslope'])
-
-print("Linear min: {}   MAX: {}".format(min(linearslopes),max(linearslopes)))
-print("Broken min: {}   MAX: {}".format(min(brokenslopes),max(brokenslopes)))
-'''
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
@@ -818,8 +823,7 @@ end = time.time()
 print('runtime = {}s'.format(end-start))
 
 '''
-BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
-Key Numbers: 
+
 
 Main sequence number of subhalos: 
 snap33:8162
