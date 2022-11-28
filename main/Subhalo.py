@@ -752,15 +752,14 @@ def subhalo_slope_fitplots(i):
         #f.close         
         return print(e)
 
-
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['slope','met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
 df2.dropna()
 df2.to_csv("csv/tng33MSslopes.csv")
 
-'''
 
+'''
 returns = Parallel(n_jobs= 20)(delayed(subhalo_slope_analysis)(i) for i in valid_id)
 df3=pd.DataFrame(returns,columns=['linslope','brokenslope'])
 
@@ -776,9 +775,9 @@ print("Broken min: {}   MAX: {}".format(min(brokenslopes),max(brokenslopes)))
 #------------------------------------------------------------------------------------------------------------------------------|
 end = time.time()
 print('runtime = {}s'.format(end-start))
+
 '''
 BCUTILS.MSfilter(dfin,df2,'csv/tng99MAIN.csv')
-
 Key Numbers: 
 
 Main sequence number of subhalos: 
@@ -806,6 +805,7 @@ Composite 	-0.06 ± 0.01
 '''
 
 
+
 '''
 Keys for overview plots:
 
@@ -815,6 +815,15 @@ SubhaloGasMetallicity -  Mass-weighted average metallicity (Mz/Mtot,
                         
 SubhaloMass -  Total mass of all member particle/cells which are bound to this Subhalo, of all types.
                 Particle/cells bound to subhaloes of this Subhalo are NOT accounted for. 
+
+
+Assessors:
+
+Mathlin: Cares about the physics - must demonstrate complete and comprehensive knowledge of background physics
+        - what is the key physics in the intro 
+        
+        - clartity - GM not practicing astrophysicist so think of clarity and linguo
+        
 
 
 

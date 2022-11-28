@@ -18,8 +18,6 @@ from scipy.signal import savgol_filter
 import matplotlib as mpl
 
 
-
-
 class analyse:
     def __init__(self,subhalos, slopes, MainSeq):
         self.subDF = pd.read_csv(subhalos)

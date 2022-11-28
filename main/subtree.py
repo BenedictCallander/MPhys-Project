@@ -105,9 +105,7 @@ class subtree:
         plt.savefig(pngname)
         plt.close()
             
-        
-        
-        
+    
         
         
         
