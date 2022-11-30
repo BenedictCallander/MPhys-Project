@@ -20,7 +20,7 @@ import illustris_python as il
 #Own module containing utility functions 
 import BCUTILS
 
-# runtime calculation 
+#runtime calculation 
 import time
 
 #Computational functions - simultaneous calculations to make use of multi-core CPU
@@ -29,6 +29,7 @@ from joblib import Parallel, delayed
 #specific functions for fitting utilities
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
+
 
 #set basic constants during initialisation for easy 
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
@@ -753,7 +754,8 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("csv/tng33MAIN.csv")
+dfin = BCUTILS.subhalo_classification(99)
+#pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
@@ -762,7 +764,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -856,7 +858,7 @@ def subhalo_slope_fitplots(i):
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv/tng33MSslopes.csv")
+df2.to_csv("csv/tng99outerslopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
@@ -906,5 +908,4 @@ Mathlin: Cares about the physics - must demonstrate complete and comprehensive k
         - what is the key physics in the intro 
         
         - clartity - GM not practicing astrophysicist so think of clarity and linguo
-
 '''

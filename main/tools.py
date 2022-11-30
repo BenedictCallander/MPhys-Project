@@ -76,7 +76,7 @@ class analyse:
         
         '''
         df = df.dropna()
-        df = df[df['mass'].between(minX,maxX)]
+        df = df[df['massplot'].between(minX,maxX)]
         df = df[df['sfr'].between(minY,maxY)]
         slopes = list(df['slope'])
         mean = np.mean(slopes)
@@ -84,9 +84,9 @@ class analyse:
         maxslope = max(slopes)
         sloperange = maxslope-minslope
         
-        print("slope values for M {}->{}, SFR {}->{} \n".format(minX,maxX,minY,maxY))
+        print("slope values for M {}->{}, SFR {}->{}".format(minX,maxX,minY,maxY))
         print("median slope in box = {} : minimum slope = {} : maximum slope = {}".format(mean, minslope,maxslope))
         print("range in slopes = {}".format(sloperange))
         return (slopes,mean,minslope,maxslope,sloperange)
-    
-    
+df2 = pd.read_csv('csv/tng67slopes.csv')
+slopes,mean,minslope,maxslope,sloperange = analyse.boxfind(df2,10,11,10e-1,10e-0)
