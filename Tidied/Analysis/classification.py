@@ -38,15 +38,13 @@ def get(path, params = None):
     return r
 
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/33/subhalos/"
-sfr_q = "?limit=77655&sfr__gt=0.001"
-
-
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
+sfr_q = "?limit=17553&sfr__gt=0.0"
 sfrurl = baseurl+sfr_q
 sfrsubs = get(sfrurl)
 mass=[]
 sfr=[]
-
+print(sfrsubs['count'])
 sfr_ids = [sfrsubs['results'][i]['id'] for i in range(sfrsubs['count'])]
 mass_sfr = []
 sfr_sfr = []
@@ -62,28 +60,97 @@ df_analysis = pd.DataFrame({
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('csv/tng33subhalos.csv')
-'''
+#df_analysis.to_csv('csv/tng33subhalos.csv')
 xval = np.linspace(0,13,100)
+yvals = np.linspace(10e-6,10e3,100)
 def line(m,x,b):
     y = 10**((m*x)+b)
     return y 
-def line2(m,x,b):
-    y = (m*x) + b
-    return y 
+
 
 plt.figure(figsize=(15,10))
-plt.plot(mass_sfr,np.log10(sfr_sfr),'g+')
+plt.plot(mass_sfr,sfr_sfr,'g+')
 #sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
-plt.plot(xval, line2(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
+plt.plot(xval, line(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
+plt.plot(xval, line(2,xval,-18.5), 'g-', label = "y=$10^{mx+b}$")
+plt.axvline(x=8.5)
+plt.axvline(x=9.5)
+plt.axhline(y=10e-2)
 plt.yscale('log')
 plt.ylabel('log(SFR)')
-plt.ylim(-6.5,2)
-plt.xlim(7,14)
+plt.ylim(10e-6,10e2)
+plt.xlim(7,13)
 plt.xlabel('Mass (log10 Msun)')
-plt.savefig('png/classification/SFR_M_TNG50-1_991.png')
+plt.show()
 plt.close()
-'''
+
 end = time.time()
 print("runtime :{}".format(end-start))
+
+def line1(x):
+    y = pow(10,((2*x)-20))
+    return y
+def line2(x):
+    y =pow(10,(2*x)-18.5)
+    return y
+
+df = df_analysis.copy()
+
+df = df[df['mass']<9.5]
+df = df[df['mass']>8.5]
+
+def MSfilterup(dfin):
+    df = dfin
+    ids = list(df['id'])
+    masses = list(df['mass'])
+    sfr = list((df['sfr']))
+    valids = []
+    for i in range(len(ids)):
+        value=line1((masses[i]))
+        if value<((sfr[i])):
+            valids.append(ids[i])
+            print(i)
+        else:
+            continue
+    return valids
+valid1 = MSfilterup(df)
+df = df[df['id'].isin(valid1)]
+
+
+def MSfilterdown(dfin):
+    df = dfin
+    ids = list(df['id'])
+    masses = list(df['mass'])
+    sfr = list((df['sfr']))
+    valids = []
+    for i in range(len(ids)):
+        value=line2((masses[i]))
+        if value>((sfr[i])):
+            valids.append(ids[i])
+            print(i)
+        else:
+            continue
+    return valids
+
+valid2 = MSfilterdown(df)
+df = df[df['id'].isin(valid2)]
+print(valid2)
+df.to_csv('ids99.csv')
+plt.figure(figsize=(15,10))
+plt.plot(mass_sfr,sfr_sfr,'g+')
+#sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
+plt.plot(xval, line(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
+plt.plot(xval, line(2,xval,-18.5), 'g-', label = "y=$10^{mx+b}$")
+plt.plot(11,1.3,'k+', ms = 20)
+plt.plot(df['mass'],df['sfr'],'r*')
+plt.axvline(x=8.5)
+plt.axvline(x=9.5)
+plt.yscale('log')
+plt.ylabel('log(SFR)')
+plt.ylim(10e-6,10e2)
+plt.xlim(7,13)
+plt.xlabel('Mass (log10 Msun)')
+plt.show()
+plt.close()
+
 # %%
