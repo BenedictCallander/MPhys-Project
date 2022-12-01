@@ -32,7 +32,9 @@ from joblib import Parallel, delayed
 #specific functions for fitting utilities
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
+headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 
+pd.options.mode.chained_assignment = None  # default='warn'
 class UTILITY:
     def get(path, params = None):
         r'''
@@ -97,10 +99,9 @@ class UTILITY:
     
 
 class subhaloev:
-    def __init__(self, startID, startSnap, simID,):
+    def __init__(self, startID, startSnap):
         self.startID = startID
         self.startSN = startSnap
-        self.simID = simID
         
         self.start_url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}".format(str(self.startSN), str(self.startID))
 
@@ -120,7 +121,7 @@ class subhaloev:
         })
         self.snapnum = snapnum
         self.subids = subid
-        
+        return df_id
     def get_history(self,i):
         url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(self.snapnum[i], self.subids[i])
         sub = UTILITY.get(url)
@@ -205,11 +206,25 @@ class subhalo_cut:
         plt.savefig(filename)
         plt.close()
         
-        
-subhalo = subhaloev(11,99,'TNG50-1')
-        
-        
-        
+tree = subhaloev(11,99)
+tree.fetchtree()
+dfid = tree.fetchIDS()
+valids = [21,25,30,33,36,39,42,45,50,55,60,65,70,75,80,85,90,99]
+dfuse = dfid[dfid['snapshot'].isin(valids)]
+snaps= list(dfuse['snapshot'])
+numbers = list(dfuse['id'])
+print(snaps)
+print(numbers)
+def gradgen(i):
+    subid = numbers[i]
+    snapid=snaps[i]
+    print(subid)
+    sub = subhalo_cut(subid,i,'TNG50-1')
+    sub.get_cutout()
+    sub.met_gradient()
+    return print("done for snapshot {}".format(i))
+returns = Parallel(n_jobs=10)(delayed(gradgen)(i) for i in snapshots)
+
         
         
         
