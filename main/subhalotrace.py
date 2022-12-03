@@ -165,6 +165,9 @@ class subhalo_tree:
         except FileNotFoundError:
             self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
             self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
+        except IOError:
+            self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
+            self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
         
         
     def idtrace(self):
@@ -218,8 +221,9 @@ class subhalo_tree:
         plt.ylabel('log(SFR)')
         plt.xlim(7,14)
         plt.xlabel('Mass (log10 Msun)')
-        plt.savefig('MS_evolution_{}.png'.format(self.subID))
+        plt.savefig('MSPLOT/MS_evolution_{}.png'.format(self.subID))
         plt.close()
+        
     def plot3d(self):
         baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
         search_q = "?limit=17553&sfr__gt=0.0"
@@ -254,7 +258,7 @@ def subhalo_traces(i):
         test = subhalo_tree(99,i)
         test.idtrace()
         test.MSDATAGET()
-        test.plot3d()
+        test.MSPLOT()
         return print("done for subhalo{}".format(i))
     except OSError as e:
         return print(e)
@@ -265,5 +269,4 @@ def subhalo_traces(i):
     except ValueError as e:
         return print(e)
     
-subhalo_traces(19)
-#returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)
+returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)
