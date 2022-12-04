@@ -50,7 +50,6 @@ masses99 =subhalos99['SubhaloMass'] * 1e10 / 0.704
 
 sfr33 = list((subhalos33['SubhaloSFR'])); sfr67 = list((subhalos67['SubhaloSFR'])) ;sfr99 = list((subhalos99['SubhaloSFR']))
 
-'''
 plt.figure(figsize=(20,12))
 plt.plot((masses), sfr, 'g+')
 plt.yscale('log')
@@ -63,11 +62,11 @@ plt.yticks(fontsize=15)
 
 plt.savefig('m_sfr_33_local.png')
 plt.close()
+'''
 divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider2 = make_axes_locatable(ax2)
 cax0 = divider0.append_axes('right', size='5%', pad=0.05)
 cax1 = divider1.append_axes('right', size='5%', pad=0.05)
 cax2 = divider2.append_axes('right', size='5%', pad=0.05)
-'''
 
 
 plt.rcParams["font.family"] = "serif"
@@ -111,3 +110,4 @@ fig.subplots_adjust(top=0.89)
 fig.suptitle("Redshift progression of galaxy Mass-SFR Relation", fontsize=20)
 fig.savefig('localclass_all.png')
 
+'''

@@ -97,7 +97,7 @@ class UTILITY:
         f = (a*(x**2))+(b*x)+c
         return f
 
-subhaloid = 19
+subhaloid = 11
 
 class subhaloev:
     def __init__(self, startID, startSnap, simID,):
@@ -109,8 +109,11 @@ class subhaloev:
 
     def fetchtree(self):
         subhalo = UTILITY.get(self.start_url)
-        self.mpb2 = UTILITY.get(subhalo['trees']['lhalotree_mpb'])
-        
+        try:
+            self.mpb2 = "hdf5/lhalotree_mpb_19.hdf5"
+        except FileNotFoundError:
+            self.mpb2 = UTILITY.get(subhalo['trees']['lhalotree_mpb'])
+    
     def fetchIDS(self):
         with h5py.File(self.mpb2,'r') as f:
             snapnums = f['SnapNum'][:]
@@ -269,7 +272,7 @@ class cutsub:
         filename = 'historypng/snap{}_progenitorto_{}png'.format(self.snapID,subhaloid)
         plt.savefig(filename)
         plt.close()
-        print("gradient {}".format(popt[0]))
+        #print("gradient {}".format(popt[0]))
         return popt[0]
     
     def piecewise(self,dfin,breakpoint):
@@ -282,7 +285,7 @@ class cutsub:
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
-        print("slopes are inner: {} and outer:{}".format(slope1,slope2))
+        #print("slopes are inner: {} and outer:{}".format(slope1,slope2))
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
         plt.figure(figsize=(20,12))
@@ -290,7 +293,7 @@ class cutsub:
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'histbrfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
+        filename = 'histbrfit/single/{}_snap_sub={}.png'.format(self.snapID, self.subID)
         plt.savefig(filename)
         plt.close()
         return (slope1,slope2)
@@ -315,7 +318,7 @@ class cutsub:
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'histbrfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
+        filename = 'histbrfit/double/{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
 
@@ -325,11 +328,14 @@ tree.fetchtree()
 dfid = tree.fetchIDS()
 tree.history_filegen(fpath)
 tree.history_plot(fpath, "sfr")
-print(dfid)
+#print(dfid)
 fname = "csv/{}tree.csv".format(subhaloid)
 print("tree found!")
 dfid.to_csv(fname)
-snapshots = [21,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,99]
+snapshots = [1,10,21,33,50,67,78,91,99]#
+#Highest Resolution Snapshots 
+#Corresponds to z=[4.01, 2.00, 1.00, 0.50, 0.30, 0.10, 0.00]
+#
 
 #print(dfid)
 dfuse = dfid[dfid['snapshot'].isin(snapshots)]
@@ -348,9 +354,11 @@ def gradgen(i):
         else:
             sub.align_dfgen()
             dfg2 = sub.filter()
-            sub.linearfit(dfg2)
+            linear = sub.linearfit(dfg2)
             slope1,slope2 = sub.piecewise(dfg2,5)
-            return print("done for snapshot {}".format(snapid))
+            sub.doublepiecewise(dfg2,3,8)
+            print("done for snapshot {}".format(snapid))
+            return(snapid,subid,slope1,slope2, linear) 
     except OSError as e:
         return print(e)
     except TypeError as e:
@@ -360,35 +368,20 @@ def gradgen(i):
     except ValueError as e:
         return print(e)
 returns = Parallel(n_jobs=15)(delayed(gradgen)(i) for i in range(len(snapshots)))
-
+df = pd.DataFrame(returns, columns = ['snapshot','subhalo_id', 'innerslope','outerslope','linearslope'])
+fname = "properties_progenitorsto{}".format(subhaloid)
+df.to_csv(fname)
 end = time.time()
 print("runtime: {}".format(end-start))
 
 '''
-snapshots
-snap21:    "redshift": 4.00794511146527
-33: redshift = 2
-67: redshift = 0.5
-99: redshift = 0 
-'''
-
-'''
-[63988, 64001, 64016, 64162, 117346, 117361, 117416, 117431, 117512, 117630, 143937, 143940, 143952, 144006, 144094, 167460, 167461, 167466, 167469, 167498,
-167574, 167626, 185005, 185045, 208890, 209017, 229966, 242823, 242824, 242825, 242837, 242885, 253967, 264910, 275577, 275582, 283040, 283102, 294914, 300972,
-300987, 307520, 307524, 307531, 324195, 329534, 329547, 329550, 329573, 338478, 338508, 345905, 345913, 345921, 345930, 355743, 355744, 355745, 355751, 355778,
-358617, 358618, 358620, 358626, 358639, 368885, 368902, 371131, 371132, 377694, 379823, 382229, 386276, 386277, 386279, 386289, 386292, 386300, 386303, 400979,
-402588, 402589, 402604, 402606, 413376, 413377, 413378, 413383, 419643, 421578, 422779, 424315, 425728, 425733, 425738, 425740, 425746, 430875, 430876, 430878,
-430883, 433293, 433294, 433295, 435761, 435762, 435764, 435769, 435775, 435781, 435792, 435798, 436941, 436945, 436948, 436949, 436954, 436957, 436964, 436969,
-436972, 445632, 445633, 445635, 445638, 445640, 445641, 445644, 445651, 445662, 455295, 455296, 459581, 466560, 466563, 470352, 471999, 472000, 472001, 472002,
-473336, 474016, 474023, 475017, 475018, 475020, 475022, 475023, 477337, 484453, 484454, 490088, 490824, 492251, 494016, 494017, 494018, 494019, 494020, 494021,
-497578, 500581, 500583, 501731, 501732, 503442, 503450, 503455, 503456, 507301, 507306, 510274, 510275, 510278, 510279, 510281, 510287, 511307, 511309, 512434,
-514831, 517275, 518685, 518687, 519733, 520320, 520322, 520892, 521431, 521432, 526480, 530853, 532763, 532766, 533064, 536160, 539669, 539673, 542254, 548794,
-549517, 551978, 554528, 555016, 555602, 555822, 558069, 564833, 565091, 566663, 566670, 568309, 569454, 569458, 569654, 569655, 569657, 571075, 571910, 577128,
-578837, 581319, 586424, 588180, 590932, 592986, 595997, 597313, 599247, 599468, 604859, 613215, 615608, 619507, 620178, 621044, 625186, 626055, 628719, 629095,
-630401, 633518, 634287, 640111, 642894, 644437, 646102, 647769, 648368, 652935, 653604, 653606, 654818, 657572, 658810, 661982, 670003, 671483, 672282, 672873,
-674016, 677006, 678038, 678289, 678855, 679172, 679409, 680099, 681333, 682714, 689768, 689809, 691777, 697464, 706245, 709227, 709286, 717089, 721237, 726884,
-727159, 731246, 736865, 737846, 739433, 741346, 743592, 743912, 751532, 753339, 753534, 755505, 760730, 761824, 763641, 763728,766151, 771679, 772124, 774724,
-779648, 783438, 790650, 794125, 799175, 801898]  
-
+snapshots and respective redshift values
+21: redshift = 4.01
+33: redshift = 2.00
+50: redshift = 1.00
+67: redshift = 0.50
+78: redshift = 0.30
+91: redshift = 0.10
+99: redshift = 0.00
 
 '''
