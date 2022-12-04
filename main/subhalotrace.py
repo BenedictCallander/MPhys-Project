@@ -7,9 +7,10 @@
 
 #Plotting, numerical functions and dataset manipulation
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
-import pwlf
+#import pwlf
 
 #hdf5 binary file manipulation
 import h5py
@@ -173,6 +174,7 @@ class subhalo_tree:
             self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
 
         
+        
     def idtrace(self):
         with h5py.File(self.mpb2,'r') as f:
             snapnums = f['SnapNum'][:]
@@ -239,19 +241,28 @@ class subhalo_tree:
             mass.append(subs['results'][i]['mass_log_msun'])
             sfr.append(subs['results'][i]['sfr'])
             urls.append(subs['results'][i]['url'])
-        fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
-        ax.plot(mass,sfr,zs=0, zdir='z', c='g', marker = '+')
-        ax.set_yscale('log')
-        ax.plot(df['mass'], df['sfr'], df['snapshot'], 'r-')
-        ax.plot(df['mass'], df['sfr'], df['snapshot'], 'ko')
-        fig.savefig("3d19.png")
+        plt.style.use('_mpl-gallery')
         
+        fig = plt.figure()
+        ax = plt.axes(projection="3d")  
+        ax.plot3D(mass,np.log10(sfr),zs=0, zdir='z', c='g', marker = '+', linestyle='None')
+        ax.scatter3D(df['mass'],np.log10(df['sfr']),df['snapshot'],c=df['id'],cmap = 'magma')
+        ax.plot3D(df['mass'],np.log10(df['sfr']),df['snapshot'],c='r',linestyle = 'dashed')
+        fig.savefig('3d19.png')
+        plt.show()
+        
+<<<<<<< HEAD
 snapshots = [1,10,21,33,50,67,78,91,99]
 #
 #Highest Resolution Snapshots 
 #Corresponds to z=[4.01, 2.00, 1.00, 0.50, 0.30, 0.10, 0.00]
 #
 
+=======
+        
+        
+        
+>>>>>>> cbb66301c4a748599eb229036ff0da11edddfbfa
 
 
 def subhalo_traces(i):
