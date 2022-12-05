@@ -159,7 +159,7 @@ class subhalo_tree:
         self.primesuburl = UTILITY.subhalo_url_constructor(self.snapID, self.subID)
         self.primesubhalo = UTILITY.get(self.primesuburl)
         sub = self.primesubhalo
-        #'''
+        '''
         #self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
         self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
         '''
@@ -172,7 +172,7 @@ class subhalo_tree:
         except IOError:
             self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
             self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
-        '''
+        #'''
         
     def idtrace(self):
         with h5py.File(self.mpb2,'r') as f:
@@ -207,8 +207,8 @@ class subhalo_tree:
         return df
     
     def MSPLOT(self):
-        snapshots = [1,10,21,33,40,50,67,78,91,99]
-        linesnaps = [1,10,21,33,40,50,67,78,91]
+        snapshots = [1,5,6,10,21,33,40,50,52,55,67,78,91,99]
+        linesnaps = [1,5,6,10,21,33,40,50,52,55,67,78,91]
         linedf = self.maindf[self.maindf['snapshot'].isin(linesnaps)]
         self.maindf = self.maindf[self.maindf['snapshot'].isin(snapshots)]
         print(self.maindf)
@@ -283,6 +283,7 @@ def subhalo_traces(i):
     except ValueError as e:
         return print(e)
     '''
-subhalo_traces(106)
+subhalo_traces(28)
+#122,123,124,125,128,129,130]
 #100,101,108,115,120,121,122
 #returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)

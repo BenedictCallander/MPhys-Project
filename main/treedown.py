@@ -104,7 +104,7 @@ def treeget(path, params = None):
 
 
 
-subhalos = [121,122,123,124,125,128,129,130]
+subhalos = [122,123,124,125,128,129,130]
 
 def gettree(subID):
     url = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/{}/".format(subID)
