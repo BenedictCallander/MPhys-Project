@@ -160,7 +160,7 @@ class subhalo_tree:
         self.primesubhalo = UTILITY.get(self.primesuburl)
         sub = self.primesubhalo
         '''
-        self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
+        #self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
         self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
         '''
         try:
@@ -172,6 +172,7 @@ class subhalo_tree:
         except IOError:
             self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
             self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
+        
 
         
         
@@ -211,20 +212,24 @@ class subhalo_tree:
         print(self.maindf)
         basePath = '/home/AstroPhysics-Shared/DATA/IllustrisTNG/TNG50-1/output/'
         fields = ['SubhaloMass','SubhaloSFRinRad','SubhaloSFR','SubhaloGasMetallicitySfrWeighted']
-        subhalos99 = il.groupcat.loadSubhalos(basePath,99,fields=fields)
+        subhalos99 = il.groupcat.loadSubhalos(basePath,67,fields=fields)
         mass =subhalos99['SubhaloMass'] * 1e10 / 0.704
         sfr = list((subhalos99['SubhaloSFR']))
         print("min{} max{}".format(min(mass),max(mass)))
         plt.figure(figsize=(20,12))
-        plt.yscale('log')
-        plt.plot(np.log10(mass),sfr, 'g+')
-        plt.plot(self.maindf['mass'],self.maindf['sfr'], 'r--')
-        plt.scatter(self.maindf['mass'],self.maindf['sfr'],c = self.maindf['snapshot'], cmap = 'tab20',vmin=1,vmax=99)
+        plt.xscale('log')
+        plt.plot(sfr,np.log10(mass), 'g+', zorder=1)
+        plt.plot(self.maindf['sfr'],self.maindf['mass'], 'r--',zorder=2)
+        plt.scatter(self.maindf['sfr'],self.maindf['mass'],c = self.maindf['snapshot'], cmap = 'magma',vmin=1,vmax=99,zorder=3)
+        #plt.text(9, 0.02, "snapshot 1",zorder= 4)
+        #plt.text(11,1.5,"snapshot 10",zorder= 4)
+        #plt.text(12, 13,"snapshots 70-99",zorder= 4)
+        
         plt.colorbar(label = 'Snapshot')
-        plt.ylabel('log(SFR)')
-        plt.xlabel('Mass (log10 Msun)')
+        plt.xlabel('log(SFR)')
+        plt.ylabel('Mass (log10 Msun)')
         #'MSPLOT/MS_evolution_{}.png'.format(self.subID)
-        plt.savefig('msev_2.png')
+        plt.savefig('msev_96787_background33.png')
         plt.close()
         
     def plot3d(self):
@@ -251,18 +256,11 @@ class subhalo_tree:
         fig.savefig('3d19.png')
         plt.show()
         
-<<<<<<< HEAD
-snapshots = [1,10,21,33,50,67,78,91,99]
 #
 #Highest Resolution Snapshots 
 #Corresponds to z=[4.01, 2.00, 1.00, 0.50, 0.30, 0.10, 0.00]
 #
 
-=======
-        
-        
-        
->>>>>>> cbb66301c4a748599eb229036ff0da11edddfbfa
 
 
 def subhalo_traces(i):
@@ -280,6 +278,7 @@ def subhalo_traces(i):
         return print(e)
     except ValueError as e:
         return print(e)
-subhalo_traces(2)
+
+subhalo_traces(96787)
 #1,2,3,4,5,6,7
 #returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)

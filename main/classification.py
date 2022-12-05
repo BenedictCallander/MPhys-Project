@@ -95,8 +95,8 @@ def line2(x):
 
 df = df_analysis.copy()
 
-df = df[df['mass']<10.5]
-df = df[df['mass']>9.5]
+df = df[df['mass']<12]
+df = df[df['mass']>10.5]
 
 def MSfilterup(dfin):
     df = dfin

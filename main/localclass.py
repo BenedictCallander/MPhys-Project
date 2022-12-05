@@ -47,11 +47,11 @@ subhalos99 = il.groupcat.loadSubhalos(basePath,99,fields=fields)
 masses33 =subhalos33['SubhaloMass'] * 1e10 / 0.704 ;masses67 =subhalos67['SubhaloMass'] * 1e10 / 0.704 
 masses99 =subhalos99['SubhaloMass'] * 1e10 / 0.704
 
-
 sfr33 = list((subhalos33['SubhaloSFR'])); sfr67 = list((subhalos67['SubhaloSFR'])) ;sfr99 = list((subhalos99['SubhaloSFR']))
 
+'''
 plt.figure(figsize=(20,12))
-plt.plot((masses), sfr, 'g+')
+plt.plot((masses99), sfr99, 'g+')
 plt.yscale('log')
 plt.xscale('log') 
 plt.xlabel("Total Mass [$M_\odot$]",fontsize=20);plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
@@ -60,8 +60,25 @@ plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, widt
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 
-plt.savefig('m_sfr_33_local.png')
+plt.savefig('m_sfr_99_local.png')
 plt.close()
+'''
+
+plt.figure(figsize=(20,12))
+plt.plot( sfr99,(masses99), 'g+')
+plt.yscale('log')
+plt.xscale('log') 
+plt.ylabel("Total Mass [$M_\odot$]",fontsize=20);plt.xlabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+
+plt.savefig('sfr_m_99_local.png')
+plt.close()
+
+
+
 '''
 divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider2 = make_axes_locatable(ax2)
 cax0 = divider0.append_axes('right', size='5%', pad=0.05)
