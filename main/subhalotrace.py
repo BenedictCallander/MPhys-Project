@@ -159,7 +159,7 @@ class subhalo_tree:
         self.primesuburl = UTILITY.subhalo_url_constructor(self.snapID, self.subID)
         self.primesubhalo = UTILITY.get(self.primesuburl)
         sub = self.primesubhalo
-        '''
+        #'''
         #self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
         self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
         '''
@@ -172,9 +172,7 @@ class subhalo_tree:
         except IOError:
             self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
             self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
-        
-
-        
+        '''
         
     def idtrace(self):
         with h5py.File(self.mpb2,'r') as f:
@@ -189,6 +187,8 @@ class subhalo_tree:
         self.snapnum = snapnum
         self.subids = subid
         self.id_frame = df_id.copy()
+        #print (self.snapnum)
+        #print(len(self.snapnum))        
         return df_id
     
     def subhalodata(self,i):
@@ -201,13 +201,15 @@ class subhalo_tree:
         return (met,mass,sfr,self.subids[i],self.snapnum[i])
     
     def MSDATAGET(self):
-        returns = Parallel(n_jobs= 4)(delayed(self.subhalodata)(i) for i in range(1,99))
+        returns = Parallel(n_jobs= 2)(delayed(self.subhalodata)(i) for i in range(len(self.snapnum)))
         df=pd.DataFrame(returns,columns=['met','mass','sfr','id','snapshot'])
         self.maindf = df
         return df
     
     def MSPLOT(self):
-        snapshots = [1,10,21,33,50,67,78,91,99]
+        snapshots = [1,10,21,33,40,50,67,78,91,99]
+        linesnaps = [1,10,21,33,40,50,67,78,91]
+        linedf = self.maindf[self.maindf['snapshot'].isin(linesnaps)]
         self.maindf = self.maindf[self.maindf['snapshot'].isin(snapshots)]
         print(self.maindf)
         basePath = '/home/AstroPhysics-Shared/DATA/IllustrisTNG/TNG50-1/output/'
@@ -215,21 +217,22 @@ class subhalo_tree:
         subhalos99 = il.groupcat.loadSubhalos(basePath,67,fields=fields)
         mass =subhalos99['SubhaloMass'] * 1e10 / 0.704
         sfr = list((subhalos99['SubhaloSFR']))
-        print("min{} max{}".format(min(mass),max(mass)))
         plt.figure(figsize=(20,12))
-        plt.xscale('log')
-        plt.plot(sfr,np.log10(mass), 'g+', zorder=1)
-        plt.plot(self.maindf['sfr'],self.maindf['mass'], 'r--',zorder=2)
-        plt.scatter(self.maindf['sfr'],self.maindf['mass'],c = self.maindf['snapshot'], cmap = 'magma',vmin=1,vmax=99,zorder=3)
-        #plt.text(9, 0.02, "snapshot 1",zorder= 4)
-        #plt.text(11,1.5,"snapshot 10",zorder= 4)
-        #plt.text(12, 13,"snapshots 70-99",zorder= 4)
-        
+        plt.yscale('log')
+        plt.title("evolution of largest progenitor to subhalo 21 at z=0: ")
+        plt.plot(np.log10(mass),sfr, 'g+',label = 'Snapshot 99 subhalos', zorder=1)
+        plt.plot(linedf['mass'],linedf['sfr'], 'r--',label = 'path of progenitors to subhalo 21',zorder=2)
+        plt.scatter(self.maindf['mass'],self.maindf['sfr'],c = self.maindf['snapshot'], cmap = 'magma',vmin=1,vmax=99,zorder=3)
+        plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+        plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
         plt.colorbar(label = 'Snapshot')
-        plt.xlabel('log(SFR)')
-        plt.ylabel('Mass (log10 Msun)')
+        plt.ylabel('log(SFR)')
+        plt.xlabel('Mass (log10 Msun)')
+        plt.legend(loc='upper right')
         #'MSPLOT/MS_evolution_{}.png'.format(self.subID)
-        plt.savefig('msev_96787_background33.png')
+        plt.savefig('msev_{}.png'.format(self.subID))
         plt.close()
         
     def plot3d(self):
@@ -272,13 +275,14 @@ def subhalo_traces(i):
         return print("done for subhalo{}".format(i))
     except OSError as e:
         return print(e)
+    '''
     except TypeError as e:
         return print(e)
     except IndexError as e:
         return print(e)
     except ValueError as e:
         return print(e)
-
-subhalo_traces(96787)
-#1,2,3,4,5,6,7
+    '''
+subhalo_traces(106)
+#100,101,108,115,120,121,122
 #returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)
