@@ -26,34 +26,120 @@ df2.insert(5,'mass', dfin['mass'],True)
 df2.dropna()
 df2.to_csv("csv/tng33MSslopes.csv")
 '''
-    def broken_fit(self,dfin,breakpoint,pc):
-        r'''
-        Pseudocode
-        Inputs:
+    
+    
+    
+import os
+import requests
 
-        Dataframe (can be inherited from subhalo object)
-        breakpoint (the point at which break in linear fit is placed)
-        '''
-        dfin.sort_values(by='rad',inplace = True)
-        med_data1 = medfilt(12+np.log10(dfin['met2']), kernel_size=21)
-        x0 = np.array([min(dfin['rad']), breakpoint, max(dfin['rad'])])
-        break1 = list(dfin[dfin['rad']<breakpoint])
-        break2 = list(dfin[dfin['rad']>=breakpoint])
-        my_pwlf = pwlf.PiecewiseLinFit(dfin['rad'], 12+np.log10(dfin['met2']),weights=1/dfin['sfr'])
-        my_pwlf.fit_with_breaks(x0)
-        slope1 = my_pwlf.slopes[0]
-        slope2 = my_pwlf.slopes[1]
+# URL of the API that contains the file
+api_url = "https://www.example.com/api/file"
+
+# Name of the file
+file_name = "my_file.txt"
+
+# Path to the directory where the file should be saved
+directory = "./data"
+
+# Check if the file already exists in the directory
+if not os.path.exists(os.path.join(directory, file_name)):
+    # Request the file from the API
+    response = requests.get(api_url)
+    
+    # Save the file to disk
+    with open(os.path.join(directory, file_name), "wb") as f:
+        f.write(response.content)
         
-        xHat = np.linspace(min(dfin['rad']), max(dfin['rad']), num=10000)
-        yHat = my_pwlf.predict(xHat)
-        '''
-        plt.figure(figsize=(20,12))
-        plt.plot(dfin['rad'], med_data1, 'b--')
-        plt.plot(xHat,yHat, 'g-')
-        plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'brfit/sub_{}_break_snapshot_{}.png'.format(self.subID, self.snapID)
-        plt.savefig(filename)
-        plt.close()
-        '''
-        return(slope1,slope2)
+    print(f"Successfully downloaded {file_name} to {directory}.")
+else:
+    print(f"{file_name} already exists in {directory}.")
+
+#
+#
+#
+#
+
+# List of downloaded filenames
+filenames = ['file1.txt', 'file2.txt', 'file3.jpg']
+
+# Create directories based on filenames
+for filename in filenames:
+    directory_name = filename.split('.')[0]  # Get the file name without the extension
+    if not os.path.exists(directory_name):  # Check if the directory already exists
+        os.makedirs(directory_name)  # Create the directory
+
+
+
+class MyClass:
+    def __init__(self, name):
+        # Store the name of the object in an instance variable
+        self.name = name
+
+        # Use the __setattr__ method to dynamically create a new object
+        # with the name stored in the `name` instance variable
+        self.__setattr__(name, "hello world")
+
+
+# Create an instance of MyClass with the name "my_object"
+my_class = MyClass("my_object")
+
+# Print the dynamically named object to verify that it has been created
+print(my_class.my_object)  # Output: "hello world"
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Create some dummy data to plot
+data1 = np.random.randn(100)
+data2 = np.random.randn(100)
+data3 = np.random.randn(100)
+
+# Create a figure and axes for the plot
+fig, ax = plt.subplots()
+
+# Plot the first dataset
+ax.plot(data1, label="Data 1")
+
+# Set the title and labels for the plot
+ax.set_title("Animated Background Data")
+ax.set_xlabel("X axis")
+ax.set_ylabel("Y axis")
+
+# Add a legend to the plot
+ax.legend()
+
+# Function to update the background data and redraw the plot
+def update(curr):
+    # Check if the animation is at the last frame, and if so, stop it
+    if curr == 100:
+        a.event_source.stop()
+
+    # Clear the current axes
+    ax.clear()
+
+    # Select the current dataset to plot based on the current frame
+    if curr < 50:
+        data = data1
+    elif curr < 75:
+        data = data2
+    else:
+        data = data3
+
+    # Plot the selected dataset
+    ax.plot(data, label="Data")
+
+    # Set the title and labels for the plot
+    ax.set_title("Animated Background Data")
+    ax.set_xlabel("X axis")
+    ax.set_ylabel("Y axis")
+
+    # Add a legend to the plot
+    ax.legend()
+
+# Create an animation using the update function
+a = animation.FuncAnimation(fig, update, interval=100)
+
+# Show the plot
+plt.show()

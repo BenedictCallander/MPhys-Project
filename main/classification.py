@@ -83,21 +83,23 @@ plt.xlabel('Mass (log10 Msun)')
 plt.show()
 plt.close()
 
-end = time.time()
-print("runtime :{}".format(end-start))
+
 
 def line1(x):
-    y = pow(10,((2*x)-21.5))
+    y = pow(10,((2*x)-20.5))
     return y
 def line2(x):
-    y =pow(10,(2*x)-20)
+    y =pow(10,(2*x)-18.5)
     return y
 
 df = df_analysis.copy()
 
 df = df[df['mass']<12]
-df = df[df['mass']>10.5]
+df = df[df['mass']>11]
+df = df[df['sfr']>1]
+df.to_csv('traceids.csv')
 
+'''
 def MSfilterup(dfin):
     df = dfin
     ids = list(df['id'])
@@ -137,8 +139,8 @@ df.to_csv('ids99.csv')
 plt.figure(figsize=(15,10))
 plt.plot(mass_sfr,sfr_sfr,'g+')
 #sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
-plt.plot(xval, line(2,xval,-20), 'r-', label = "y=$10^{mx+b}$")
-plt.plot(xval, line(2,xval,-21.5), 'g-', label = "y=$10^{mx+b}$")
+plt.plot(xval, line1(xval), 'r-', label = "y=$10^{mx+b}$")
+plt.plot(xval, line2(xval), 'g-', label = "y=$10^{mx+b}$")
 plt.plot(df['mass'],df['sfr'],'r*')
 plt.axvline(x=8.5)
 plt.axvline(x=9.5)
@@ -149,3 +151,8 @@ plt.xlim(7,13)
 plt.savefig("classif.png")
 plt.xlabel('Mass (log10 Msun)')
 plt.close()
+df.to_csv("treefinds.csv")
+print(list(df['id']))
+end = time.time()
+print("runtime :{}".format(end-start))
+'''

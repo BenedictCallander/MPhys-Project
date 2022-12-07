@@ -142,55 +142,39 @@ class UTILITY:
         f = (a*(x**2))+(b*x)+c
         return f
 
-    def subhalo_url_constructor(snapID, subID):
-        url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}".format(str(snapID),str(subID))
-        return url
 
-
-class subhalo_tree:
-    def __init__(self, snapID, subID):
-        r'''
-        Load known snapshot and subhalo ID for trees tracing request 
-        '''
+class subhistory:
+    def __init__(self,startID, startSN):
+        self.startID = startID
+        self.startsnap = startSN
         
-        self.snapID = snapID #initial known value 
-        self.subID = subID  # initial known value 
+        self.start_url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}".format(str(startSN),str(startID))
+        self.start_sub = UTILITY.get(self.start_url)
+        self.check = self.start_sub['related']['sublink_progenitor']
+        #self.mpb = UTILITY.get(self.start_sub['trees']['sublink_mpb'])
+        #self.mdb = UTILITY.get(self.start_sub['trees']['sublink_mdb'])
         
-        self.primesuburl = UTILITY.subhalo_url_constructor(self.snapID, self.subID)
-        self.primesubhalo = UTILITY.get(self.primesuburl)
-        sub = self.primesubhalo
-        '''
-        #self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
-        self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
-        '''
-        try:
-            self.mpb1 = 'trees/sublink_mpb_{}.hdf5'.format(self.subID)
-            self.mpb2 = 'trees/lhalotree_mpb_{}.hdf5'.format(self.subID)
-        except FileNotFoundError:
-            self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
-            self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
-        except IOError:
-            self.mpb1 = UTILITY.treeget(sub['trees']['sublink_mpb'])
-            self.mpb2 = UTILITY.treeget(sub['trees']['lhalotree_mpb'])
-        #'''
+        self.mpb = "trees1/prog/sublink_mpb_{}.hdf5".format(startID)
+        #self.mdb = "trees1/desc/sublink_mdb_{}.hdf5".format(startID)
         
-    def idtrace(self):
-        with h5py.File(self.mpb2,'r') as f:
-            snapnums = f['SnapNum'][:]
-            subid = f['SubhaloNumber'][:]
-        snapnum = list(snapnums); subid = list(subid)
-        snapnum.reverse();subid.reverse()
-        df_id = pd.DataFrame({
-            "snapshot": snapnum,
-            "id": subid
-        })
-        self.snapnum = snapnum
-        self.subids = subid
-        self.id_frame = df_id.copy()
-        #print (self.snapnum)
-        #print(len(self.snapnum))        
-        return df_id
-    
+        # collect all IDS 
+        with h5py.File(self.mpb,'r') as f:
+            presnap = list(f['SnapNum'][:])
+            preID= list (f['SubfindID'][:])
+        '''  
+        with h5py.File(self.mdb,'r') as x:
+            postsnap = list(x['SnapNum'][:])
+            postID = list(x['SubfindID'][:])
+        postsnap.reverse() ; postID.reverse()
+        presnap.extend(postsnap)
+        preID.extend(postID)
+        
+        '''
+        presnap.reverse(); preID.reverse()
+              
+        self.snapnum = presnap
+        self.subids = preID
+        
     def subhalodata(self,i):
         url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(self.snapnum[i], self.subids[i])
         sub = UTILITY.get(url)
@@ -201,7 +185,7 @@ class subhalo_tree:
         return (met,mass,sfr,self.subids[i],self.snapnum[i])
     
     def MSDATAGET(self):
-        returns = Parallel(n_jobs= 2)(delayed(self.subhalodata)(i) for i in range(len(self.snapnum)))
+        returns = Parallel(n_jobs= 20)(delayed(self.subhalodata)(i) for i in range(len(self.snapnum)))
         df=pd.DataFrame(returns,columns=['met','mass','sfr','id','snapshot'])
         self.maindf = df
         return df
@@ -219,9 +203,9 @@ class subhalo_tree:
         sfr = list((subhalos99['SubhaloSFR']))
         plt.figure(figsize=(20,12))
         plt.yscale('log')
-        plt.title("evolution of largest progenitor to subhalo 21 at z=0: ")
+        plt.title("evolution of largest progenitor to subhalo {} at z=0: ".format(self.startID))
         plt.plot(np.log10(mass),sfr, 'g+',label = 'Snapshot 99 subhalos', zorder=1)
-        plt.plot(linedf['mass'],linedf['sfr'], 'r--',label = 'path of progenitors to subhalo 21',zorder=2)
+        plt.plot(linedf['mass'],linedf['sfr'], 'r--',label = 'path of progenitors to subhalo {}'.format(self.startID),zorder=2)
         plt.scatter(self.maindf['mass'],self.maindf['sfr'],c = self.maindf['snapshot'], cmap = 'magma',vmin=1,vmax=99,zorder=3)
         plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
         plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
@@ -232,58 +216,33 @@ class subhalo_tree:
         plt.xlabel('Mass (log10 Msun)')
         plt.legend(loc='upper right')
         #'MSPLOT/MS_evolution_{}.png'.format(self.subID)
-        plt.savefig('msev_{}.png'.format(self.subID))
+        plt.savefig('store/back33/msev_{}.png'.format(self.startID))
         plt.close()
-        
-    def plot3d(self):
-        baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
-        search_q = "?limit=17553&sfr__gt=0.0"
-        url = baseurl+ search_q
-        subs = UTILITY.get(url)
-        ids = [subs['results'][i]['id'] for i in range(subs['count'])]
-        mass = []
-        sfr = []
-        urls = []
-        df = self.maindf
-        for i,id in enumerate(ids):
-            mass.append(subs['results'][i]['mass_log_msun'])
-            sfr.append(subs['results'][i]['sfr'])
-            urls.append(subs['results'][i]['url'])
-        plt.style.use('_mpl-gallery')
-        
-        fig = plt.figure()
-        ax = plt.axes(projection="3d")  
-        ax.plot3D(mass,np.log10(sfr),zs=0, zdir='z', c='g', marker = '+', linestyle='None')
-        ax.scatter3D(df['mass'],np.log10(df['sfr']),df['snapshot'],c=df['id'],cmap = 'magma')
-        ax.plot3D(df['mass'],np.log10(df['sfr']),df['snapshot'],c='r',linestyle = 'dashed')
-        fig.savefig('3d19.png')
-        plt.show()
-        
-#
-#Highest Resolution Snapshots 
-#Corresponds to z=[4.01, 2.00, 1.00, 0.50, 0.30, 0.10, 0.00]
-#
+
+def runscript(i):
+    sub = subhistory(i,99)
+    sub.MSDATAGET()
+    sub.MSPLOT()
+    return print("subhalo {} done".format(i))
+
+df= pd.read_csv('traceids.csv')
+ids = list(df['id'])
+
+returns = Parallel(n_jobs= 2)(delayed(runscript)(i) for i in ids)
 
 
+'''
+for i in ids:
+    runscript(i)
+    print("subhalo {} done".format(i))
 
-def subhalo_traces(i):
-    try:
-        test = subhalo_tree(99,i)
-        test.idtrace()
-        test.MSDATAGET()
-        test.MSPLOT()
-        return print("done for subhalo{}".format(i))
-    except OSError as e:
-        return print(e)
-    '''
-    except TypeError as e:
-        return print(e)
-    except IndexError as e:
-        return print(e)
-    except ValueError as e:
-        return print(e)
-    '''
-subhalo_traces(63867)
-#122,123,124,125,128,129,130]
-#100,101,108,115,120,121,122
-#returns = Parallel(n_jobs = 20)(delayed(subhalo_traces)(i) for i in ids)
+IDS
+[199, 226, 250, 261, 265, 282, 287, 288, 302, 343, 351, 54120, 54123, 92900, 92906, 92943, 92954, 105165, 115190, 115194, 160834, 160854,
+166626, 166632, 166641, 173159, 173161, 173163, 173168, 173170, 173174, 173175, 173183, 173185, 173190, 173199, 190064, 237953, 237957,
+237961, 237966, 237967, 237969, 242568, 244821, 244822, 244827, 244829, 244835, 261422, 261426, 261427, 261432, 261435, 261438, 261439, 262794,
+266542, 268475, 268476, 268477, 268481, 279688, 281000, 281001, 281002, 281003, 281008, 282221, 282225, 282226, 289162, 289165, 289167, 289171,
+296873, 308513, 308515, 308523, 317887, 317888, 317889, 324131, 324135, 327105, 331162, 331165, 334220, 334221, 334222, 334223, 334224, 334225,
+334226, 340064, 348016, 353213, 354844, 358981, 359436, 359437, 359438, 359439, 374420, 374421, 374422, 377803, 379570, 382231, 385419, 385420, 388001,
+388002, 388580, 388582, 388583, 404820, 438731, 442224]
+
+'''
