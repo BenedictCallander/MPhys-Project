@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
-#import pwlf
+import pwlf
 
 #hdf5 binary file manipulation
 import h5py
