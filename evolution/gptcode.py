@@ -128,3 +128,20 @@ Note that in this modified piecewise_linear function, the slopes of each piece a
 x1, y1, x2, and y2. These slopes are then returned as additional output parameters, along with the piecewise linear function itself.
 You can adjust this code to return the slopes in a different format, or to calculate the slopes in a different way, depending on your specific needs.
 '''
+
+
+import numpy as np
+
+# Sample scattered data
+x = np.array([0, 1, 2, 3, 4, 5])
+y = np.array([0, 1, 4, 9, 16, 25])
+
+# Weights for each datapoint
+weights = np.array([1, 2, 3, 2, 1, 2])
+
+# Fit linear regression
+A = np.vstack([x, np.ones(len(x))]).T
+m, c = np.linalg.lstsq(A * weights[:, np.newaxis], y * weights, rcond=None)[0]
+
+# Print result
+print(f"y = {m} * x + {c}")
