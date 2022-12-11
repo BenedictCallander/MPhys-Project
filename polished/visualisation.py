@@ -274,39 +274,22 @@ class subhalo:
         df = df[abs(df['x'])<lim]
         df = df[abs(df['y'])<lim]
         df = df.groupby(['x','y'])['dens'].sum().reset_index()
+        print(np.mean(df['dens']))
         print(df)
         plt.figure(figsize=(20,12),dpi=500)
         plt.style.use('dark_background')
-        #plt.hist2d(df['x'],df['y'],weights = np.log10(df['dens']), bins=[1000,1000],cmap='magma')
-        plt.scatter(df['x'],df['y'],c=((np.log10(df['dens']))),cmap='inferno',vmin = min(np.log10(df['dens'])),vmax=-2.5)
+        plt.hist2d(df['x'],df['y'],weights =(df['dens']), bins=[10000,10000],cmap='magma',vmax=0.004)
+        #plt.scatter(df['x'],df['y'],c=((np.log10(df['dens']))),cmap='inferno')#,vmin = min(np.log10(df['dens'])),vmax=-2.5)
         plt.xlabel('$\Delta x$ [kpc/h]')
         plt.ylabel('$\Delta y$ [kpc/h]')
         plt.colorbar(label='log10(Gas Mass)')
         plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
         #filename = 'Visuals/visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
-        filename = 'histtest2.png'
+        filename = 'vis_{}.png'.format(self.subID)
         plt.savefig(filename)
         plt.close()
         
-    def gas_visual2(self,dfin,lim):
-        df = pd.DataFrame(dfin)  # Convert the input data to a Pandas DataFrame
-        # Use Pandas to group the data by the 'x' and 'y' columns
-        df = df.groupby(['x','y'])['dens'].sum()
-        df = df.reset_index()  # Convert the resulting Series to a DataFrame
-        # Use Pandas to filter the data by the 'x' and 'y' columns
-        df = df[(abs(df['x']) < lim) & (abs(df['y']) < lim)]
-        plt.figure(figsize=(20,12),dpi=500)
-        plt.style.use('dark_background')
-        # Use Pandas to apply the log10 function to the 'dens' column and plot the results
-        plt.scatter(df['x'],df['y'],c=np.log10(df['dens']),cmap='magma',vmin=df['dens'].min(),vmax=-2.2)
-        plt.xlabel('$\Delta x$ [kpc/h]')
-        plt.ylabel('$\Delta y$ [kpc/h]')
-        plt.colorbar(label='log10(Gas Mass)')
-        plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-        filename = 'histtest2.png'
-        plt.savefig(filename)
-        plt.close()
-        
+    
         
     
     

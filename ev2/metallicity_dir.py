@@ -238,7 +238,6 @@ class cutsub:
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
         slope3 = my_pwlf.slopes[2]
-        return (slope1,slope2,slope3)
     
         '''
         print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
@@ -249,10 +248,11 @@ class cutsub:
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'histbrfit/double/{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID, self.snapID)
+        filename = 'files/historycutouts/evdir_37/png/{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID, self.snapID)
         plt.savefig(filename)
         plt.close()
         '''
+        return (slope1,slope2,slope3)
 
 class dodirectory:
     def __init__(self,primeID):
@@ -300,6 +300,8 @@ def dodir(i):
         return print(e)
     except TypeError as e:
         return print(e)
+    except KeyError as e:
+        return print(e)
     except IndexError as e:
         return print(e)
     except ValueError as e:
@@ -307,10 +309,10 @@ def dodir(i):
     
 dfyay = pd.read_csv("traceids.csv")
 ids = list(dfyay['id'])
-
+dodir(504560)
 #for i in ids:
 #    dodir(i)
-returns = Parallel(n_jobs=20)(delayed(dodir)(i) for i in ids)
+#returns = Parallel(n_jobs=20)(delayed(dodir)(i) for i in ids)
 
 #208568
 '''
