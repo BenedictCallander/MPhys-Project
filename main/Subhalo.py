@@ -754,7 +754,7 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = BCUTILS.subhalo_classification(99)
+dfin = pd.read_csv('alllocal33.csv')
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
@@ -764,7 +764,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:

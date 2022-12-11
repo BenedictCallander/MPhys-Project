@@ -43,7 +43,7 @@ class history:
         df = df[df['snapshot'].isin(keepvals)]
         return df
     
-df = pd.read_csv("traceids3.csv")
+df = pd.read_csv("traceids.csv")
 ids = list(df['id'])
 
 dataframes = []
@@ -53,7 +53,7 @@ for i in ids:
     dataframes.append(df)
     print("done for {}".format(i))
 combined = pd.concat(dataframes)
-combined.to_csv("alllocal33.csv")
+combined.to_csv("all.csv")
 
 
 #

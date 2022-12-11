@@ -145,3 +145,58 @@ m, c = np.linalg.lstsq(A * weights[:, np.newaxis], y * weights, rcond=None)[0]
 
 # Print result
 print(f"y = {m} * x + {c}")
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Set the radius of the annulus
+radius = 5
+
+# Generate data for the x and y axes of the plot
+theta = np.linspace(0, 2*np.pi, 100)
+x = radius*np.cos(theta)
+y = radius*np.sin(theta)
+
+# Create a figure and axes object for the plot
+fig, ax = plt.subplots()
+
+# Plot the annulus using the `fill_between` function
+ax.fill_between(x, y, radius*2, alpha=0.5)
+
+# Show the plot
+plt.show()
+
+
+
+
+
+
+
+
+
+df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                plt.figure(figsize=(20,12), dpi=500)
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(max(np.log10(df_valid['m']))))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='log10(Gas Mass)')
+                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'suppng/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+                
+                
+        
+import numba
+
+@numba.jit
+def piecewise_linear(x, x0, y0, k1, k2):
+    return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
+
+# use the piecewise_linear function as before

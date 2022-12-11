@@ -306,3 +306,21 @@ ids = list(dfyay['id'])
 #for i in ids:
 #    dodir(i)
 returns = Parallel(n_jobs=20)(delayed(dodir)(i) for i in ids)
+
+#208568
+'''
+@numba.jit
+def piecewise_linear(x, x0, y0, k1, k2):
+    return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
+
+def fit_piecewise_linear(xdata, ydata):
+    p, e = curve_fit(piecewise_linear, xdata, ydata, (5, 8, 1, -1))
+    x0, y0, k1, k2 = p
+    return k1, k2
+
+xdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ydata = [1, 4, 6, 7, 8, 9, 9, 8, 6, 4]
+
+k1, k2 = fit_piecewise_linear(xdata, ydata)
+print(k1, k2)
+'''

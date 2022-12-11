@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 import pwlf
@@ -14,7 +13,6 @@ import requests
 import illustris_python as il
 
 #Own module containing utility functions 
-
 #runtime calculation 
 import time
 
@@ -87,6 +85,8 @@ class UTILITY:
         '''
         f = (a*(x**2))+(b*x)+c
         return f
+
+
 
 class cutsub:
     def __init__(self,subID,snapID,simID,primeID):
@@ -237,42 +237,63 @@ class cutsub:
         slope2 = my_pwlf.slopes[1]
         slope3 = my_pwlf.slopes[2]
         
-        print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
-        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
-        yHat = my_pwlf.predict(xHat)
-        plt.figure(figsize=(20,12))
-        plt.plot(df['rad'], med_data1, 'b--')
-        plt.plot(xHat,yHat, 'g-')
-        plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'histbrfit/double/{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID, self.snapID)
-        plt.savefig(filename)
-        plt.close()
+        return (slope1,slope2,slope3) 
 
-df = pd.read_csv("all.csv")
-df = df.sample(frac=0.5, replace=False)
-subs = list(df['subhalo'])
-snaps = list(df['snapshot'])
-prime = list(df['primesub'])
-l1 = []; l2= []
-def dofunc(i):
-    try:
-        sub = cutsub(subs[i],snaps[i],'TNG50-1',prime[i])
-        sub.align_dfgen()
-        df = sub.filter()
-        slope1,slope2 = sub.piecewise(df,3)
-        subID = subs[i];snapID = snaps[i]; primeID = prime[i]
-        print("done for sub {} at snap {}".format(subID,snapID))
-        return (slope1,slope2,subID,snapID,primeID)
-    except OSError as e:
-        return print(e)
-    except TypeError as e:
-        return print(e)
-    except IndexError as e:
-        return print(e)
-    except ValueError as e:
-        return print(e)
+class dodirectory:
+    def __init__(self,primeID):
+        self.primeID = primeID
+    def getlist(self):
+        listpath = "files/historycutouts/evdir_{}/treedata_{}.csv".format(self.primeID,self.primeID)
+        df = pd.read_csv(listpath)
+        snapshots = list(df['snapshots'])
+        subhalos = list(df['subhalos']) 
+        return snapshots,subhalos
 
-returns = Parallel(n_jobs=20)(delayed(dofunc)(i) for i in range(len(subs)))
-dfout = pd.DataFrame(returns, columns = ['slope1', 'slope2', 'subhalo', 'snapshot', 'primesub'])
-dfout.to_csv("all2.csv")
+def dosingle(sub,snap,prime):
+    subhalo = cutsub(sub,snap,'TNG50-1', prime)
+    subhalo.align_dfgen()
+    df= subhalo.filter()
+    subID = sub
+    snapID = snap
+    slope1,slope2,slope3 = subhalo.doublepiecewise(df,3,8)
+    print("done for subhalo {} snapshot {}".format(sub,snap))
+    return (subID, snapID,slope1,slope2,slope3)
+
+dfyay = pd.read_csv("all.csv")
+dfyay = dfyay.sample(frac=0.1,replace=False)
+ids = list(dfyay['subhalo'])
+snapshots = list(dfyay['snapshot'])
+primes = list(dfyay['primesub'])
+
+def runall(i):
+    sub = ids[i]
+    snapshot = snapshots[i]
+    primeID = primes[i]
+    subID,snapID,slope1,slope2,slope3 = dosingle(sub,snapshot,primeID)
+    return (subID,snapID,primeID,slope1,slope2,slope3)
+    
+    
+
+#for i in ids:
+#    dodir(i)
+returns = Parallel(n_jobs=25)(delayed(runall)(i) for i in range(len(ids)))
+df = pd.DataFrame(returns, columns = ['subID','snapID','primeID','slope1','slope2','slope3'])
+df.to_csv("allrun.csv")
+#570598
+
+'''
+@numba.jit
+def piecewise_linear(x, x0, y0, k1, k2):
+    return np.piecewise(x, [x < x0], [lambda x:k1*x + y0-k1*x0, lambda x:k2*x + y0-k2*x0])
+
+def fit_piecewise_linear(xdata, ydata):
+    p, e = curve_fit(piecewise_linear, xdata, ydata, (5, 8, 1, -1))
+    x0, y0, k1, k2 = p
+    return k1, k2
+
+xdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ydata = [1, 4, 6, 7, 8, 9, 9, 8, 6, 4]
+
+k1, k2 = fit_piecewise_linear(xdata, ydata)
+print(k1, k2)
+'''

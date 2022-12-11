@@ -753,7 +753,7 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("alllocal99.csv")
+dfin = pd.read_csv("alllocal33.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['subhalo'])
 
@@ -763,7 +763,7 @@ valid_id = list(dfin['subhalo'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -811,53 +811,11 @@ def subhalo_analysis(i):
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-def subhalo_slope_fitplots(i):
-    try:
-        sub = subhalo("TNG50-1",99,i)
-        if sub.test<4:
-            print("not enough gas cells to continue")
-        else:
-            sub.galcen()
-            sub.ang_mom_align('gas')
-            sub.rad_transform()
-            dfg = sub.df_gen('gas','comb')
-            dfg2 = sub.combfilter(dfg,10)
-            sub.weighted_slopegen(dfg2,5)
-            print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
-            return print("done")
-    except OSError as e:    
-        return print(e)
-    '''
-    except ValueError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close
-        return print(e)
-    except KeyError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close        
-        return print(e)
-    except OSError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close         
-        return print(e)
-    except TypeError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close         
-        return print(e)
-    '''
 
-returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 15)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng99slopes.csv")
+df2.to_csv("csv/tng33slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
