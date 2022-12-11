@@ -36,7 +36,7 @@ from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-df = pd.read_csv("traceids.csv")
+
 def get(path, params = None):
     #utility function for API reading 
 
@@ -61,7 +61,7 @@ def get(path, params = None):
 
     return r
 
-def treeget(path, params = None):
+def varget(path,dir, params = None):
     #utility function for API reading 
 
     #Make API request - 
@@ -78,34 +78,60 @@ def treeget(path, params = None):
         return r.json() # parse json responses automatically
 
     if 'content-disposition' in r.headers:
-        filename = "files/trees/"+r.headers['content-disposition'].split("filename=")[1]
+        filename = dir + r.headers['content-disposition'].split("filename=")[1]
         with open(filename, 'wb') as f:
             f.write(r.content)
         return filename # return the filename string
 
     return r
 
-class tree:
-    def __init__(self,subhalo):
-        self.ID = subhalo
-        baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
-        self.suburl = baseurl + str(self.ID)
-        sub = get(self.suburl)
-        self.mpb = treeget(sub['trees']['sublink_mpb'])
-        print("done for subhalo {}".format(subhalo))
+'''
+Input parameters
 
+File containing IDS of all TNG99 subhalos to trace metallicity evolution
+
+'''
+df = pd.read_csv("traceids.csv")
 ids = list(df['id'])
-def download(i):
-    try:
-        subtree= tree(i)
-        print("done for {}".format(i))
-    except:
-        print("Connection refused by the server..")
-        print("Let me sleep for 5 seconds")
-        print("ZZzzzz...")
-        time.sleep(5)
-        print("Was a nice sleep, now let me continue...")
-        
+'''
+for i in ids:
+    dir_name = "files/binary/historycutouts/evdir_{}".format(i)
+    os.makedirs(dir_name)
+'''
 
-download(220650)
-#returns = Parallel(n_jobs=25)(delayed(download)(i) for i in ids)
+class history:
+    def __init__(self, descendant):
+        self.startsub = descendant
+        
+        self.mpb = "files/trees/sublink_mpb_{}.hdf5".format(self.startsub)
+        keepvals = [21,33,50,67,78,91,99]
+        self.length = keepvals
+        with h5py.File(self.mpb,'r') as f:
+            snapshots = list(f['SnapNum'][:])
+            subhalos= list (f['SubfindID'][:])
+        df = pd.DataFrame({
+            "snapshots": snapshots,
+            "subhalos":subhalos
+        })
+        
+        df = df[df['snapshots'].isin(keepvals)]
+        df.to_csv("files/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
+        self.target_snaps= list(df['snapshots'])
+        self.target_subhalos = list(df['subhalos'])
+        #print(df)
+    
+    def cutoutdownload(self):
+        for i in range(len(self.target_snaps)):
+            snap = self.target_snaps[i]
+            sub = self.target_subhalos[i]
+            url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(snap,sub)
+            temp = get(url)
+            cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities'}
+            cutout = varget(temp['cutouts']['subhalo'],"files/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
+            
+def down(i):
+    sub = history(i)
+    sub.cutoutdownload()
+    return print("subahlo {}".format(i))
+
+returns = Parallel(n_jobs= 20)(delayed(down)(j) for j in ids)

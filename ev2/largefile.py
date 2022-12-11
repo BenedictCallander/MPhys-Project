@@ -34,7 +34,7 @@ class history:
         
     def gettree(self):
         keepvals = [21,33,50,67,78,91,99]
-        fpath = "/home/AstroPhysics-Shared/PROJECTS/MPhys_Schady/Projects/TNGmetgrads/BC763/MPhys-Project/evolution/files/binary/trees/99trees/sublink_mpb_{}.hdf5".format(self.primesub)
+        fpath = "files/trees/sublink_mpb_{}.hdf5".format(self.primesub)
         with h5py.File(fpath,'r') as f:
             snapshots = list(f['SnapNum'][:])
             subhalos= list (f['SubfindID'][:])
@@ -45,17 +45,22 @@ class history:
     
 df = pd.read_csv("traceids.csv")
 ids = list(df['id'])
-
+no=[]
 dataframes = []
 for i in ids:
-    obj = history(i)
-    df = obj.gettree()
-    dataframes.append(df)
-    print("done for {}".format(i))
+    try:
+        obj = history(i)
+        df = obj.gettree()
+        dataframes.append(df)
+        print("done for {}".format(i))
+    except FileNotFoundError as e:
+        no.append(i)
+        print("indexed")
 combined = pd.concat(dataframes)
 combined.to_csv("all.csv")
 
+print(no)
 
-#
+
 # point of no return was 572840
 #
