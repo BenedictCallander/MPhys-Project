@@ -217,15 +217,15 @@ class visualisation:
                 df_valid = df.round(decp)
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
-                df_valid = df_valid.groupby(['x','y'])['sfr'].sum().reset_index()
+                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
                 plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['sfr'])),cmap='inferno', vmin=(min(np.log10(df_valid['sfr']))),vmax =(max(np.log10(df_valid['sfr']))))
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Mass)')
                 plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-                filename = 'sfr_{}_sub_{}.png'.format(self.simID, self.subID)
+                filename = 'Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
             elif(quant=='metallicity'):
@@ -233,14 +233,30 @@ class visualisation:
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
                 df_valid = df_valid.groupby(['x','y'])['met'].sum().reset_index()
-                plt.figure(figsize=(21,15))
+                plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(df_valid['met']),cmap='inferno', vmin=1.1*min(df_valid['met']),vmax= max(df_valid['met']))
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['met'])),cmap='inferno', vmin=(min(np.log10(df_valid['met']))),vmax =(0.7*max(np.log10(df_valid['met']))))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
-                plt.colorbar(label='log10(Gas Metallicity)')
-                plt.title('Metallicity Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-                filename = 'met_gas_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.colorbar(label='log10(Gas Mass)')
+                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'met_{}_sub_{}.png'.format(self.simID, self.subID)
+                plt.savefig(filename)
+                plt.close()
+            elif(quant=='sfr'):
+                df_valid = df.round(decp)
+                annul1= annuli_pc*self.crit_dist
+                df_valid = df[df['rad']<annul1]
+                df_valid=df_valid[df_valid['sfr']>0.0]
+                df_valid = df_valid.groupby(['x','y'])['sfr'].sum().reset_index()
+                plt.figure(figsize=(20,12), dpi=500)
+                plt.style.use('dark_background')
+                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['sfr'])),cmap='inferno')# vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
+                plt.xlabel('$\Delta x$ [kpc/h]')
+                plt.ylabel('$\Delta y$ [kpc/h]')
+                plt.colorbar(label='log10(Gas Mass)')
+                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
+                filename = 'sfr_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
 
@@ -323,7 +339,7 @@ massive_list=[0, 63864, 96762, 117250, 143880, 184931, 198182, 208811, 220595, 2
 #print(len(sub1.pgas_met))
 
 #for i in massive_ids:
-sub1= galaxy('TNG50-1',99,275545)
+sub1= galaxy('TNG50-1',99,117250)
 sub1.galcen()
 sub1.ang_mom_align('gas')
 sub1.radial_coo()
@@ -331,9 +347,9 @@ dfg = sub1.dataframegen('gas')
 dfs = sub1.dataframegen('star')
 #sub1.gas_plot(0.5)
 #dfg.to_csv('inspect.csv')
-
+print("Current Runtime before plot: {}".format(time.time()-start))
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.visual('gas','mass',4,1)
+sub1plot.visual('gas','sfr',4,1)
 
 #print(min(sub1.pstar_coo[:,0]))
 #print(max(sub1.pstar_coo[:,0]))

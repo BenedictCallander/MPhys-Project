@@ -274,12 +274,12 @@ class subhalo:
         df = df[abs(df['x'])<lim]
         df = df[abs(df['y'])<lim]
         df = df.groupby(['x','y'])['dens'].sum().reset_index()
-        print(np.mean(df['sfr']))
+        print(np.mean(df['dens']))
         print(df)
         plt.figure(figsize=(20,12))
         plt.style.use('dark_background')
         #plt.hist2d(df['x'],df['y'],weights =(df['dens']), bins=[2000,1500],cmap='magma',vmax=0.000006)#,vmin=0.0008,vmax=0.002)
-        plt.scatter(df['x'],df['y'],c=10*(df['sfr']),cmap='dens',vmax=0.0003)#,vmin=-7,vmax=-1)
+        plt.scatter(df['x'],df['y'],c=10*(df['dens']),cmap='magma')#,vmax=0.0003)#,vmin=-7,vmax=-1)
         plt.xlabel('$\Delta x$ [kpc/h]')
         plt.ylabel('$\Delta y$ [kpc/h]')
         plt.colorbar(label='log10(Gas Mass)')
@@ -290,9 +290,9 @@ class subhalo:
         plt.close()
         
     def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
-        df = dfin.sample(frac=0.01,replace=False)
+        df = dfin#.sample(frac=0.01,replace=False)
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -305,7 +305,7 @@ class subhalo:
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
         plt.figure(figsize=(20,12))
-        plt.plot(df['rad'], med_data1, 'b--')
+        plt.hist2d(df['rad'],12+np.log10(df['met']),bins=[200,200], weights=df['sfr'],cmap='binary')
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
@@ -314,8 +314,6 @@ class subhalo:
         plt.close()
         #'''
         return (slope1,slope2,slope3)
-
-
 
 class csvvis:
     def __init__(self,fpath):
@@ -329,14 +327,16 @@ test subject= subhalo 275545
 checkpoint 87768 on terminal
 '''    
 
-sub = subhalo('TNG50-1',99,275545)
+sub = subhalo('TNG50-1',99,96762)
 sub.galcen()
 sub.ang_mom_align('gas')
 sub.rad_transform()
 df =sub.df_gen('gas','comb')
 print("current runtime {}".format(time.time()-start))
-sub.doublepiecewise(df,15,60)
-
+#sub.gas_visual(df,30)
+sub.doublepiecewise(df,1,2)
+#96762
+#117250
 end = time.time()
 print("runtime = {}".format(end-start))
 

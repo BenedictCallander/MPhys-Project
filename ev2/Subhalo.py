@@ -765,7 +765,7 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("tng33MAIN.csv")
+dfin = pd.read_csv("csv/tng99MAIN.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
@@ -775,7 +775,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -785,11 +785,11 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             idval = i
-            slope1,slope2,slope3 = sub.doublepiecewise(dfg2,3,8)
+            slope1,slope2 = sub.broken_fit(dfg2,4)
             met = sub.tot_met
             sfr = sub.totsfr
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
-            return (met,idval,sfr,slope1,slope2,slope3)
+            return (met,idval,sfr,slope1,slope2)
 
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -824,9 +824,9 @@ def subhalo_analysis(i):
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
 returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','slope3'])
+df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng33MSslopes.csv")
+df2.to_csv("tng99MS2slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|
