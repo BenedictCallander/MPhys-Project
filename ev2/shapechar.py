@@ -19,6 +19,7 @@ def shapemeans(i):
     mean4 = np.mean(sfr)
     print("slope1={} : slope2 ={} : slope3={}".format(mean1,mean2,mean3))
     print("mean SFR: {}".format(mean4))
+    print(max(df['mass']))
     return(mean1,mean2,mean3,mean4)
 snapshots=(21,33,50,67,78,91,99)
 

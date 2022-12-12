@@ -751,7 +751,7 @@ class subhalo:
     def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
         df = dfin.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -765,9 +765,9 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("tng99subhalos.csv")
+dfin = pd.read_csv("tng33MAIN.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
-valid_id = list(dfin['subhalo'])
+valid_id = list(dfin['id'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
 #Function to generate subhalo object using class and specify analysis functions to be run -> function allows parallelisation to be used|
@@ -775,7 +775,7 @@ valid_id = list(dfin['subhalo'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -803,7 +803,7 @@ def subhalo_analysis(i):
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close        
-        return print(e)
+        return print(e,i)
     
     except OSError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -823,10 +823,10 @@ def subhalo_analysis(i):
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','slope3'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng99slopes.csv")
+df2.to_csv("tng33MSslopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|

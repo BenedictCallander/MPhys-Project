@@ -111,10 +111,10 @@ class subhalo:
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
         hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        self.test = len(hcoldgas)
         #print(hcoldgas)
         #print(len(hcoldgas1), len(hcoldgas2))
         #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        self.test = len(hcoldgas)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -274,32 +274,59 @@ class subhalo:
         df = df[abs(df['x'])<lim]
         df = df[abs(df['y'])<lim]
         df = df.groupby(['x','y'])['dens'].sum().reset_index()
-        print(np.mean(df['dens']))
+        print(np.mean(df['sfr']))
         print(df)
-        plt.figure(figsize=(20,12),dpi=500)
+        plt.figure(figsize=(20,12))
         plt.style.use('dark_background')
-        plt.hist2d(df['x'],df['y'],weights =(df['dens']), bins=[10000,10000],cmap='magma',vmax=0.004)
-        #plt.scatter(df['x'],df['y'],c=((np.log10(df['dens']))),cmap='inferno')#,vmin = min(np.log10(df['dens'])),vmax=-2.5)
+        #plt.hist2d(df['x'],df['y'],weights =(df['dens']), bins=[2000,1500],cmap='magma',vmax=0.000006)#,vmin=0.0008,vmax=0.002)
+        plt.scatter(df['x'],df['y'],c=10*(df['sfr']),cmap='dens',vmax=0.0003)#,vmin=-7,vmax=-1)
         plt.xlabel('$\Delta x$ [kpc/h]')
         plt.ylabel('$\Delta y$ [kpc/h]')
         plt.colorbar(label='log10(Gas Mass)')
         plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
         #filename = 'Visuals/visuals/Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
-        filename = 'vis_{}.png'.format(self.subID)
+        filename = 'scatvis_{}.png'.format(self.subID)
         plt.savefig(filename)
         plt.close()
         
+    def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
+        df = dfin.sample(frac=0.01,replace=False)
+        df.sort_values(by="rad",inplace = True)
+        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
+        my_pwlf.fit_with_breaks(x0)
+        slope1 = my_pwlf.slopes[0]
+        slope2 = my_pwlf.slopes[1]
+        slope3 = my_pwlf.slopes[2]
     
-        
-    
-    
-        
+        #'''
+        print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
+        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
+        yHat = my_pwlf.predict(xHat)
+        plt.figure(figsize=(20,12))
+        plt.plot(df['rad'], med_data1, 'b--')
+        plt.plot(xHat,yHat, 'g-')
+        plt.xlabel("Radius (Normalised Code Units)")
+        plt.ylabel("12+$log_{10}$ $(O/H)$")
+        filename = '{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID)
+        plt.savefig(filename)
+        plt.close()
+        #'''
+        return (slope1,slope2,slope3)
 
+
+
+class csvvis:
+    def __init__(self,fpath):
+        self.path = fpath
+    def slopegrad(self):
+        df = self.df
+        
+        
 '''
 test subject= subhalo 275545
-
 checkpoint 87768 on terminal
-
 '''    
 
 sub = subhalo('TNG50-1',99,275545)
@@ -308,7 +335,8 @@ sub.ang_mom_align('gas')
 sub.rad_transform()
 df =sub.df_gen('gas','comb')
 print("current runtime {}".format(time.time()-start))
-sub.gas_visual(df,60)
+sub.doublepiecewise(df,15,60)
+
 end = time.time()
 print("runtime = {}".format(end-start))
 
