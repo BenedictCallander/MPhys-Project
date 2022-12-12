@@ -189,19 +189,6 @@ class cutsub:
     def linearfit(self, dfin):
         dfin.sort_values(by='rad',inplace=True)
         popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],np.log10(dfin['met'])+12,sigma=1/dfin['sfr'],absolute_sigma=True)
-        med_data = medfilt(np.log10(dfin['met'])+12,kernel_size = 21)
-
-        plt.figure(figsize=(20,12))
-        plt.title("Metgrad for {} - snap{} (linked to sub{}_snap99)".format(self.subID,self.snapID,subhaloid))
-        plt.plot(dfin['rad'], med_data, 'r-')
-        plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
-        plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}O/H)$ (SFR Normalised)")
-        plt.ylim(8,11)
-        filename = 'historypng/snap{}_progenitorto_{}png'.format(self.snapID,subhaloid)
-        plt.savefig(filename)
-        plt.close()
-        #print("gradient {}".format(popt[0]))
         return popt[0]
     
     def piecewise(self,dfin,breakpoint):
@@ -212,46 +199,17 @@ class cutsub:
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
-        #print("slopes are inner: {} and outer:{}".format(slope1,slope2))
-        '''
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
-        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
-        yHat = my_pwlf.predict(xHat)
-        plt.figure(figsize=(20,12))
-        plt.plot(df['rad'], med_data1, 'b--')
-        plt.plot(xHat,yHat, 'g-')
-        plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}$ $(O/H)$")
-        #filename = 'histbrfit/single/{}_snap_sub={}.png'.format(self.snapID, self.subID)
-        plt.savefig("testing{}.png".format(self.subID))
-        plt.close()
-        '''
         return (slope1,slope2)
     
     def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
         df = dfin.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
         slope3 = my_pwlf.slopes[2]
-    
-        '''
-        print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
-        xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
-        yHat = my_pwlf.predict(xHat)
-        plt.figure(figsize=(20,12))
-        plt.plot(df['rad'], med_data1, 'b--')
-        plt.plot(xHat,yHat, 'g-')
-        plt.xlabel("Radius (Normalised Code Units)")
-        plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'files/historycutouts/evdir_37/png/{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID, self.snapID)
-        plt.savefig(filename)
-        plt.close()
-        '''
         return (slope1,slope2,slope3)
 
 class dodirectory:

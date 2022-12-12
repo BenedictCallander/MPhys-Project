@@ -290,7 +290,7 @@ class subhalo:
         plt.close()
         
     def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
-        df = dfin#.sample(frac=0.01,replace=False)
+        df = dfin.sample(frac=0.01,replace=False)
         df.sort_values(by="rad",inplace = True)
         #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
@@ -304,9 +304,10 @@ class subhalo:
         print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
+        plt.style.use('dark_background')
         plt.figure(figsize=(20,12))
-        plt.hist2d(df['rad'],12+np.log10(df['met']),bins=[200,200], weights=df['sfr'],cmap='binary')
-        plt.plot(xHat,yHat, 'g-')
+        plt.hist2d(df['rad'],12+np.log10(df['met']),bins=[200,200], weights=1/df['sfr'],cmap='PuOr')
+        plt.plot(xHat,yHat, 'b-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
         filename = '{}_sub_{}_doublebreak.png'.format(self.snapID, self.subID)
@@ -321,20 +322,21 @@ class csvvis:
     def slopegrad(self):
         df = self.df
         
-        
+
+  
 '''
 test subject= subhalo 275545
 checkpoint 87768 on terminal
 '''    
 
-sub = subhalo('TNG50-1',99,96762)
+sub = subhalo('TNG50-1',99,117250)
 sub.galcen()
 sub.ang_mom_align('gas')
 sub.rad_transform()
 df =sub.df_gen('gas','comb')
 print("current runtime {}".format(time.time()-start))
 #sub.gas_visual(df,30)
-sub.doublepiecewise(df,1,2)
+sub.doublepiecewise(df,10,50)
 #96762
 #117250
 end = time.time()
