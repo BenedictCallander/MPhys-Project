@@ -16,7 +16,6 @@ headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 #Main Code
 #
 
-
 #----------------------------------------------------------------------------------------------------------------------------------------
 #CLASS UTILITY
 #----------------------------------------------------------------------------------------------------------------------------------------
@@ -128,22 +127,31 @@ class snaptools:
 #CLASS PLOTS
 #----------------------------------------------------------------------------------------------------------------------------------------
 class plots:
-    def __init__(self,subID,dfin):
+    def __init__(self,subID):
         self.subID = subID
     
     def metgrad(self,dfin):
         df = dfin.sort_values(by='rad').copy()
         plt.figure(figsize=(20,12))
-        plt.plot(df['rad'],df['met'],'g+')
+        plt.plot(df['rad'],12+np.log10(df['met']),'g+')
         plt.xlabel("Radius (Kpc)") ; plt.ylabel("12+$log_{10} ({O}/{H}$")
         fpath = "metparticles_{}.png".format(self.subID)
+        plt.savefig(fpath)
+        plt.close()
+        
+    def metgradsfr(self,dfin):
+        df = dfin.sort_values(by='rad').copy()
+        plt.figure(figsize=(20,12))
+        plt.scatter(df['rad'],12+np.log10(df['met']),c=df['sfr'],cmap = 'viridis')
+        plt.xlabel("Radius (Kpc)") ; plt.ylabel("12+$log_{10} ({O}/{H}$")
+        fpath = "metparticlessfr_{}.png".format(self.subID)
         plt.savefig(fpath)
         plt.close()
     
     def linearmetgrad(self,dfin):
         df = dfin.sort_values(by='rad').copy()
         x0 = list(df['rad'])
-        interp = savgol_filter(12+np.log10(df['met']),window_length=5)
+        interp = savgol_filter(12+np.log10(df['met']),window_length=21,polyorder=5)
         popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],(12+np.log10(df['met'])),sigma = 1/df['sfr'],absolute_sigma=True)
         
         plt.figure(figsize=(20,12))
@@ -158,7 +166,7 @@ class plots:
     def singlebreak(self,dfin,breakpoint):
         df = dfin.copy()
         df.sort_values(by="rad",inplace = True)
-        interp = savgol_filter(12+np.log10(df['met']),window_length=5)
+        interp = savgol_filter(12+np.log10(df['met']),window_length=21,polyorder=5)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -176,7 +184,7 @@ class plots:
     def doublebreak(self,dfin,break1,break2):
         df = dfin.copy()
         df.sort_values(by="rad",inplace = True)
-        interp = savgol_filter(12+np.log10(df['met']),window_length=5)
+        interp = savgol_filter(12+np.log10(df['met']),window_length=21,polyorder=5)
         x0 = np.array([min(df['rad']), break1,break2, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -193,25 +201,25 @@ class plots:
         
     def gas_visual(self,dfin,decp):
                 df_valid = dfin.round(decp)
-                df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                df_valid = df_valid.groupby(['x','y'])['dens'].sum().reset_index()
                 plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
-                plt.scatter(df_valid['x'],df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno',
-                            vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
+                plt.scatter(df_valid['x'],df_valid['y'],c=(np.log10(df_valid['dens'])),cmap='inferno',
+                            vmin=(min(np.log10(df_valid['dens']))),vmax =(0.7*max(np.log10(df_valid['dens']))))
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Gas Mass)')
-                plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
                 filename = 'Mgass_sub_{}.png'.format(self.subID)
                 plt.savefig(filename)
                 plt.close()
         
     def met_histogram(self,dfin,extra):
         df = dfin.copy()
+        df.sort_values(by='rad',inplace=True)
         plt.figure(figsize=(20,12))
         plt.hist2d(df['rad'],12+np.log10(df['met']),bins=[200,200], weights=1/df['sfr'],cmap='PuOr')
         if (extra=='Y'):
-            interp = savgol_filter(12+np.log10(df['met']),window_length=5)
+            interp = savgol_filter(12+np.log10(df['met']),window_length=21,polyorder=5)
             plt.plot(df['rad'],interp,'b-')
         else:
             print("No Sav Filter Apploied")
@@ -539,7 +547,6 @@ class dodirectory:
         subhalos = list(df['subhalos']) 
         return snapshots,subhalos
     
-
 #----------------------------------------------------------------------------------------------------------------------------------------
 # CLASS CUTOUT_PROCESSING
 #----------------------------------------------------------------------------------------------------------------------------------------
@@ -568,11 +575,8 @@ class cutout_processing:
                 'snapshot':snaps,
                 'slope1':s1,
                 'slope2':s2,
-                'slope3':s3
-                
+                'slope3':s3  
             })
-            #returns = Parallel(n_jobs=4)(delayed(dosingle)(subhalos[j],snapshots[j],i)for j in range(4))
-            #df = pd.DataFrame(returns,columns = ['subhalo','snapshot','slope1','slope2'])
             fpath = "files/historycutouts/evdir_{}/slope{}.csv".format(i,i)
             df.to_csv(fpath)
             return print("done for descendant {}".format(i))

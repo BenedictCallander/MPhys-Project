@@ -134,10 +134,6 @@ class subhalo:
         #use api to easily read snapshot information
         redshift = 0 if self.snapID is 99 else 0.5 if self.snapID is 67 else 2 if snapID is 33 else print("invalid snapID: Not on Noether")
         
-        #
-        #redshift = 0 for snap99
-        #redshift = 2.00202813925285 for snap 33
-        #redshift = 0.503047523244883 for snap 67
         self.redshift =redshift  # store redshift value as attribute
         
         scalefac = 1./(1.+redshift) #calculate scale factor
@@ -148,7 +144,9 @@ class subhalo:
         
         ptNumGas = il.snapshot.partTypeNum('gas') #determine index designation for each particle type
         ptNumStars = il.snapshot.partTypeNum('stars')
+        #
         #pull all data for specific subhalo 
+        #
         all_fields= il.groupcat.loadSingle(basePath, snapID, subhaloID = subID)
         self.test=all_fields['SubhaloMassInRadType'][ptNumGas]
         self.tot_met = all_fields['SubhaloGasMetallicity']
@@ -186,8 +184,11 @@ class subhalo:
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
         self.pgas_dens = gas['Density'][hcoldgas]
         self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
+        
+        
         #print(all_fields.keys())
-        # Load all stellar particle data
+        # 
+        #Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities','GFM_Metallicity' ])
         hstar = np.where( (np.sum((stars['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         self.pstar_coo   = stars['Coordinates'][hstar]/hubble / (1. + redshift)
