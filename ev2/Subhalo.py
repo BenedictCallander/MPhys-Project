@@ -185,8 +185,6 @@ class subhalo:
         self.pgas_dens = gas['Density'][hcoldgas]
         self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
         
-        
-        #print(all_fields.keys())
         # 
         #Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities','GFM_Metallicity' ])
