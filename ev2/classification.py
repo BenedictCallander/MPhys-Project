@@ -53,10 +53,21 @@ for i,id in enumerate(sfr_ids):
     sfr_sfr.append(sfrsubs['results'][i]['sfr'])
     urls.append(sfrsubs['results'][i]['url'])
 
-df_analysis = pd.DataFrame({
+df = pd.DataFrame({
     "id": sfr_ids,
     "mass": mass_sfr,
     "sfr": sfr_sfr,
     "url": urls
 })
-df_analysis.to_csv('tng99subhalos.csv')
+df.to_csv('tng99subhalos.csv')
+
+plt.figure(figsize=(20,12))
+plt.plot( df['mass'],(df['sfr']), 'g+')
+plt.yscale('log')
+plt.xlabel("Total Mass [$M_\odot$]",fontsize=20);plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+plt.xlim(9.5,11.5)
+plt.savefig("classif.png")

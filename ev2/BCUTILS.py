@@ -362,8 +362,28 @@ class shapeanalysis:
     
     def get_char_3D(x,y,z):
         '''
-        take inputs of 3 slopes -> return value based on slope 
+        get_char_3d(x,y,z)
+        
+        INPUTS:
+        
+        x: float | Inner gradient of subhalo metallicity gradient
+        
+        y: float | Central gradient of subhalo metallicity gradient
+        
+        z: float | Outer gradient of subhalo metallicity gradient 
+        
+        
+        Outputs: int range(1-7) | identifying number describing gradient broken fit shape according to 
+                ->shape 1:  steep negative inner followed by shallow negative mid/outer
+                ->shape 2:  shallow negative inner followed by steeper negative mid/outer
+                ->shape 3:  positive inner followed by negative outers
+                ->shape 4:  positive inner followed by positive outer( Something has gone wrong)
+                ->shape 5:  steep inner down followed by shallow negative outer
+                ->shape 6:  steep inner up followed by shallow negative outer
+                ->shape 7:  No shape criteria met
+
         '''
+        
         
         #shape 1: steep negative inner followed by shallow negative mid/outer
         if x<0 and y<0 and abs(x)<abs(y):
@@ -398,6 +418,16 @@ class shapeanalysis:
             return 3 
     
     def get_inner_direction(x):
+        '''
+        Inputs: 
+        
+        X: float (num)
+        
+        Gradient of inner slope of metallicity gradient fit 
+        
+        outputs: Shape characteristic identifying number 
+        
+        '''
         if x>0:
             return 1
         elif x<0: 
@@ -456,6 +486,13 @@ class cutout_subhalo:
         self.pgas_coo -= self.centre[None,:]
 
     def align_dfgen(self):
+        '''
+        Inputs: Self | Particle level data input from object creation
+        
+        Computes angular momentum of subhalo gas, uses information to create a transformation matrix to align the subhalo such that x,y plane is
+        perpendicular to z 
+        
+        '''
         _coo = np.copy(self.pgas_coo)
         _vel = np.copy(self.pgas_vel)
         _m = np.copy(self.pgas_m)
