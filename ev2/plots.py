@@ -29,28 +29,30 @@ start =time.time()
 
 
 
-df = pd.read_csv("alldatadone.csv")
-df.dropna()
-slopes1 =list(df['slope1'])
-print(np.mean(slopes1))
-slopes2 =list(df['slope2'])
-print(np.mean(slopes2))
-slopes3 = list(df['slope3'])
-slopechar1=[]
-slopechar2=[]
-for i in range(len(slopes1)):
-    slopechar1.append(slopes2[i]-slopes1[i])
-    slopechar2.append(slopes3[i]-slopes2[i])
-    
-    
-    
+df = pd.read_csv("tng67KPCslopeslin.csv")
 
-df = df[df['snapshot'].isin([78])]
+    
+    
+print(min(df['slope']))
+print(max(df['slope']))
+print(0.5*np.mean(df['slope']))
+print(1.5*np.mean(df['slope']))
+
 plt.figure(figsize=(20,12))
-plt.scatter(df['mass'],(df['sfr']),c=(df['slope2']-df['slope1']) ,cmap = 'magma')
+
 plt.yscale('log')
-plt.xlabel("Log10M")
-plt.colorbar(label="Outerslope")
-plt.ylabel("12+log10(O/H)")
-plt.savefig("slopechar1.png")
+
+plt.title("Metallicity Gradients of TNG50-1 Main Sequence Subhalos at z=0.5")
+plt.xlabel("Total Mass [$M_\odot$]",fontsize=20)
+plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+
+plt.scatter(df['mass'],(df['sfr']),c=(df['slope']),cmap='magma',vmin=-0.5,vmax=0.3)
+plt.colorbar(label="Metallicity Gradient [dex/Kpc]")
+
+plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+
+plt.savefig("slopechar67.png")
 plt.close()

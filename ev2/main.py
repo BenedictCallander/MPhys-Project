@@ -11,7 +11,7 @@ import BCUTILS
 from subobj import subhalo
 
 from BCUTILS import UTILITY,plots
-
+'''
 sub = subhalo("TNG50-1",99,19)
 sub.galcen()
 sub.ang_mom_align('gas')
@@ -23,3 +23,25 @@ print(dfg2)
 
 subvis=plots(19)
 subvis.gas_visual(dfg2,4)
+'''
+
+dfin = pd.read_csv("csv/tng67MAIN.csv")
+ids = list(dfin['id'])
+print(len(ids))
+dataframes=[]
+invalids = []
+valids = []
+for i in ids:
+    try:
+        fpath = "dfdump/df{}.csv".format(i)
+        df=pd.read_csv(fpath)
+        dataframes.append(df)
+        valids.append(i)
+    except FileNotFoundError:
+        invalids.append(i)
+print(len(invalids))    
+data2 = pd.concat(dataframes)
+data2.to_csv("all67working.csv")
+
+dfin=dfin[dfin['id'].isin(valids)]
+dfin.to_csv("csv/tng67MAIN.csv")
