@@ -5,14 +5,13 @@
 # Respository https://github.com/btcallander/MPhys-Project (private)
 #
 
-
 #Plotting, numerical functions and dataset manipulation
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 import pwlf
-import os 
+
 #hdf5 binary file manipulation
 import h5py
 
@@ -31,12 +30,10 @@ import time
 from joblib import Parallel, delayed
 
 #specific functions for fitting utilities
-
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-
 def get(path, params = None):
     #utility function for API reading 
 
@@ -85,26 +82,13 @@ def varget(path,dir, params = None):
 
     return r
 
-'''
-Input parameters
-
-File containing IDS of all TNG99 subhalos to trace metallicity evolution
-
-'''
-df = pd.read_csv("traceids2.csv")
-ids = list(df['id'])
-'''
-for i in ids:
-    dir_name = "files/binary/historycutouts/evdir_{}".format(i)
-    os.makedirs(dir_name)
-'''
 
 class history:
     def __init__(self, descendant):
         self.startsub = descendant
         
         self.mpb = "files/binary/trees/99trees/sublink_mpb_{}.hdf5".format(self.startsub)
-        keepvals = [21,33,50,67,78,91,99]
+        keepvals = [21,50,78,91]
         self.length = keepvals
         with h5py.File(self.mpb,'r') as f:
             snapshots = list(f['SnapNum'][:])
@@ -115,23 +99,29 @@ class history:
         })
         
         df = df[df['snapshots'].isin(keepvals)]
-        df.to_csv("files/binary/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
+        df.to_csv("files/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
         self.target_snaps= list(df['snapshots'])
         self.target_subhalos = list(df['subhalos'])
-        print(df)
-    
-    def cutoutdownload(self):
-        for i in range(6):
-            snap = self.target_snaps[i]
-            sub = self.target_subhalos[i]
-            url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(snap,sub)
-            temp = get(url)
-            cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities',''}
-            cutout = varget(temp['cutouts']['subhalo'],"files/binary/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
-            
-def down(i):
-    sub = history(i)
-    sub.cutoutdownload()
-    return print("subahlo {}".format(i))
+        
+    def getdata(self,i):
+        snap = self.target_snaps[i]
+        sub = self.target_subhalos[i]
+        url = url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(snap,sub)
+        temp = get(url)
+        cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities'}
+        cutout = varget(temp['cutouts']['subhalo'],"files/binary/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
+    def pardown(self):
+        returns = Parallel(n_jobs=6)(delayed(history.getdata)(self,i) for i in range(len(self.target_snaps)))
+        
 
-returns = Parallel(n_jobs= 20)(delayed(down)(j) for j in ids)
+def rundownload(i):
+    get = history(i)
+    print("sub {} history downloaded".format(i))
+    
+df = pd.read_csv("traceids.csv")
+ids = list(df['id'])
+returns = Parallel(n_jobs=30)(delayed(rundownload)(i) for i in ids)
+
+
+end = time.time()
+print("runtime {} ".format(end-start))

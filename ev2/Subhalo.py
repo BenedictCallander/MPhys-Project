@@ -18,7 +18,6 @@ import requests
 import illustris_python as il
 
 #Own module containing utility functions 
-import BCUTILS
 
 #runtime calculation 
 import time
@@ -135,10 +134,6 @@ class subhalo:
         #use api to easily read snapshot information
         redshift = 0 if self.snapID is 99 else 0.5 if self.snapID is 67 else 2 if snapID is 33 else print("invalid snapID: Not on Noether")
         
-        #
-        #redshift = 0 for snap99
-        #redshift = 2.00202813925285 for snap 33
-        #redshift = 0.503047523244883 for snap 67
         self.redshift =redshift  # store redshift value as attribute
         
         scalefac = 1./(1.+redshift) #calculate scale factor
@@ -149,7 +144,9 @@ class subhalo:
         
         ptNumGas = il.snapshot.partTypeNum('gas') #determine index designation for each particle type
         ptNumStars = il.snapshot.partTypeNum('stars')
+        #
         #pull all data for specific subhalo 
+        #
         all_fields= il.groupcat.loadSingle(basePath, snapID, subhaloID = subID)
         self.test=all_fields['SubhaloMassInRadType'][ptNumGas]
         self.tot_met = all_fields['SubhaloGasMetallicity']
@@ -187,8 +184,9 @@ class subhalo:
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
         self.pgas_dens = gas['Density'][hcoldgas]
         self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
-        #print(all_fields.keys())
-        # Load all stellar particle data
+        
+        # 
+        #Load all stellar particle data
         stars = il.snapshot.loadSubhalo(basePath, snapID, subID, 'stars', fields=['Coordinates', 'Masses', 'Velocities','GFM_Metallicity' ])
         hstar = np.where( (np.sum((stars['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         self.pstar_coo   = stars['Coordinates'][hstar]/hubble / (1. + redshift)
@@ -525,7 +523,7 @@ class subhalo:
         '''
         df = df.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -749,12 +747,24 @@ class subhalo:
         fig.close()
         return (linslope,brokeninner,brokenouter)
 
+    def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
+        df = dfin.copy()
+        df.sort_values(by="rad",inplace = True)
+        #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
+        my_pwlf.fit_with_breaks(x0)
+        slope1 = my_pwlf.slopes[0]
+        slope2 = my_pwlf.slopes[1]
+        slope3 = my_pwlf.slopes[2]
+        
+        return(slope1,slope2,slope3)
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv('alllocal33.csv')
+dfin = pd.read_csv("csv/tng99MAIN.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
@@ -764,7 +774,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -774,11 +784,11 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             idval = i
-            inside,outside = sub.broken_fit(dfg2,5)
+            slope1,slope2 = sub.broken_fit(dfg2,4)
             met = sub.tot_met
             sfr = sub.totsfr
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
-            return (met,idval,sfr,inside,outside)
+            return (met,idval,sfr,slope1,slope2)
 
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -792,7 +802,7 @@ def subhalo_analysis(i):
         #f = open(fname,"w")
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close        
-        return print(e)
+        return print(e,i)
     
     except OSError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -812,53 +822,10 @@ def subhalo_analysis(i):
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 
-def subhalo_slope_fitplots(i):
-    try:
-        sub = subhalo("TNG50-1",99,i)
-        if sub.test<4:
-            print("not enough gas cells to continue")
-        else:
-            sub.galcen()
-            sub.ang_mom_align('gas')
-            sub.rad_transform()
-            dfg = sub.df_gen('gas','comb')
-            dfg2 = sub.combfilter(dfg,10)
-            sub.weighted_slopegen(dfg2,5)
-            print("subhalo {} calculated: current runtime time: {}".format(i,(time.time()-start)))
-            return print("done")
-    except OSError as e:    
-        return print(e)
-    '''
-    except ValueError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close
-        return print(e)
-    except KeyError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close        
-        return print(e)
-    except OSError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close         
-        return print(e)
-    except TypeError as e:
-        #fname = "errors/errors{}.txt".format(i)
-        #f = open(fname,"w")
-        #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
-        #f.close         
-        return print(e)
-    '''
-
-returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
+returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
+df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv/tng99outerslopes.csv")
+df2.to_csv("tng99MS2slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|

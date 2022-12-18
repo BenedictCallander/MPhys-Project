@@ -18,7 +18,6 @@ import requests
 import illustris_python as il
 
 #Own module containing utility functions 
-import BCUTILS
 
 #runtime calculation 
 import time
@@ -525,7 +524,7 @@ class subhalo:
         '''
         df = df.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
+        #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -754,9 +753,9 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv('alllocal33.csv')
+dfin = pd.read_csv("alllocal99.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
-valid_id = list(dfin['id'])
+valid_id = list(dfin['subhalo'])
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
 #Function to generate subhalo object using class and specify analysis functions to be run -> function allows parallelisation to be used|
@@ -764,7 +763,7 @@ valid_id = list(dfin['id'])
 
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<4:
             print("not enough gas cells to continue")
         else:
@@ -858,7 +857,7 @@ def subhalo_slope_fitplots(i):
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','inside','outside'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv/tng99outerslopes.csv")
+df2.to_csv("tng99slopes.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|

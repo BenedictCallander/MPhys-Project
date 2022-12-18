@@ -62,7 +62,7 @@ plt.yticks(fontsize=15)
 
 plt.savefig('m_sfr_99_local.png')
 plt.close()
-'''
+
 
 plt.figure(figsize=(20,12))
 plt.plot( sfr99,(masses99), 'g+')
@@ -76,7 +76,7 @@ plt.yticks(fontsize=15)
 
 plt.savefig('sfr_m_99_local.png')
 plt.close()
-
+'''
 
 
 '''
@@ -84,47 +84,43 @@ divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider
 cax0 = divider0.append_axes('right', size='5%', pad=0.05)
 cax1 = divider1.append_axes('right', size='5%', pad=0.05)
 cax2 = divider2.append_axes('right', size='5%', pad=0.05)
+'''
 
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["mathtext.fontset"] = "dejavuserif"
 
-fig,(ax0,ax1,ax2) = plt.subplots(nrows = 1, ncols = 3,figsize=(30,8))
+fig,axs = plt.subplots(nrows = 1, ncols = 3,figsize=(30,8))
 
 #set scales to log
 #y
-ax0.set_yscale('log');ax1.set_yscale('log');ax2.set_yscale('log')
+axs[0].set_yscale('log');axs[1].set_yscale('log');axs[2].set_yscale('log')
 #x
-ax0.set_xscale('log');ax1.set_xscale('log');ax2.set_xscale('log')
 
-ax0.set_title("Snapshot 33: z=2",fontsize=20)
-ax0.plot(masses33,sfr33, 'g+')
-ax0.set_xlabel("Total Mass [$M_\odot$]",fontsize=12);ax0.set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=12)
-ax0.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-ax1.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-ax2.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-
-ax0.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-ax1.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-ax2.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+axs[0].set_title("Snapshot 33: z=2",fontsize=20)
+axs[0].plot(np.log10(masses33),sfr33, 'g+')
+axs[0].set_xlabel("Total Mass [$M_\odot$]",fontsize=20);axs[0].set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+for i in range(3):
+    axs[i].grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+    axs[i].tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 
 
 
-ax1.set_title("Snapshot 67: z=0.5",fontsize=20)
-ax1.plot(masses67,sfr67, 'g+')
-ax1.set_xlabel("Total Mass [$M_\odot$]",fontsize=12);ax0.set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=12)
-ax1.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-ax1.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 
-ax2.set_title("Snapshot 99: z=0",fontsize=20)
-ax2.plot(masses99,sfr99, 'g+')
-ax2.set_xlabel("Total Mass [$M_\odot$]",fontsize=12);ax0.set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=12)
-ax2.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-ax2.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+axs[1].set_title("Snapshot 67: z=0.5",fontsize=20)
+axs[1].plot(np.log10(masses67),sfr67, 'g+')
+axs[1].set_xlabel("Total Mass [$M_\odot$]",fontsize=20);axs[1].set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+#axs[1].grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+#axs[1].tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+
+axs[2].set_title("Snapshot 99: z=0",fontsize=20)
+axs[2].plot(np.log10(masses99),sfr99, 'g+')
+axs[2].set_xlabel("Total Mass [$M_\odot$]",fontsize=20);axs[2].set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+#axs[2].grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+#axs[2].tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
 
 fig.tight_layout()
 fig.subplots_adjust(top=0.89)
 fig.suptitle("Redshift progression of galaxy Mass-SFR Relation", fontsize=20)
 fig.savefig('localclass_all.png')
 
-'''

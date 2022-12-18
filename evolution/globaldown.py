@@ -1,18 +1,12 @@
-# Metallicityev.py 
-# \-> script containing Classes subsequent functions to study the Metallicity evolution of a subhalo's metallicity gradient through the IllustrisTNG snapshots 
-# Created:17/11/2022 
-# Author: Benedict Callander 
-# Respository https://github.com/btcallander/MPhys-Project (private)
 #
-
-
-#Plotting, numerical functions and dataset manipulation
+# Load progenitor subhalos to subset of TNG99 subhalos and compute their metallicity parameters
+#
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 import pwlf
-import os 
+
 #hdf5 binary file manipulation
 import h5py
 
@@ -29,14 +23,11 @@ import time
 
 #Computational functions - simultaneous calculations to make use of multi-core CPU
 from joblib import Parallel, delayed
-
-#specific functions for fitting utilities
-
-from scipy.optimize import curve_fit
-from scipy.signal import medfilt, savgol_filter
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-
+#specific functions for fitting utilities
+from scipy.optimize import curve_fit
+from scipy.signal import medfilt, savgol_filter
 def get(path, params = None):
     #utility function for API reading 
 
@@ -61,44 +52,6 @@ def get(path, params = None):
 
     return r
 
-def varget(path,dir, params = None):
-    #utility function for API reading 
-
-    #Make API request - 
-    # Path: url to api page 
-    #Params - misc ; Headers = api key 
-    r = requests.get(path, params=params, headers=headers)
-
-    #HTTP code - raise error if code return is not 200 (success)
-    r.raise_for_status()
-    
-    #detect content type (json or hdf5) - run appropriate download programme
-    
-    if r.headers['content-type'] == 'application/json':
-        return r.json() # parse json responses automatically
-
-    if 'content-disposition' in r.headers:
-        filename = dir + r.headers['content-disposition'].split("filename=")[1]
-        with open(filename, 'wb') as f:
-            f.write(r.content)
-        return filename # return the filename string
-
-    return r
-
-'''
-Input parameters
-
-File containing IDS of all TNG99 subhalos to trace metallicity evolution
-
-'''
-df = pd.read_csv("traceids2.csv")
-ids = list(df['id'])
-'''
-for i in ids:
-    dir_name = "files/binary/historycutouts/evdir_{}".format(i)
-    os.makedirs(dir_name)
-'''
-
 class history:
     def __init__(self, descendant):
         self.startsub = descendant
@@ -115,23 +68,46 @@ class history:
         })
         
         df = df[df['snapshots'].isin(keepvals)]
-        df.to_csv("files/binary/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
+        df.to_csv("files/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
         self.target_snaps= list(df['snapshots'])
         self.target_subhalos = list(df['subhalos'])
-        print(df)
+        #print(df)
     
     def cutoutdownload(self):
+        mass = []; sfr = []; met = []; Rhalf = []; stellarphotometrics = []
+        snaps = []; subs = []
         for i in range(6):
             snap = self.target_snaps[i]
+            snaps.append(snap)
             sub = self.target_subhalos[i]
+            subs.append(sub)
             url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(snap,sub)
-            temp = get(url)
-            cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities',''}
-            cutout = varget(temp['cutouts']['subhalo'],"files/binary/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
+            subhalo = get(url)
+            mass.append(subhalo['mass_log_msun'])
+            sfr.append(subhalo['sfr'])
+            met.append(subhalo['gasmetallicity'])
+            Rhalf.append(subhalo['halfmassrad'])
+            stellarphotometrics.append(subhalo['stellarphotometricsrad'])
+        fpath = "files/historycutouts/evdir_{}/subdata_{}.hdf5".format(self.startsub,self.startsub)
+        with h5py.File(fpath, 'w') as f:
+            # Write the lists to the HDF5 file
+            f['list1'] = mass; f['list2'] = sfr ; f['list3'] = met ; f['list4'] = Rhalf; f['list5'] = stellarphotometrics 
+            f['list6'] = snaps ; f['list7'] = subs
+            # Set the keywords for the lists
+            f['list1'].attrs['keyword'] = 'mass'
+            f['list2'].attrs['keyword'] = 'sfr'
+            f['list3'].attrs['keyword'] = 'met'
+            f['list4'].attrs['keyword'] = 'Rhalf'
+            f['list5'].attrs['keyword'] = 'stellarph'
+            f['list6'].attrs['keyword'] = 'snaps'
+            f['list7'].attrs['keyword'] = 'subs'
+            
+df = pd.read_csv("traceids.csv")
+ids = list(df['id'])               
             
 def down(i):
     sub = history(i)
     sub.cutoutdownload()
-    return print("subahlo {}".format(i))
+    return print("subahlo {} done".format(i))
 
 returns = Parallel(n_jobs= 20)(delayed(down)(j) for j in ids)

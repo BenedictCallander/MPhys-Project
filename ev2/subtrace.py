@@ -21,8 +21,6 @@ import requests
 #specialised functions to query Illustris TNG data 
 import illustris_python as il
 
-#Own module containing utility functions 
-import BCUTILS
 
 #runtime calculation 
 import time
@@ -154,7 +152,7 @@ class subhistory:
         #self.mpb = UTILITY.get(self.start_sub['trees']['sublink_mpb'])
         #self.mdb = UTILITY.get(self.start_sub['trees']['sublink_mdb'])
         
-        self.mpb = "trees1/prog/sublink_mpb_{}.hdf5".format(startID)
+        self.mpb = "files/trees/sublink_mpb_{}.hdf5".format(startID)
         #self.mdb = "trees1/desc/sublink_mdb_{}.hdf5".format(startID)
         
         # collect all IDS 
@@ -196,9 +194,10 @@ class subhistory:
         linedf = self.maindf[self.maindf['snapshot'].isin(linesnaps)]
         self.maindf = self.maindf[self.maindf['snapshot'].isin(snapshots)]
         print(self.maindf)
+        snap = 67
         basePath = '/home/AstroPhysics-Shared/DATA/IllustrisTNG/TNG50-1/output/'
         fields = ['SubhaloMass','SubhaloSFRinRad','SubhaloSFR','SubhaloGasMetallicitySfrWeighted']
-        subhalos99 = il.groupcat.loadSubhalos(basePath,33,fields=fields)
+        subhalos99 = il.groupcat.loadSubhalos(basePath,snap,fields=fields)
         mass =subhalos99['SubhaloMass'] * 1e10 / 0.704
         sfr = list((subhalos99['SubhaloSFR']))
         plt.figure(figsize=(20,12))
@@ -216,7 +215,7 @@ class subhistory:
         plt.xlabel('Mass (log10 Msun)')
         plt.legend(loc='upper right')
         #'MSPLOT/MS_evolution_{}.png'.format(self.subID)
-        plt.savefig('store/back33/msev_{}.png'.format(self.startID))
+        plt.savefig('msev_{}_bg{}.png'.format(self.startID,snap))
         plt.close()
 
 def runscript(i):
@@ -225,10 +224,11 @@ def runscript(i):
     sub.MSPLOT()
     return print("subhalo {} done".format(i))
 
-df= pd.read_csv('traceids.csv')
-ids = list(df['id'])
+runscript(37)
+#df= pd.read_csv('traceids.csv')
+#ids = list(df['id'])
 
-returns = Parallel(n_jobs= 2)(delayed(runscript)(i) for i in ids)
+#returns = Parallel(n_jobs= 2)(delayed(runscript)(i) for i in ids)
 
 
 '''

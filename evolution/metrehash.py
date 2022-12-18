@@ -1,11 +1,6 @@
-# Metallicityev.py 
-# \-> script containing Classes subsequent functions to study the Metallicity evolution of a subhalo's metallicity gradient through the IllustrisTNG snapshots 
-# Created:17/11/2022 
-# Author: Benedict Callander 
-# Respository https://github.com/btcallander/MPhys-Project (private)
 #
-
-#Plotting, numerical functions and dataset manipulation
+# Load progenitor subhalos to subset of TNG99 subhalos and compute their metallicity parameters
+#
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import numpy as np
@@ -34,7 +29,6 @@ from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
 headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
-
 class UTILITY:
     def get(path, params = None):
         r'''
@@ -97,50 +91,31 @@ class UTILITY:
         f = (a*(x**2))+(b*x)+c
         return f
 
+#treepath = "files/historycutouts/evdir_{}/treedata_{}.csv".format(start,start)
 
-class cutout_subhalo:
-    def __init__(self,snapshot,subhalo,descendant):
-        filedir = "files/binary/historycutouts/evdir_{}/".format(descendant)
-        self.subID = subhalo
-        self.snapID = snapshot
-        self.startsub = descendant
-        snapshots = [21,33,50,67,78,91,99]
-        redshifts= [4.01, 2,1,0.5,0.3,0.1,0.0]
-        index = snapshots.index(self.snapID)
-        redshift= redshifts[index]
-        self.redshift = redshift    
-        scalefac = 1./(1.+redshift) #calculate scale factor
-  
+class cutout:
+    def __init__(self, start, subID,snapID,rhalf,stellarphotometrics):
+        self.startsub = start
+        self.subID = subID
+        self.snapID = snapID
         #
-        #Query API for global data 
         #
-        self.subURL = 'http://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/'.format(str(self.snapID),str(self.subID))
-        subhalo = UTILITY.get(self.subURL)
-        
-        self.mass = subhalo['mass_log_msun']
-        self.tot_sfr = subhalo['sfr']
-        self.tot_met = subhalo['gasmetallicity']
-        self.Rhalf = subhalo['halfmassrad']
-        self.crit_dist = 5* self.Rhalf
-        self.stellarphotometrics = subhalo['stellarphotometricsrad']
-        self.centre = np.array([subhalo['pos_x'],subhalo['pos_y'],subhalo['pos_z']])
-
-        cutout = filedir+"cutout_{}.hdf5".format(self.subID)
-        with h5py.File(cutout,'r') as f:
+        #
+        self.Rhalf = rhalf
+        self.stellarphotometrics = stellarphotometrics     
+        cutpath = "files/historycutouts/evdir_{}/cutout_{}.hdf5".format(start,subID)
+        with h5py.File(cutpath,'r') as f:
             sfr = f['PartType0']['StarFormationRate'][:]
             co_ords = f['PartType0']['Coordinates'][:]
             hcoldgas  = np.where( (sfr > 0.0))[0]
-            #print(sfr)
-            #print(hcoldgas)
             self.pgas_coo = f['PartType0']['Coordinates'][hcoldgas]
             self.pgas_m = f['PartType0']['Masses'][hcoldgas]
             self.pgas_vel = f['PartType0']['Velocities'][hcoldgas]
             self.pgas_met = f['PartType0']['GFM_Metallicity'][hcoldgas]
             self.pgas_sfr = f['PartType0']['StarFormationRate'][hcoldgas]
+        #
         self.test = len(hcoldgas)
-
-        self.pgas_coo -= self.centre[None,:]
-        
+        print(self.test)
     def align_dfgen(self):
         _coo = np.copy(self.pgas_coo)
         _vel = np.copy(self.pgas_vel)
@@ -175,9 +150,7 @@ class cutout_subhalo:
             "met":(self.pgas_met),
             "sfr":self.pgas_sfr
             })
-        df=df[df['rad']<5*self.Rhalf]
-        #print(df)
-        self.df = df
+        self.df=df[df['rad']<5*self.Rhalf]
         
     def filter(self):
         df = self.df.copy()
@@ -185,7 +158,6 @@ class cutout_subhalo:
         z_max = 0.1*spr
         df = df[df['z']<z_max]
         df.rad =10*((df.rad-df.rad.min())/(df.rad.max()-df.rad.min()))
-        
         self.df = df
         return df
     
@@ -193,7 +165,6 @@ class cutout_subhalo:
         dfin.sort_values(by='rad',inplace = True)
         df = dfin.copy()
         df.sort_values(by="rad",inplace = True)
-        med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
@@ -202,85 +173,62 @@ class cutout_subhalo:
         slope3 = my_pwlf.slopes[2]
         
         print("slopes are inner: {} middle:{} and outer:{}".format(slope1,slope2,slope3))
+        '''
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
-        '''
         plt.figure(figsize=(20,12))
         plt.plot(df['rad'], med_data1, 'b--')
         plt.plot(xHat,yHat, 'g-')
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}$ $(O/H)$")
-        filename = 'files/images/metallicityhistory/99progenitors/progenitorsto_{}/{}_sub_{}_doublebreak.png'.format(self.startsub, self.snapID, self.subID)
+        filename = 'files/images/metallicityhistory/{}_sub_{}.png'.format(self.primesub, self.snapID, self.subID)
         plt.savefig(filename)
         plt.close()
         '''
         
-        return (slope1,slope2,slope3)
 
-
-
-class metallicity_evolution:
+class dirrun:
     def __init__(self,descendant):
-        self.startsub = descendant
-        
-        filedir = "files/binary/historycutouts/evdir_{}/".format(self.startsub)
-        df = pd.read_csv(filedir+"treedata_{}.csv".format(self.startsub))
-        target_snaps = list(df['snapshots'])
-        target_subs = list(df['subhalos'])
-        
-        self.target_snaps = target_snaps
-        self.target_subs = target_subs
+        self.primesub = descendant
     
-    def individual_subhalo(self,i):
-        snapshot = self.target_snaps[i]
-        subhalo = self.target_subs[i]
-        subhalo = cutout_subhalo(snapshot, subhalo, self.startsub)
-        subhalo.align_dfgen()
-        dfg = subhalo.filter()
-        slope1,slope2,slope3= subhalo.doublepiecewise(dfg,3,8)
-        self.slope1 = slope1
-        self.slope2 = slope2
-        self.slope3 = slope3
-        return (slope1,slope2,slope3)
+    def getlist(self):
+        '''
+        f['list1'].attrs['keyword'] = 'mass'
+            f['list2'].attrs['keyword'] = 'sfr'
+            f['list3'].attrs['keyword'] = 'met'
+            f['list4'].attrs['keyword'] = 'Rhalf'
+            f['list5'].attrs['keyword'] = 'stellarph'
+            f['list6'].attrs['keyword'] = 'snaps'
+            f['list7'].attrs['keyword'] = 'subs'
+        '''
+        datapath = "files/historycutouts/evdir_{}/subdata_{}.hdf5".format(self.primesub,self.primesub)
+        with h5py.File(datapath,'r') as f:
+            snapshots = list(f['list6'][:])
+            subhalos = list(f['list7'][:])
+            Rhalf = list(f['list4'][:])
+            stellarphotometrics = list(f['list5'][:])
+            
+            return snapshots,subhalos,Rhalf,stellarphotometrics
     
-    def history_trace(self):
-        fills = [self.startsub,self.startsub,self.startsub,self.startsub,self.startsub,self.startsub]
-        snapshots = self.target_snaps
-        subhalos = self.target_snaps
-        
-        inners = []; middles =  [] ; outers= []
-        for i in range(6):
-            slope1,slope2,slope3 = metallicity_evolution.individual_subhalo(self,i)
-            inners.append(slope1)
-            middles.append(slope2)
-            outers.append(slope3)
-        df = pd.DataFrame({
-            "progenitor": fills,
-            "snapshot":snapshots,
-            "subhalo": subhalos,
-            "slope1": inners,
-            "slope2": middles,
-            "slope3": outers
-        })
-        fpath = "files/binary/historycutouts/evdir_{}/slopehistory_{}".format(self.startsub,self.startsub)
-        df.to_csv(fpath)
-             
+    def dir(self):
+        datapath = "files/historycutouts/evdir_{}/subdata_{}.hdf5".format(self.primesub,self.primesub)
+        with h5py.File(datapath,'r') as f:
+            snapshots = list(f['list6'][:])
+            subhalos = list(f['list7'][:])
+            Rhalf = list(f['list4'][:])
+            stellarphotometrics = list(f['list5'][:])
+            l1 = []; l2=[];l3 = []
+            for i in range(len(snapshots)):
+                sub = cutout(self.primesub, subhalos[i],snapshots[i], Rhalf[i], stellarphotometrics[i])
+                sub.align_dfgen()
+                df = sub.filter()
+                slope1,slope2,slope3 = sub.doublepiecewise(df,3,8)
+                l1.append(slope1); l2.append(slope2);l3.append(slope3)
+            print(l1,l2,l3)
+            
+            
+test = dirrun(63870)
+test.dir()
 
-df = pd.read_csv("traceids.csv")
-ids = list(df['id'])
-
-def main(i):
-    try:
-        history = metallicity_evolution(i)
-        history.history_trace()
-        return print("done for {}".format(i))
-    except OSError as e:
-        return print(e)
-    except TypeError as e:
-        return print(e)
-    except IndexError as e:
-        return print(e)
-    except ValueError as e:
-        return print(e)
-    
-returns = Parallel(n_jobs= 20)(delayed(main)(i) for i in ids)
+end = time.time()
+print("runtime = {}".format(end-start))

@@ -91,7 +91,7 @@ Input parameters
 File containing IDS of all TNG99 subhalos to trace metallicity evolution
 
 '''
-df = pd.read_csv("traceids2.csv")
+df = pd.read_csv("traceids.csv")
 ids = list(df['id'])
 '''
 for i in ids:
@@ -103,7 +103,7 @@ class history:
     def __init__(self, descendant):
         self.startsub = descendant
         
-        self.mpb = "files/binary/trees/99trees/sublink_mpb_{}.hdf5".format(self.startsub)
+        self.mpb = "files/trees/sublink_mpb_{}.hdf5".format(self.startsub)
         keepvals = [21,33,50,67,78,91,99]
         self.length = keepvals
         with h5py.File(self.mpb,'r') as f:
@@ -115,19 +115,19 @@ class history:
         })
         
         df = df[df['snapshots'].isin(keepvals)]
-        df.to_csv("files/binary/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
+        df.to_csv("files/historycutouts/evdir_{}/treedata_{}.csv".format(self.startsub,self.startsub))
         self.target_snaps= list(df['snapshots'])
         self.target_subhalos = list(df['subhalos'])
-        print(df)
+        #print(df)
     
     def cutoutdownload(self):
-        for i in range(6):
+        for i in range(len(self.target_snaps)):
             snap = self.target_snaps[i]
             sub = self.target_subhalos[i]
             url = "https://www.tng-project.org/api/TNG50-1/snapshots/{}/subhalos/{}/".format(snap,sub)
             temp = get(url)
-            cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities',''}
-            cutout = varget(temp['cutouts']['subhalo'],"files/binary/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
+            cutout_request = {'gas':'Coordinates,Masses,GFM_Metallicity,StarFormationRate,Velocities'}
+            cutout = varget(temp['cutouts']['subhalo'],"files/historycutouts/evdir_{}/".format(self.startsub),cutout_request)
             
 def down(i):
     sub = history(i)
