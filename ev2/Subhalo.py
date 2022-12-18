@@ -525,7 +525,7 @@ class subhalo:
         df.sort_values(by="rad",inplace = True)
         #med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
-        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=1/df['sfr'])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met2']),weights=df['sfr'])
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]

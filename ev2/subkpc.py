@@ -435,19 +435,20 @@ class subhalo:
         Max Radial distance of consideration (annuli)
         '''
         dfin=dfin.copy()
-        dfin.sort_values(by='rad',inplace = True)   
+        dfin.sort_values(by='rad',inplace = True)
         popt,pcov = curve_fit(UTILITY.linear_fit, dfin['rad'],np.log10(dfin['met2'])+12,sigma=1/dfin['sfr'])
+        interp = savgol_filter(12+np.log10(dfin['met']),window_length=21,polyorder=5)
         '''
         plt.figure(figsize=(20,12))
-        plt.plot(dfin['rad'], med_data, 'r-')
+        plt.plot(dfin['rad'], interp, 'r-')
         plt.plot(dfin['rad'], UTILITY.linear_fit(dfin['rad'],*popt))
         plt.xlabel("Radius (Normalised Code Units)")
         plt.ylabel("12+$log_{10}O/H)$ (SFR Normalised)")
         filename = 'linfit/sub_{}_met_snap={}'.format(self.subID,self.snapID)
         plt.savefig(filename)
         plt.close()
-        print("gradient {}".format(popt[0]))
         '''
+        
         return popt[0]
     
     def linfit2(self,dfin):
@@ -765,7 +766,7 @@ class subhalo:
 #-------------------------------------------------------------------------------------------------------------------------------------|
 
 sim = 99
-dfin = pd.read_csv("csv/tng33MAIN.csv")
+dfin = pd.read_csv("csv/tng99MAIN.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 
@@ -775,7 +776,7 @@ valid_id = list(dfin['id'])
 ids2 = []
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<15:
             print("not enough gas cells to continue")
         else:
@@ -805,7 +806,7 @@ def subhalo_analysis(i):
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close
         return print(e)
-  
+#'''
     except KeyError as e:
         #fname = "errors/errors{}.txt".format(i)
         #f = open(fname,"w")
@@ -826,7 +827,7 @@ def subhalo_analysis(i):
         #f.write("errorcode: {} for subhalo {} \n".format(str(e),i))
         #f.close         
         return print(e)
-
+#'''
 #-----------------------------------------------------------------------------------------------------------------------------------------|
 #Call function in paralell computation to simultaneously perform analysis on (n_jobs) subhalos, write desired properties to dataframe->csv|
 #-----------------------------------------------------------------------------------------------------------------------------------------|
@@ -837,7 +838,7 @@ def subhalo_analysis(i):
 returns = Parallel(n_jobs= 20)(delayed(subhalo_analysis)(i) for i in valid_id)
 df2=pd.DataFrame(returns,columns=['met','id','sfr','slope','slope1','slope2'])
 df2.insert(6,'mass', dfin['mass'],True)
-df2.to_csv("tng33KPCslopesboth.csv")
+df2.to_csv("tng99test.csv")
 
 #------------------------------------------------------------------------------------------------------------------------------|
 # Pass dataframes into BCUTILS MSfilter function to create dataset containing only main sequence subhalos for separate analysis|

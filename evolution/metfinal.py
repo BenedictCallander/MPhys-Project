@@ -172,7 +172,6 @@ class cutsub:
             "sfr":self.pgas_sfr
             })
         df=df[df['rad']<5*self.Rhalf]
-        f=df.sample(frac=0.1,replace=False)
 
         #print(df)
         self.df = df
@@ -206,6 +205,7 @@ class cutsub:
     
     def piecewise(self,dfin,breakpoint):
         df = dfin.copy()
+        df = df.sample(frac=0.05,replace=False)
         df.sort_values(by="rad",inplace = True)
         x0 = np.array([min(df['rad']), breakpoint, max(df['rad'])])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
@@ -230,6 +230,7 @@ class cutsub:
     
     def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
         df = dfin.copy()
+        df = df.sample(frac=0.05,replace=False)
         df.sort_values(by="rad",inplace = True)
         med_data1 = medfilt((12+np.log10(df['met'])), kernel_size=11)
         x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
@@ -300,7 +301,7 @@ def dodir(i):
     except ValueError as e:
         return print(e)
     
-dfyay = pd.read_csv("traceids_1.csv")
+dfyay = pd.read_csv("traceids.csv")
 ids = list(dfyay['id'])
 
 #for i in ids:

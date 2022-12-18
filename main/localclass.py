@@ -48,8 +48,9 @@ masses33 =subhalos33['SubhaloMass'] * 1e10 / 0.704 ;masses67 =subhalos67['Subhal
 masses99 =subhalos99['SubhaloMass'] * 1e10 / 0.704
 
 sfr33 = list((subhalos33['SubhaloSFR'])); sfr67 = list((subhalos67['SubhaloSFR'])) ;sfr99 = list((subhalos99['SubhaloSFR']))
+met33 = list(subhalos33['SubhaloGasMetallicitySfrWeighted']); met67 = list(subhalos67['SubhaloGasMetallicitySfrWeighted'])
+met99 = list(subhalos99['SubhaloGasMetallicitySfrWeighted'])
 
-'''
 plt.figure(figsize=(20,12))
 plt.plot((masses99), sfr99, 'g+')
 plt.yscale('log')
@@ -64,27 +65,12 @@ plt.savefig('m_sfr_99_local.png')
 plt.close()
 
 
-plt.figure(figsize=(20,12))
-plt.plot( sfr99,(masses99), 'g+')
-plt.yscale('log')
-plt.xscale('log') 
-plt.ylabel("Total Mass [$M_\odot$]",fontsize=20);plt.xlabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
-plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
-
-plt.savefig('sfr_m_99_local.png')
-plt.close()
-'''
-
 
 '''
 divider0 = make_axes_locatable(ax0); divider1 = make_axes_locatable(ax1);divider2 = make_axes_locatable(ax2)
 cax0 = divider0.append_axes('right', size='5%', pad=0.05)
 cax1 = divider1.append_axes('right', size='5%', pad=0.05)
 cax2 = divider2.append_axes('right', size='5%', pad=0.05)
-'''
 
 
 plt.rcParams["font.family"] = "serif"
@@ -124,3 +110,4 @@ fig.subplots_adjust(top=0.89)
 fig.suptitle("Redshift progression of galaxy Mass-SFR Relation", fontsize=20)
 fig.savefig('localclass_all.png')
 
+'''

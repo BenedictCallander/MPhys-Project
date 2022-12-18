@@ -218,6 +218,7 @@ class visualisation:
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
                 df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
+                '''
                 plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
                 plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
@@ -228,11 +229,15 @@ class visualisation:
                 filename = 'Mgass_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
+                '''
+                df_valid.to_csv("dens.csv")
             elif(quant=='metallicity'):
                 df_valid = df.round(decp)
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
                 df_valid = df_valid.groupby(['x','y'])['met'].sum().reset_index()
+                df_valid.to_csv("met.csv")
+                '''
                 plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
                 plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['met'])),cmap='inferno', vmin=(min(np.log10(df_valid['met']))),vmax =(0.7*max(np.log10(df_valid['met']))))
@@ -243,12 +248,14 @@ class visualisation:
                 filename = 'met_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
+                '''
             elif(quant=='sfr'):
                 df_valid = df.round(decp)
                 annul1= annuli_pc*self.crit_dist
                 df_valid = df[df['rad']<annul1]
                 df_valid=df_valid[df_valid['sfr']>0.0]
                 df_valid = df_valid.groupby(['x','y'])['sfr'].sum().reset_index()
+                '''
                 plt.figure(figsize=(20,12), dpi=500)
                 plt.style.use('dark_background')
                 plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['sfr'])),cmap='inferno')# vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
@@ -259,6 +266,8 @@ class visualisation:
                 filename = 'sfr_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
+                '''
+                df_valid.to_csv("sfr.csv")
 
         elif(type=='stars'):
             df = self.df_s
@@ -349,6 +358,8 @@ dfs = sub1.dataframegen('star')
 #dfg.to_csv('inspect.csv')
 print("Current Runtime before plot: {}".format(time.time()-start))
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
+sub1plot.visual('gas','mass',4,1)
+sub1plot.visual('gas','metallicity',4,1)
 sub1plot.visual('gas','sfr',4,1)
 
 #print(min(sub1.pstar_coo[:,0]))

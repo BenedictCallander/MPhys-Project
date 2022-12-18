@@ -216,6 +216,7 @@ class plots:
     def met_histogram(self,dfin,extra):
         df = dfin.copy()
         df.sort_values(by='rad',inplace=True)
+        df.to_csv("historgram.csv")
         plt.figure(figsize=(20,12))
         plt.hist2d(df['rad'],12+np.log10(df['met']),bins=[200,200], weights=1/df['sfr'],cmap='PuOr')
         if (extra=='Y'):

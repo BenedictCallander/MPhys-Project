@@ -43,7 +43,7 @@ sfrurl = baseurl+sfr_q
 sfrsubs = get(sfrurl)
 mass=[]
 sfr=[]
-print(sfrsubs['count'])
+
 sfr_ids = [sfrsubs['results'][i]['id'] for i in range(sfrsubs['count'])]
 mass_sfr = []
 sfr_sfr = []
@@ -53,21 +53,37 @@ for i,id in enumerate(sfr_ids):
     sfr_sfr.append(sfrsubs['results'][i]['sfr'])
     urls.append(sfrsubs['results'][i]['url'])
 
-df = pd.DataFrame({
+df_analysis = pd.DataFrame({
     "id": sfr_ids,
     "mass": mass_sfr,
     "sfr": sfr_sfr,
     "url": urls
 })
-df.to_csv('tng99subhalos.csv')
+xval = np.linspace(0,13,100)
+yvals = np.linspace(10e-6,10e3,100)
+def line(m,x,b):
+    y = 10**((m*x)+b)
+    return y 
+#df_analysis.to_csv('csv/tng33subhalos.csv')
+def line2(m,x,b):
+    y = (m*x)+b
+    return y
 
-plt.figure(figsize=(20,12))
-plt.plot( df['mass'],(df['sfr']), 'g+')
-plt.yscale('log')
-plt.xlabel("Total Mass [$M_\odot$]",fontsize=20);plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
-plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.figure(figsize=(15,10))
+plt.plot(mass_sfr,np.log10(sfr_sfr),'g+',label = "TNG50-1 snapshot 99 Subhalos")
+sns.kdeplot(x=mass_sfr, y=np.log10(sfr_sfr))
+plt.plot(xval, line2(2,xval,-20.5), 'r-', label = "y=2$M_\odot$-20.5")
+#plt.plot(xval, line(2,xval,-18.5), 'g-', label = "y=$10^{mx+b}$")
 plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
-plt.xlim(9.5,11.5)
-plt.savefig("classif.png")
+plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+plt.xlabel("Total Mass [$M_\odot$]",fontsize=20)
+plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+
+plt.ylim(-6,3)
+plt.xlim(7,14)
+plt.legend(loc='upper right')
+plt.savefig("classif2.png")
+plt.close()
+
+end=time.time()
+print("runtime is {}".format(end-start))

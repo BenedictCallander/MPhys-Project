@@ -3,6 +3,8 @@ from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 import pwlf
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 #hdf5 binary file manipulation
 import h5py
@@ -28,31 +30,60 @@ headers = {"api-key":"849c96a5d296f005653a9ff80f8e259e"}
 start =time.time()
 
 
+df1 = pd.read_csv("csv/tng33KPCslopesboth.csv")
+df2= pd.read_csv("csv/tng67KPCslopesboth.csv")
+df3 = pd.read_csv("csv/tng99KPCslopesboth.csv")
+'''
 
-df = pd.read_csv("tng67KPCslopeslin.csv")
+df1= pd.read_csv("tng33MS2slopes.csv")
+df2= pd.read_csv("tng67MS2slopes.csv")
+df3= pd.read_csv("tng99MS2slopes.csv")
+'''
 
-    
-    
-print(min(df['slope']))
-print(max(df['slope']))
-print(0.5*np.mean(df['slope']))
-print(1.5*np.mean(df['slope']))
+print("\n33\n")
+print(min(df1['slope2']))
+print(max(df1['slope2']))
+print(np.mean(df1['slope2']))
+print("\n67\n")
+print(min(df2['slope2']))
+print(max(df2['slope2']))
+print(np.mean(df2['slope2']))
+print("\n99\n")
+print(min(df3['slope2']))
+print(max(df3['slope2']))
+print(np.mean(df3['slope2']))
 
-plt.figure(figsize=(20,12))
 
-plt.yscale('log')
 
-plt.title("Metallicity Gradients of TNG50-1 Main Sequence Subhalos at z=0.5")
-plt.xlabel("Total Mass [$M_\odot$]",fontsize=20)
-plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["mathtext.fontset"] = "dejavuserif"
 
-plt.scatter(df['mass'],(df['sfr']),c=(df['slope']),cmap='magma',vmin=-0.5,vmax=0.3)
-plt.colorbar(label="Metallicity Gradient [dex/Kpc]")
+fig,axs = plt.subplots(nrows = 1, ncols = 3,figsize=(30,8))
 
-plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
-plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
+divider0 = make_axes_locatable(axs[0])  ;cax0 = divider0.append_axes('right', size='5%', pad=0.05)
+divider1 = make_axes_locatable(axs[1])  ;cax1 = divider1.append_axes('right', size='5%', pad=0.05)
+divider2 = make_axes_locatable(axs[2])  ;cax2 = divider2.append_axes('right', size='5%', pad=0.05)
 
-plt.savefig("slopechar67.png")
-plt.close()
+for i in range(3):
+    axs[i].grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.5,alpha =0.5)
+    axs[i].tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
+    axs[i].set_yscale('log')
+    axs[i].set_xlabel("Total Mass [$M_\odot$]",fontsize=20)
+    axs[i].set_ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
+
+axs[0].set_title("Snapshot 33: z=2",fontsize=20)
+axs[1].set_title("Snapshot 67: z=0.5",fontsize=20)
+axs[2].set_title("Snapshot 99: z=0",fontsize=20)
+
+im0=axs[0].scatter(df1['mass'],(df1['sfr']),c=(df1['slope2']),cmap='magma',vmin=-0.6,vmax=0.2)
+im1=axs[1].scatter(df2['mass'],(df2['sfr']),c=(df2['slope2']),cmap='magma',vmin=-0.6,vmax=0.2)
+im2=axs[2].scatter(df3['mass'],(df3['sfr']),c=(df3['slope2']),cmap='magma',vmin=-0.6,vmax=0.2)
+
+fig.colorbar(im0, cax=cax0, orientation='vertical')
+fig.colorbar(im1, cax=cax1, orientation='vertical')
+fig.colorbar(im2, cax=cax2, orientation='vertical')
+
+fig.tight_layout()
+fig.subplots_adjust(top=0.89)
+fig.suptitle("Redshift progression of galaxy Mass-SFR Relation", fontsize=20)
+fig.savefig('slopes_all.png')
