@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pwlf
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.patches as pat
 
 
 #hdf5 binary file manipulation
@@ -47,12 +48,21 @@ divider2 = make_axes_locatable(ax2)  ;cax2 = divider2.append_axes('right', size=
 ax0.set_xlabel('$\Delta x$ [kpc/h]')
 ax0.set_ylabel('$\Delta y$ [kpc/h]')
 
+
+annulus0 =pat.Circle((0, 0), 30, color='g', fill=False,lw=5)
 ax0.set_title("Subhalo Gas Density")
 im0=ax0.scatter(dens['x'],dens['y'],c=(np.log10(dens['m'])),cmap='inferno', vmin=(min(np.log10(dens['m']))),vmax =(0.7*max(np.log10(dens['m']))))
+ax0.add_patch(annulus0)
+
+annulus1 =pat.Circle((0, 0), 30, color='g', fill=False,lw=5)
 ax1.set_title("Subhalo Surface Metallicity")
 im1=ax1.scatter(met['x'],met['y'],c=(np.log10(met['met'])),cmap='inferno', vmin=(min(np.log10(met['met']))),vmax =(0.7*max(np.log10(met['met']))))
+ax1.add_patch(annulus1)
+
+annulus2 =pat.Circle((0, 0), 30, color='g', fill=False,lw=5)
 ax2.set_title("Subhalo Surface SFR")
 im2=ax2.scatter(sfr['x'],sfr['y'],c=(np.log10(sfr['sfr'])),cmap='inferno')# vmin=(min(np.log10(df_valid['m']))),vmax =(0.7*max(np.log10(df_valid['m']))))
+ax2.add_patch(annulus2)
 
 ax3.set_title("Subhalo Metallicity Profile")
 im3=ax3.hist2d(hist['rad'],12+np.log10(hist['met']),bins=[200,200], weights=1/hist['sfr'],cmap='PuOr')
