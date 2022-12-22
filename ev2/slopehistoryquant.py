@@ -32,7 +32,6 @@ def docombine(i):
         df2 = pd.read_csv(path2)
         df2.insert(6,"slope1",df1['slope1'])
         df2.insert(7,"slope2",df1['slope2'])
-        df2.insert(8,"slope3",df1['slope3'])
         path = "files/historycutouts/evdir_{}/alldata{}.csv".format(i,i)
         df2.to_csv(path)
         print("done for {}".format(i))
@@ -42,7 +41,7 @@ def docombine(i):
 
         
     
-dfrun =pd.read_csv("traceids.csv")
+dfrun =pd.read_csv("csv/traceids.csv")
 ids = list(dfrun['id'])
 
 returns = Parallel(n_jobs=20)(delayed(docombine)(i) for i in ids)
@@ -56,4 +55,4 @@ for i in ids:
         print("1")
     
 dfall = pd.concat(dataframes)
-dfall.to_csv("alldatadone.csv")
+dfall.to_csv("alldatadone2.csv")

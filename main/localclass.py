@@ -51,6 +51,10 @@ sfr33 = list((subhalos33['SubhaloSFR'])); sfr67 = list((subhalos67['SubhaloSFR']
 met33 = list(subhalos33['SubhaloGasMetallicitySfrWeighted']); met67 = list(subhalos67['SubhaloGasMetallicitySfrWeighted'])
 met99 = list(subhalos99['SubhaloGasMetallicitySfrWeighted'])
 
+print(np.mean(masses33))
+print(np.mean(masses67))
+print(np.mean(masses99))
+
 plt.figure(figsize=(20,12))
 plt.plot((masses99), sfr99, 'g+')
 plt.yscale('log')
