@@ -107,7 +107,6 @@ ids = list(df['id'])
             
 def down(i):
     sub = history(i)
-    sub.cutoutdownload()
     return print("subahlo {} done".format(i))
 
 returns = Parallel(n_jobs= 20)(delayed(down)(j) for j in ids)

@@ -5,6 +5,8 @@ import requests #obtain data from API server
 import h5py #binary file manipulation
 import pandas as pd 
 import numpy as np 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt 
 import illustris_python as il
 
@@ -79,8 +81,8 @@ class galaxy:
         # Velocities  (N,3) km sqrt(scalefac)        # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        #hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
-        hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
+        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -272,18 +274,18 @@ class visualisation:
         elif(type=='stars'):
             df = self.df_s
             if (quant=='mass'):
-                df_valid = df.round(decp)
-                annul1= annuli_pc*self.crit_dist
-                df_valid = df[df['rad']<annul1]
+                df_valid = df.round(1)
                 df_valid = df_valid.groupby(['x','y'])['m'].sum().reset_index()
-                plt.figure(figsize=(21,15))
+                df_valid.to_csv("starm.csv")
+                print("ready to plot: {} ".format(time.time()-start))
+                plt.figure(figsize=(20,12))
                 plt.style.use('dark_background')
-                plt.scatter(-df_valid['x'],-df_valid['y'],c=(np.log10(df_valid['m'])),cmap='inferno', vmin=np.log10(min(df_valid['m'])), vmax = np.log10(max(df_valid['m'])))
+                plt.scatter(df_valid['x'],df_valid['y'],c=df_valid['m'],cmap='inferno')#, vmin=4.5, vmax = 7)
                 plt.xlabel('$\Delta x$ [kpc/h]')
                 plt.ylabel('$\Delta y$ [kpc/h]')
                 plt.colorbar(label='log10(Stellar Mass)')
                 plt.title('Gas Density of SubID {}: {} snapshot {}'.format(self.subID, self.simID, self.snapID))
-                filename = 'temppng/Mstar_{}_sub_{}.png'.format(self.simID, self.subID)
+                filename = 'Mstar_{}_sub_{}.png'.format(self.simID, self.subID)
                 plt.savefig(filename)
                 plt.close()
             
@@ -358,9 +360,10 @@ dfs = sub1.dataframegen('star')
 #dfg.to_csv('inspect.csv')
 print("Current Runtime before plot: {}".format(time.time()-start))
 sub1plot = visualisation(dfg,dfs,sub1.subID, sub1.snapID, sub1.simID, sub1.crit_dist)
-sub1plot.visual('gas','mass',4,1)
-sub1plot.visual('gas','metallicity',4,1)
-sub1plot.visual('gas','sfr',4,1)
+sub1plot.visual('stars','mass',1,1)
+#sub1plot.visual('gas','mass',4,1)
+#sub1plot.visual('gas','metallicity',4,1)
+#sub1plot.visual('gas','sfr',4,1)
 
 #print(min(sub1.pstar_coo[:,0]))
 #print(max(sub1.pstar_coo[:,0]))

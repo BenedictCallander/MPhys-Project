@@ -127,7 +127,7 @@ class cutsub:
         with h5py.File(cutout,'r') as f:
             sfr = f['PartType0']['StarFormationRate'][:]
             co_ords = f['PartType0']['Coordinates'][:]
-            hcoldgas  = np.where( (sfr > 0.0))[0]
+            hcoldgas  = np.where((sfr > 0.0))[0]
             self.pgas_coo = f['PartType0']['Coordinates'][hcoldgas]
             self.pgas_m = f['PartType0']['Masses'][hcoldgas]
             self.pgas_vel = f['PartType0']['Velocities'][hcoldgas]
@@ -171,8 +171,7 @@ class cutsub:
             "met":(self.pgas_met),
             "sfr":self.pgas_sfr
             })
-        df=df[df['rad']<5*self.Rhalf]
-        f=df.sample(frac=0.1,replace=False)
+        df = df[df['rad']<5*self.Rhalf]
 
         #print(df)
         self.df = df
@@ -183,7 +182,6 @@ class cutsub:
         z_max = 0.1*spr
         df = df[df['z']<z_max]
         df.rad =10*((df.rad-df.rad.min())/(df.rad.max()-df.rad.min()))
-        self.df = df
         return df
     
     def median_filter(self,dfin):
@@ -210,7 +208,16 @@ class cutsub:
         slope2 = my_pwlf.slopes[1]
         return (slope1,slope2)
     
-
+    def doublepiecewise(self,dfin,breakpoint1,breakpoint2):
+        df = dfin.copy()
+        df.sort_values(by="rad",inplace = True)
+        x0 = np.array([min(df['rad']), breakpoint1,breakpoint2, max(df['rad'])])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=df['sfr'])
+        my_pwlf.fit_with_breaks(x0)
+        slope1 = my_pwlf.slopes[0]
+        slope2 = my_pwlf.slopes[1]
+        slope3 = my_pwlf.slopes[2]
+        return (slope1,slope2,slope3)
 
 class dodirectory:
     def __init__(self,primeID):
@@ -223,41 +230,32 @@ class dodirectory:
         return snapshots,subhalos
 
 def dosingle(sub,snap,prime):
-    try:
-        subhalo = cutsub(sub,snap,'TNG50-1', prime)
-        subhalo.align_dfgen()
-        df= subhalo.filter()
-        df = subhalo.median_filter(df)
-        subID = sub
-        snapID = snap
-        slope1,slope2= subhalo.piecewise(df,3)
-        print("done for subhalo {} snapshot {}".format(sub,snap))
-        return (subID, snapID,slope1,slope2)
-    except OSError as e:
-        return print(e)
-    except TypeError as e:
-        return print(e)
-    except KeyError as e:
-        return print(e)
-    except IndexError as e:
-        return print(e)
-    except ValueError as e:
-        return print(e)
+    subhalo = cutsub(sub,snap,'TNG50-1', prime)
+    subhalo.align_dfgen()
+    df= subhalo.filter()
+    df = subhalo.median_filter(df)
+    subID = sub
+    snapID = snap
+    slope1,slope2= subhalo.piecewise(df,subhalo.Rhalf)
+    print("done for subhalo {} snapshot {}".format(sub,snap))
+    return (subID, snapID,slope1,slope2)
+'''
     
 def dodir(i):
     try:
         data = dodirectory(i)
         snapshots,subhalos = data.getlist()
-        subs = [];snaps=[];s1=[];s2=[]
+        subs = [];snaps=[];s1=[];s2=[];s3=[]
         for j in range(len(snapshots)):
-            subID,snapID,slope1,slope2 = dosingle(subhalos[j],snapshots[j],i)
+            subID,snapID,slope1,slope2= dosingle(subhalos[j],snapshots[j],i)
             subs.append(subID);snaps.append(snapID)
             s1.append(slope1);s2.append(slope2)
-        df = pd.DataFrame({
+            df = pd.DataFrame({
             'subhalo':subs,
             'snapshot':snaps,
             'slope1':s1,
-            'slope2':s2,
+            'slope2':s2
+            
         })
         #returns = Parallel(n_jobs=4)(delayed(dosingle)(subhalos[j],snapshots[j],i)for j in range(4))
         #df = pd.DataFrame(returns,columns = ['subhalo','snapshot','slope1','slope2'])
@@ -266,6 +264,7 @@ def dodir(i):
         return print("done for descendant {}".format(i))
     except OSError as e:
         return print(e)
+    
     except TypeError as e:
         return print(e)
     except KeyError as e:
@@ -275,11 +274,25 @@ def dodir(i):
     except ValueError as e:
         return print(e)
     
-dfyay = pd.read_csv("csv/traceids.csv")
-ids = list(dfyay['id'])
+''' 
+dfyay = pd.read_csv("alllocal33.csv")
+snapshots = list(dfyay['snapshot'])
+subs = list(dfyay['subhalo'])
+primes = list(dfyay['primesub'])
+def doall(i):
+    snap = snapshots[i]
+    sub = subs[i]
+    prime = primes[i]
+    
+    subID, snapID,slope1,slope2 = dosingle(sub,snap,prime)
+    return subID, snapID, slope1, slope2, prime
+    
+
 #for i in ids:
 #    dodir(i)
-returns = Parallel(n_jobs=25)(delayed(dodir)(i) for i in ids)
+returns = Parallel(n_jobs=25)(delayed(doall)(i) for i in range(len(subs)))
+df = pd.DataFrame(returns, columns = ['sub', 'snapshot', 'slope1', 'slope2','prime' ])
+df.to_csv("alldone.csv")
 
 #208568
 '''

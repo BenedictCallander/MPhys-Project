@@ -11,6 +11,33 @@ import BCUTILS
 from subobj import subhalo
 
 from BCUTILS import UTILITY,plots
+
+dfin = pd.read_csv("csv/alldatadone.csv")
+
+snapshots=[21,33,50,67,78,91,99]
+'''
+for i in snapshots:
+    dfsnap = dfin[dfin['snapshot'].isin([i])].copy()
+    x = list(dfsnap['slope1'])
+    vals = []
+    for j in range(len(x)):
+        val = BCUTILS.shapeanalysis.get_inner_direction(x[j])
+        vals.append(val)
+    dfsnap.insert(7,"shape",vals,True)
+    dfsnap.to_csv("shapes{}.csv".format(i)) 
+    print("done for {}".format(i))
+
+'''
+for i in snapshots:
+    df = pd.read_csv("shapes{}.csv".format(i))
+    df1 = df[df['shape'].isin([1])].copy()
+    df2 = df[df['shape'].isin([2])].copy()
+    df3 = df[df['shape'].isin([3])].copy()
+    print("{} Total {}: number of:\n 1:{}\n 2:{}\n 3:{}".format(i,len(df.index),len(df1.index)/len(df.index),len(df2.index)/len(df.index),len(df3.index)/len(df.index)))
+
+    
+
+'''
 sub = subhalo("TNG50-1",99,117250)
 sub.galcen()
 sub.ang_mom_align('gas')
@@ -22,7 +49,6 @@ print(dfg2)
 
 subvis=plots(19)
 subvis.met_histogram(dfg2,'Y')
-'''
 
 dfin = pd.read_csv("csv/tng67MAIN.csv")
 ids = list(dfin['id'])

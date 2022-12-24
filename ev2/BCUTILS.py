@@ -409,10 +409,10 @@ class shapeanalysis:
         
     def get_char_2D(x,y):
         #shape 1: steep negative inner:
-        if x<-0.3 and y<0:
+        if x<-0.1 and y<0:
             return 1 
         #shape 2: steep positive inner:
-        elif x>0.3 and y<0:
+        elif x>0.1 and y<0:
             return 2
         #shape 3: anything else 
         else:

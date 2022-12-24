@@ -70,6 +70,9 @@ ax3.set_xlabel("Radius (Normalised Code Units)")
 ax3.set_ylabel("12+$log_{10}$ $(O/H)$")
 
 
+
+
+
 fig.colorbar(im0, cax=cax0, orientation='vertical')
 fig.colorbar(im1, cax=cax1, orientation='vertical')
 fig.colorbar(im2, cax=cax2, orientation='vertical')
