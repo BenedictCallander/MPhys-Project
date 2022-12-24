@@ -12,13 +12,13 @@ from subobj import subhalo
 
 from BCUTILS import UTILITY,plots
 
-dfin = pd.read_csv("csv/alldatadone.csv")
+dfin = pd.read_csv("csv/alldatadonebreak.csv")
 
 snapshots=[21,33,50,67,78,91,99]
 '''
 for i in snapshots:
     dfsnap = dfin[dfin['snapshot'].isin([i])].copy()
-    x = list(dfsnap['slope1'])
+    x = list(dfsnap['breakpoint'])
     vals = []
     for j in range(len(x)):
         val = BCUTILS.shapeanalysis.get_inner_direction(x[j])
@@ -27,7 +27,6 @@ for i in snapshots:
     dfsnap.to_csv("shapes{}.csv".format(i)) 
     print("done for {}".format(i))
 
-'''
 for i in snapshots:
     df = pd.read_csv("shapes{}.csv".format(i))
     df1 = df[df['shape'].isin([1])].copy()
@@ -35,7 +34,13 @@ for i in snapshots:
     df3 = df[df['shape'].isin([3])].copy()
     print("{} Total {}: number of:\n 1:{}\n 2:{}\n 3:{}".format(i,len(df.index),len(df1.index)/len(df.index),len(df2.index)/len(df.index),len(df3.index)/len(df.index)))
 
-    
+'''
+
+for i in snapshots:
+    dfsnap = dfin[dfin['snapshot'].isin([i])].copy()
+    x = list(dfsnap['breakrad'])
+    print("snapshot {} mean breakpoint is {}".format(i,np.mean(x)))
+    #print("snapshot {} median breakpoint is {}".format(i,np.median(x)))
 
 '''
 sub = subhalo("TNG50-1",99,117250)

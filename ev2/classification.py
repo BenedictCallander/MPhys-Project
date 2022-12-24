@@ -37,17 +37,16 @@ def get(path, params = None):
     return r
 
 
-baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/99/subhalos/"
-sfr_q = "?limit=17553&sfr__gt=0.0"
+baseurl = "https://www.tng-project.org/api/TNG50-1/snapshots/91/subhalos/"
+sfr_q = "?limit=18990&sfr__gt=0.0"
 sfrurl = baseurl+sfr_q
 sfrsubs = get(sfrurl)
-mass=[]
-sfr=[]
 
 sfr_ids = [sfrsubs['results'][i]['id'] for i in range(sfrsubs['count'])]
 mass_sfr = []
 sfr_sfr = []
 urls = []
+
 for i,id in enumerate(sfr_ids):
     mass_sfr.append(sfrsubs['results'][i]['mass_log_msun'])
     sfr_sfr.append(sfrsubs['results'][i]['sfr'])
@@ -64,7 +63,7 @@ yvals = np.linspace(10e-6,10e3,100)
 def line(m,x,b):
     y = 10**((m*x)+b)
     return y 
-#df_analysis.to_csv('csv/tng33subhalos.csv')
+df_analysis.to_csv('csv/tng91subhalos.csv')
 def line2(m,x,b):
     y = (m*x)+b
     return y
@@ -82,7 +81,7 @@ plt.ylabel("Star Formation Rate [$M_\odot / yr$]",fontsize=20)
 plt.ylim(-6,3)
 plt.xlim(7,14)
 plt.legend(loc='upper right')
-plt.savefig("classif2.png")
+plt.savefig("classif91.png")
 plt.close()
 
 end=time.time()

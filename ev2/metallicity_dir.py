@@ -210,6 +210,16 @@ class cutsub:
         slope2 = my_pwlf.slopes[1]
         return (slope1,slope2)
     
+    def getbreaks(self,dfin):
+        df = dfin.copy()
+        x = list(df['rad'])
+        y = list(df['met'])
+        piecewise_model = pwlf.PiecewiseLinFit(x, y)
+        num_breaks = 1
+        piecewise_model.fit(num_breaks)
+        breaks = piecewise_model.fit_guess([6.0])
+        return breaks[1]
+    
 
 
 class dodirectory:
@@ -230,9 +240,9 @@ def dosingle(sub,snap,prime):
         df = subhalo.median_filter(df)
         subID = sub
         snapID = snap
-        slope1,slope2= subhalo.piecewise(df,3)
+        breakrad = subhalo.getbreaks(df)
         print("done for subhalo {} snapshot {}".format(sub,snap))
-        return (subID, snapID,slope1,slope2)
+        return (subID, snapID,breakrad)
     except OSError as e:
         return print(e)
     except TypeError as e:
@@ -248,20 +258,19 @@ def dodir(i):
     try:
         data = dodirectory(i)
         snapshots,subhalos = data.getlist()
-        subs = [];snaps=[];s1=[];s2=[]
+        subs = [];snaps=[];breakrads = []
         for j in range(len(snapshots)):
-            subID,snapID,slope1,slope2 = dosingle(subhalos[j],snapshots[j],i)
+            subID,snapID,breakrad = dosingle(subhalos[j],snapshots[j],i)
             subs.append(subID);snaps.append(snapID)
-            s1.append(slope1);s2.append(slope2)
+            breakrads.append(breakrad)
         df = pd.DataFrame({
             'subhalo':subs,
             'snapshot':snaps,
-            'slope1':s1,
-            'slope2':s2,
+            'breakrad':breakrad
         })
         #returns = Parallel(n_jobs=4)(delayed(dosingle)(subhalos[j],snapshots[j],i)for j in range(4))
         #df = pd.DataFrame(returns,columns = ['subhalo','snapshot','slope1','slope2'])
-        fpath = "files/historycutouts/evdir_{}/slope{}.csv".format(i,i)
+        fpath = "files/historycutouts/evdir_{}/slopebreakpoint{}.csv".format(i,i)
         df.to_csv(fpath)
         return print("done for descendant {}".format(i))
     except OSError as e:

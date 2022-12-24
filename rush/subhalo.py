@@ -388,7 +388,6 @@ class subhalo:
 
     def broken_fit(self,dfin):
         df = dfin.copy()
-        print(df)
         breakpoint = 10*((self.Rhalf-df.rad.min())/(df.rad.max()-df.rad.min()))
         x0 = np.array([df.rad.min(),breakpoint,df.rad.max()])
         my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=df['sfr'])
@@ -397,6 +396,7 @@ class subhalo:
         slope2 = my_pwlf.slopes[1]
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
+        print(breakpoint)
         return(slope1,slope2)
     
     def linear_fit(self,dfin):
@@ -458,7 +458,7 @@ class subhalo:
 #--------------------------------------------------------------------------------------------------------------------------------------|
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",67,i)
         if sub.test<10:
             print("not enough gas cells to continue")
         else:
@@ -468,13 +468,13 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             dfg3 = sub.median_profile(dfg2)
-            breakrad = sub.getbreaks(dfg3)
+            slope1,slope2 = sub.broken_fit(dfg3)
             idval=i
             met = sub.tot_met
             sfr = sub.totsfr
             Rhalf = sub.Rhalf
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
-            return (met,idval,sfr,breakrad,Rhalf)
+            return (met,idval,sfr,slope1,slope2,Rhalf)
 
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -520,13 +520,13 @@ sub.broken_fit(dfg3)
 
 #dfg3.to_csv("sfr2.csv")
 sim = 99
-dfin = pd.read_csv("csv/tng99MAIN.csv")
+dfin = pd.read_csv("tng67MS.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
-returns = Parallel(n_jobs= 25)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['met','id','sfr','breakpoint','Rhalf'])
+returns = Parallel(n_jobs= 40)(delayed(subhalo_analysis)(i) for i in valid_id)
+df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','Rhalf'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng99breakrad.csv")
+df2.to_csv("tng67slopes.csv")
 
 
 
