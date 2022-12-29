@@ -170,7 +170,7 @@ class subhalo:
         # We convert these to pkpc (proper kpc), Msun and km/s, respectively
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
-        hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        hcoldgas  = np.where((gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         #hcoldgas  = np.where((np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         self.test = len(hcoldgas)
         #print(hcoldgas)
@@ -182,10 +182,11 @@ class subhalo:
         self.pgas_vel   = self.pgas_vel * self.conv_kms2kpcyr    #Convert to kpc/yr
         self.pgas_sfr   = gas['StarFormationRate'][hcoldgas]
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
+        self.pgas_met = ((self.pgas_met*0.35*0.0127)/(0.74*self.pgas_met*16))
         self.pgas_dens = gas['Density'][hcoldgas]
         self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
         #self.abundance_O =gas['GFM_Metals'][:,4][hcoldgas]
-        #self.abundance_H = gas['GFM_Metals'][:,0][hcoldgas]
+        #self.abundance_H = gas['GFM_Metals'][:,1][hcoldgas]
         #self.pgas_met= self.abundance_O/self.abundance_H
         # 
         #Load all stellar particle data
@@ -397,11 +398,15 @@ class subhalo:
         slope2 = my_pwlf.slopes[1]
         xHat = np.linspace(min(df['rad']), max(df['rad']), num=10000)
         yHat = my_pwlf.predict(xHat)
+        plt.figure()
+        plt.plot(df['rad'],12+np.log10(df['met']),'r-')
+        plt.savefig("OHfits/tng99/subhalo_{}".format(self.subID))
         return(slope1,slope2)
     
     def linear_fit(self,dfin):
         df = dfin.copy()
-        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],12+np.log10(df['met']),sigma = 1/df['sfr'], absolute_sigma= True)
+        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],np.log10(df['met'])+12,sigma = 1/df['sfr'], absolute_sigma= True)
+           
         return (popt[0],df.rad.max())
     
     def getbreaks(self,dfin):
@@ -547,7 +552,7 @@ returns = Parallel(n_jobs= 30)(delayed(subhalo_analysis)(i) for i in valid_id)
 #df2=pd.DataFrame(returns,columns=['met','id','sfr','slope','maxrad','minval','maxval','change','Rhalf'])
 df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','Rhalf'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv/broken99.csv")
+df2.to_csv("csv2/OH99.csv")
 
 
 

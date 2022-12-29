@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("csv/broken99.csv")
+df = pd.read_csv("csv2/OH99.csv")
 '''
 plt.figure(figsize=(20,15))
 plt.plot(np.log10(df.mass), df.slope, 'r+')
@@ -34,7 +34,7 @@ plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewi
 #plt.ylim(-2,1)
 plt.tight_layout()
 plt.colorbar().set_label(label="Metallicity Gradient (dex $Kpc^{-1}$)",size=15)
-plt.savefig("csv/ffs_99.png")
+plt.savefig("csv2/OH_99.png")
 plt.close()
 
 '''

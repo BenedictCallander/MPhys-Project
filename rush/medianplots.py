@@ -2,19 +2,20 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-'''
+right_rad = np.linspace(0,10,101)
 
 def getfname(i):
-    fname = ("332slopes/slopedata_{}.csv".format(i))
+    fname = ("992slopes/slopedata_{}.csv".format(i))
     return fname
-
-dfin = pd.read_csv("tng33MS.csv")
+'''
+dfin = pd.read_csv("tng99MS.csv")
 dfin.mass = np.log10(dfin.mass)
-#dfin = dfin[dfin['mass']>9.5]
+dfin = dfin[dfin['mass']<9.5]
 ids = list(dfin['id'])
 
 
 df_list = []
+total_not_done = 0
 for i in ids:
     try:
         fname = getfname(i)
@@ -23,30 +24,25 @@ for i in ids:
         df_list.append(dftemp)
     except FileNotFoundError:
         print(i)
-
+        total_not_done = total_not_done+1
+print(total_not_done)
 df = pd.concat(df_list)
-median_plot = df.groupby('rad').median()
-median_plot.to_csv("sfrmed33.csv")
-'''
-
-def line(m,x,b):
-    y=(m*x)+b
-    return y
+median_plot = df.groupby('rad').mean()
+median_plot.to_csv("low99.csv")
+plt.plot(right_rad, median_plot['met'], 'r-')
+plt.savefig("temp.png")
 
 
 
-df1=pd.read_csv("sfrmed33.csv")
-df2=pd.read_csv("sfrmed67.csv")
-df3=pd.read_csv("sfrmed99.csv")
-right_rad = np.linspace(0,10,101)
-popt,pcov = curve_fit(line, right_rad, 12+np.log10(df1['met']))
-popt1,pcov = curve_fit(line, right_rad, 12+np.log10(df2['met']))
-popt2,pcov = curve_fit(line, right_rad, 12+np.log10(df3['met']))
+
+
+
+
 print(popt[0])
 print(popt1[0])
 print(popt2[0])
 
-'''
+
 plt.figure(figsize=(15,10))
 
 plt.plot(right_rad,12+np.log10(df1['met']), 'r-',label="z~2: slope = {:.4f}".format(popt[0]))
@@ -63,14 +59,24 @@ plt.legend(loc="upper right")
 
 plt.savefig("temp.png")
 '''
-df33 = pd.read_csv("high33.csv")
-df332 = pd.read_csv("low33.csv")
+def line(m,x,b):
+    y=(m*x)+b
+    return y
+df1=pd.read_csv("sfrmed33.csv")
+df2=pd.read_csv("sfrmed67.csv")
+df3=pd.read_csv("sfrmed99.csv")
+right_rad = np.linspace(0,10,101)
+popt,pcov = curve_fit(line, right_rad, 12+np.log10(df1['met']))
+popt1,pcov = curve_fit(line, right_rad, 12+np.log10(df2['met']))
+popt2,pcov = curve_fit(line, right_rad, 12+np.log10(df3['met']))
+df332 = pd.read_csv("high33.csv")
+df33 = pd.read_csv("low33.csv")
 
-df67 = pd.read_csv("high67.csv")
-df672 = pd.read_csv("low67.csv")
+df672 = pd.read_csv("high67.csv")
+df67 = pd.read_csv("low67.csv")
 
-df99 = pd.read_csv("high99.csv")
-df992 = pd.read_csv("low99.csv")
+df992 = pd.read_csv("high99.csv")
+df99 = pd.read_csv("low99.csv")
 
 fig,axs = plt.subplots(1,2,figsize=(20,8))
 for i in range(2):
@@ -102,8 +108,8 @@ axs[1].set_title("Median Metallicity Profiles for TNG50-1 Subhalo Population",fo
 
 fig.tight_layout()
 fig.savefig("temp2.png")
-'''
 
+'''
 # Calculate the median plot
 
 right_rad = np.linspace(0,10,101)
@@ -130,3 +136,4 @@ plt.plot(right_rad, 12+np.log10(df992['met']),'c-',label = "$9.5<m<12  M_{\odot}
 plt.legend(loc="upper right")
 plt.savefig("med_all.png")
 '''
+
