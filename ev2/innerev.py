@@ -14,16 +14,18 @@ maxvals = [] ; minvals = [] ; meanvals = []
 dftemp = pd.read_csv("csv/alldatadone.csv")
 dftemp = dftemp.groupby(['snapshot']).mean().reset_index()
 for i in valids:
-    dftry =pd.read_csv('csv/alldatadone.csv')
+    dftry =pd.read_csv('csv/alldatadone2.csv')
     dftry= dftry[dftry['snapshot'].isin([i])]
-    maxvals.append(max(dftry['slope1']))
-    minvals.append(min(dftry['slope1']))
-    meanvals.append(np.mean(dftry['slope1']))
-print(maxvals,minvals)
+    maxvals.append(max(dftry['slope2']))
+    minvals.append(min(dftry['slope2']))
+    meanvals.append(np.mean(dftry['slope2']))
+print(maxvals)
+print(minvals)
+print(meanvals)
 
 
     
-
+'''
 plt.figure(figsize=(20,12))
 plt.title("Evolution of Inner slope for TNG50-1 subhalos",fontsize=25)
 plt.plot(valids,maxvals,'k+',ms=10)
@@ -36,3 +38,4 @@ plt.yticks(fontsize=15)
 plt.tight_layout()
 plt.savefig('iner_Ev.png')
 plt.close()
+'''

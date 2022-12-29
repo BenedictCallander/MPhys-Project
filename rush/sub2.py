@@ -171,10 +171,10 @@ class subhalo:
         crit_dist = 5 * self.Rhalf #30. # proper kpc
         self.crit_dist = crit_dist
         hcoldgas  = np.where( (gas['StarFormationRate'] > 0.0) & (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
+        #hcoldgas  = np.where((np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2) )[0]
         self.test = len(hcoldgas)
         #print(hcoldgas)
         #print(len(hcoldgas1), len(hcoldgas2))
-        #hcoldgas  = (np.sum((gas['Coordinates']/hubble / (1. + redshift) - self.centre[None,:])**2, axis=1) < crit_dist**2)
         self.pgas_coo   = gas['Coordinates'][hcoldgas]/hubble / (1. + redshift)
         self.pgas_m     = gas['Masses'][hcoldgas] * 10**10 / hubble
         self.pgas_vel   = (gas['Velocities'][hcoldgas] * np.sqrt(scalefac)) - all_fields['SubhaloVel'][None,:]
@@ -371,6 +371,7 @@ class subhalo:
 
         '''
         df = dfin.copy()
+        self.breakpoint = 10*((self.Rhalf-df.rad.min())/(df.rad.max()-df.rad.min()))
         scaleheight = 0.1* self.stellarphotometricsrad
         df = df[df['z']<scaleheight]
         df.rad = scale*((df.rad-df.rad.min())/(df.rad.max()-df.rad.min()))
@@ -388,9 +389,9 @@ class subhalo:
 
     def broken_fit(self,dfin):
         df = dfin.copy()
-        #breakpoint = 10*((self.Rhalf-df.rad.min())/(df.rad.max()-df.rad.min()))
-        x0 = np.array([df.rad.min(),2,df.rad.max()])
-        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=df['sfr'])
+        
+        x0 = np.array([df.rad.min(),self.breakpoint,df.rad.max()])
+        my_pwlf = pwlf.PiecewiseLinFit(df['rad'], 12+np.log10(df['met']),weights=1/df['sfr'])
         my_pwlf.fit_with_breaks(x0)
         slope1 = my_pwlf.slopes[0]
         slope2 = my_pwlf.slopes[1]
@@ -400,9 +401,8 @@ class subhalo:
     
     def linear_fit(self,dfin):
         df = dfin.copy()
-        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'],sigma = df['sfr'], absolute_sigma= True)
-        x0 = np.array([df.rad.min(),breakpoint,df.rad.max()])
-        return popt[0]
+        popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],12+np.log10(df['met']),sigma = 1/df['sfr'], absolute_sigma= True)
+        return (popt[0],df.rad.max())
     
     def getbreaks(self,dfin):
         df = dfin.copy()
@@ -411,7 +411,9 @@ class subhalo:
         piecewise_model = pwlf.PiecewiseLinFit(x, y)
         num_breaks = 1
         piecewise_model.fit(num_breaks)
-        breaks = piecewise_model.fit_guess([5.0])
+        breaks = piecewise_model.fit_guess([self.breakpoint])
+        self.breakpoint2 = breaks[1]
+        print(self.breakpoint2)
         return breaks[1]
     
     def fit_and_compare(self,dfin):
@@ -447,17 +449,29 @@ class subhalo:
         else:
             #print("Piecewise fit is better according to AIC")
             return 2
+
+    def bootstrap(self,dfin,runs,frac):
+        df = dfin.copy()
+        self.gradients = []
+        for i in range(runs):
+            sample = df.sample(frac=frac, replace=False)
+            popt,pcov = curve_fit(UTILITY.linear_fit, sample['rad'],12+np.log10(sample['met']),sigma = 1/sample['sfr'], absolute_sigma= True)
+            self.gradients.append(popt[0])
+        
+        minval = min(self.gradients)
+        maxval = max(self.gradients)
+        
+        return minval,maxval            
 #-------------------------------------------------------------------------------------------------------------------------------------|
 #set simulation snapshot and get IDS for star forming subhalos -> pass to function to create object for each/ perform analysis on all |
 #-------------------------------------------------------------------------------------------------------------------------------------|
-
 
 #--------------------------------------------------------------------------------------------------------------------------------------|
 #Function to generate subhalo object using class and specify analysis functions to be run -> function allows parallelisation to be used|
 #--------------------------------------------------------------------------------------------------------------------------------------|
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<10:
             print("not enough gas cells to continue")
         else:
@@ -467,6 +481,12 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             dfg3 = sub.median_profile(dfg2)
+            #slope, maxrad = sub.linear_fit(dfg2)
+            #minval,maxval=sub.bootstrap(dfg2,20,0.2)
+            #change=100*((slope-minval)/(maxval-minval))
+            #print("max-min = {}".format(change))
+            #fname = ("332slopes/slopedata_{}.csv".format(i))
+            #dfg3.to_csv(fname)
             slope1,slope2 = sub.broken_fit(dfg3)
             idval=i
             met = sub.tot_met
@@ -474,6 +494,7 @@ def subhalo_analysis(i):
             Rhalf = sub.Rhalf
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
             return (met,idval,sfr,slope1,slope2,Rhalf)
+            #return (met,idval,sfr,slope,maxrad,minval,maxval,change, Rhalf)
 
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -519,13 +540,15 @@ sub.broken_fit(dfg3)
 
 #dfg3.to_csv("sfr2.csv")
 sim = 99
-dfin = pd.read_csv("tng33MS.csv")
+dfin = pd.read_csv("tng99MS.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
-returns = Parallel(n_jobs= 40)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 30)(delayed(subhalo_analysis)(i) for i in valid_id)
+#df2=pd.DataFrame(returns,columns=['met','id','sfr','slope','maxrad','minval','maxval','change','Rhalf'])
 df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','Rhalf'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng33slopes.csv")
+df2.to_csv("csv/broken99.csv")
+
 
 
 

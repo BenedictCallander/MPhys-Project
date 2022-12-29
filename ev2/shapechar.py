@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def shapemeans(i):
-    df = pd.read_csv("alldatadone.csv")
+    df = pd.read_csv("csv/alldatadone.csv")
     df.dropna()
     df = df[df['snapshot'].isin([i])]
     slopes1 =list(df['slope1'])
