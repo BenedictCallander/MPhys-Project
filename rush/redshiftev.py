@@ -21,24 +21,26 @@ from joblib import Parallel, delayed
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt, savgol_filter
 
-df33= pd.read_csv("csv/tng33bkpc.csv")
-df67= pd.read_csv("csv/tng67bkpc.csv")
-df99= pd.read_csv("csv/tng99bkpc.csv")
+df33= pd.read_csv("csv/ffs33.csv")
+df67= pd.read_csv("csv/ffs67.csv")
+df99= pd.read_csv("csv/ffs99.csv")
 
-[7,8,9,10,11,12]
-lower = 7
-upper = 8
-i=0
 
 def do(dfin):
-    df = dfin.copy()
-    df = df.dropna()
-    slope1 = list(df['slope1'])
-    slope2 = list(df['slope2'])
-    mean1 = np.var(slope1)
-    mean2 = np.var(slope2)
-    print("mean slope1: {} slope2: {}".format(mean1,mean2))
-
-do(df33)
-do(df67)
+    lower = 7
+    upper = 8
+    slopes = [] ; vars = []
+    while upper<=12:
+        df = dfin.copy()
+        df = df.dropna()
+        df.mass = np.log10(df.mass/0.7)
+        df = df[df['mass']<upper].copy()
+        df = df[df['mass']>lower].copy()
+        slope = list(df['slope'])
+        mean = np.mean(slope)
+        slopes.append(mean)
+        vars.append(np.var(slope)) 
+        print("from mass {} slope = {}: var = {}: Nslopes = {}".format(lower, mean,np.var(slope),len(slope)))
+        lower = upper
+        upper = upper+1
 do(df99)

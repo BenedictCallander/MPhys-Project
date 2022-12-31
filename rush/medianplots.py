@@ -5,10 +5,10 @@ from scipy.optimize import curve_fit
 right_rad = np.linspace(0,10,101)
 
 def getfname(i):
-    fname = ("992slopes/slopedata_{}.csv".format(i))
+    fname = ("672slopes/slopedata_{}.csv".format(i))
     return fname
-'''
-dfin = pd.read_csv("tng99MS.csv")
+
+dfin = pd.read_csv("tng67MS.csv")
 dfin.mass = np.log10(dfin.mass)
 dfin = dfin[dfin['mass']<9.5]
 ids = list(dfin['id'])
@@ -28,7 +28,7 @@ for i in ids:
 print(total_not_done)
 df = pd.concat(df_list)
 median_plot = df.groupby('rad').mean()
-median_plot.to_csv("low99.csv")
+median_plot.to_csv("low67.csv")
 plt.plot(right_rad, median_plot['met'], 'r-')
 plt.savefig("temp.png")
 
@@ -37,7 +37,7 @@ plt.savefig("temp.png")
 
 
 
-
+'''
 print(popt[0])
 print(popt1[0])
 print(popt2[0])
@@ -58,7 +58,7 @@ plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewi
 plt.legend(loc="upper right")
 
 plt.savefig("temp.png")
-'''
+
 def line(m,x,b):
     y=(m*x)+b
     return y
@@ -110,30 +110,3 @@ fig.tight_layout()
 fig.savefig("temp2.png")
 
 '''
-# Calculate the median plot
-
-right_rad = np.linspace(0,10,101)
-
-plt.figure(figsize=(15,10),dpi=500)
-plt.title("Median Metallicity Profiles",fontsize=20)
-plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, width =1)
-plt.xlabel("Radial Distance (Normalised Code Units)",fontsize=15)
-plt.ylabel("12 + $log_{10}$(O/H)",fontsize=15)
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
-plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.7,alpha =1)
-plt.plot(right_rad, 12+np.log10(df33['met']),'r-',label = " $7<m<9.5  M_{\odot}$:z~2")
-plt.plot(right_rad, 12+np.log10(df332['met']),'y-',label = "$9.5<m<12  M_{\odot}$:z~2")
-
-plt.plot(right_rad, 12+np.log10(df67['met']),'b-',label = "$7<m<9.5  M_{\odot}$:z~0.5")
-plt.plot(right_rad, 12+np.log10(df672['met']),'g-',label = "$9.5<m<12  M_{\odot}$:z~0.5")
-
-
-plt.plot(right_rad, 12+np.log10(df99['met']),'k-',label = "$7<m<9.5  M_{\odot}$:z~0")
-plt.plot(right_rad, 12+np.log10(df992['met']),'c-',label = "$9.5<m<12  M_{\odot}$:z~0")
-
-
-plt.legend(loc="upper right")
-plt.savefig("med_all.png")
-'''
-

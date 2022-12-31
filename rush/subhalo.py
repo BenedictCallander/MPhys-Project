@@ -182,6 +182,7 @@ class subhalo:
         self.pgas_vel   = self.pgas_vel * self.conv_kms2kpcyr    #Convert to kpc/yr
         self.pgas_sfr   = gas['StarFormationRate'][hcoldgas]
         self.pgas_met   =gas['GFM_Metallicity'][hcoldgas]
+        self.pgas_met = 8.69 + np.log10(self.pgas_met) - np.log10(0.0127)
         self.pgas_dens = gas['Density'][hcoldgas]
         self.pgas_sfr= gas['StarFormationRate'][hcoldgas]
         #self.abundance_O =gas['GFM_Metals'][:,4][hcoldgas]
@@ -402,6 +403,9 @@ class subhalo:
         df = dfin.copy()
         popt,pcov = curve_fit(UTILITY.linear_fit, df['rad'],df['met'],sigma = df['sfr'], absolute_sigma= True)
         x0 = np.array([df.rad.min(),breakpoint,df.rad.max()])
+        plt.figure()
+        plt.plot(df['rad'],df['met'],'r.')
+        plt.savefig("oh/temp{}.png".format(self.subID))
         return popt[0]
     
     def getbreaks(self,dfin):
@@ -457,7 +461,7 @@ class subhalo:
 #--------------------------------------------------------------------------------------------------------------------------------------|
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",33,i)
+        sub = subhalo("TNG50-1",99,i)
         if sub.test<10:
             print("not enough gas cells to continue")
         else:
@@ -467,13 +471,13 @@ def subhalo_analysis(i):
             dfg = sub.df_gen('gas','comb')
             dfg2 = sub.combfilter(dfg,10)
             dfg3 = sub.median_profile(dfg2)
-            slope1,slope2 = sub.broken_fit(dfg3)
+            slope = sub.linear_fit(dfg3)
             idval=i
             met = sub.tot_met
             sfr = sub.totsfr
             Rhalf = sub.Rhalf
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
-            return (met,idval,sfr,slope1,slope2,Rhalf)
+            return (met,idval,sfr,slope,Rhalf)
 
     except ValueError as e:
         #fname = "errors/errors{}.txt".format(i)
@@ -519,13 +523,13 @@ sub.broken_fit(dfg3)
 
 #dfg3.to_csv("sfr2.csv")
 sim = 99
-dfin = pd.read_csv("tng33MS.csv")
+dfin = pd.read_csv("tng99MS.csv")
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
 returns = Parallel(n_jobs= 40)(delayed(subhalo_analysis)(i) for i in valid_id)
-df2=pd.DataFrame(returns,columns=['met','id','sfr','slope1','slope2','Rhalf'])
+df2=pd.DataFrame(returns,columns=['met','id','sfr','slope','Rhalf'])
 df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("tng33slopes.csv")
+df2.to_csv("tng99oh.csv")
 
 
 

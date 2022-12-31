@@ -150,16 +150,23 @@ class subhalo:
         all_fields= il.groupcat.loadSingle(basePath, snapID, subhaloID = subID)
         self.test=all_fields['SubhaloMassInRadType'][ptNumGas]
         self.tot_met = all_fields['SubhaloGasMetallicity']
+        self.tot_met = 8.69 + np.log10(self.tot_met) - np.log10(0.0127)
+        self.rad_met = all_fields['SubhaloGasMetallicityHalfRad']
+        self.rad_met = 8.69 + np.log10(self.rad_met) - np.log10(0.0127)
         self.m_tot = all_fields['SubhaloMass']
-        self.totsfr = all_fields['SubhaloSFRinHalfRad']
-        self.lMgas  = np.log10( all_fields['SubhaloMassInRadType'][ptNumGas]/hubble ) + 10.
-        self.lMstar = np.log10( all_fields['SubhaloMassInRadType'][ptNumStars]/hubble ) + 10.
+        self.totsfr = all_fields['SubhaloSFR']
+        self.radsfr = all_fields['SubhaloSFRinHalfRad']
+        self.totMstar = all_fields['SubhaloMassType'][ptNumStars]
+        self.Mgas  = all_fields['SubhaloMassInRadType'][ptNumGas]
+        self.Mstar = all_fields['SubhaloMassInRadType'][ptNumStars]
         # Coordinate of particle with minimum binding energy (converted from ckpc/h to kpc)
         self.centre = all_fields['SubhaloPos']/hubble / (1. + redshift)  # 3-element array [units: proper kpc]
         # Adopt the 3D half-stellar-mass radius
         self.Rhalf  = all_fields['SubhaloHalfmassRadType'][ptNumStars]/hubble / (1. + redshift)  
         self.stellarphotometricsrad = all_fields['SubhaloStellarPhotometricsRad']
         self.Rhalfdouble  = all_fields['SubhaloHalfmassRadType']
+        # [units: proper kpc] (quantified in 3D)
+        # Load all the relevant particle level info
         # [units: proper kpc] (quantified in 3D)
         # Load all the relevant particle level info
         gas = il.snapshot.loadSubhalo(basePath, snapID, subID, 'gas', fields=['Coordinates', 'Masses','Density','Velocities', 'StarFormationRate','GFM_Metallicity','GFM_Metals'])
@@ -456,7 +463,7 @@ class subhalo:
         self.gradients = []
         for i in range(runs):
             sample = df.sample(frac=frac, replace=False)
-            popt,pcov = curve_fit(UTILITY.linear_fit, sample['rad'],12+np.log10(sample['met']),sigma = 1/sample['sfr'], absolute_sigma= True)
+            popt,pcov = curve_fit(UTILITY.linear_fit, sample['rad'],(sample['met']),sigma = 1/sample['sfr'], absolute_sigma= True)
             self.gradients.append(popt[0])
         
         minval = min(self.gradients)
@@ -472,7 +479,7 @@ class subhalo:
 #--------------------------------------------------------------------------------------------------------------------------------------|
 def subhalo_analysis(i):
     try:
-        sub = subhalo("TNG50-1",99,i)
+        sub = subhalo("TNG50-1",33,i)
         if sub.test<10:
             print("not enough gas cells to continue")
         else:
@@ -487,13 +494,13 @@ def subhalo_analysis(i):
             #minval,maxval=sub.bootstrap(dfg2,20,0.1)
             #change=100*((slope-minval)/(maxval-minval))
             #print("max-min = {}".format(change))
-            fname = ("992slopes/slopedata_{}.csv".format(i))
+            fname = ("332slopes/slopedata_{}.csv".format(i))
             dfg3.to_csv(fname)
             idval=i
             met = sub.tot_met
             sfr = sub.totsfr
             Rhalf = sub.Rhalf
-            mass = sub.lMstar
+            mass = sub.Mstar
             print("subhalo {} calculated: current runtime: {}".format(i,(time.time()-start)))
             #return (met,idval,sfr,slope1,slope2,Rhalf)
             return (mass,met,idval,sfr,slope,Rhalf,slope1,slope2)
@@ -542,15 +549,16 @@ sub.broken_fit(dfg3)
 
 #dfg3.to_csv("sfr2.csv")
 sim = 99
-dfin = pd.read_csv("tng99MS.csv")
+dfin = pd.read_csv("tng33MS.csv")
+dfin = dfin.dropna()
 #pd.read_csv("csv/tng33MAIN.csv")
 valid_id = list(dfin['id'])
-returns = Parallel(n_jobs= 30)(delayed(subhalo_analysis)(i) for i in valid_id)
+returns = Parallel(n_jobs= 40)(delayed(subhalo_analysis)(i) for i in valid_id)
 #df2=pd.DataFrame(returns,columns=['met','id','sfr','slope','maxrad','minval','maxval','change','Rhalf'])
 df2=pd.DataFrame(returns,columns=['mass','met','id','sfr','slope','Rhalf','slope1','slope2'])
 #df2 =pd.Dataframe(returns,columns = ['met','idval','sfr','minval','maxval','Rhalf'])
 #df2.insert(5,'mass', dfin['mass'],True)
-df2.to_csv("csv2/new99.csv")
+df2.to_csv("csv/tng33slopes.csv")
 
 
 

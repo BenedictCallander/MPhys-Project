@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("csv2/OH99.csv")
+df = pd.read_csv("csv2/new33.csv")
 '''
 plt.figure(figsize=(20,15))
 plt.plot(np.log10(df.mass), df.slope, 'r+')
@@ -17,12 +17,12 @@ plt.close()
 '''
 
 #print(np.mean(df['change']))
-print(min(df['slope2']))
-print(max(df['slope2']))
-print(np.mean(df['slope2']))
+print(min(df['slope']))
+print(max(df['slope']))
+print(np.mean(df['slope']))
 
 plt.figure(figsize=(20,15))
-plt.scatter(np.log10(df['mass']),np.log10(df['sfr']),c= df['slope2'], cmap = 'magma',vmin = -0.08, vmax=0.05)
+plt.scatter((df['mass']),np.log10(df['sfr']),c= df['slope'], cmap = 'magma',vmin = -0.5, vmax=0.08)
 #plt.scatter(np.log10(df['mass']),np.log10(df['sfr']),c= df['slope2'], cmap = 'magma',vmin = -0.1, vmax=0.08)
 plt.xlabel("Log(Total Mass) [$M_\odot$]",fontsize=20)
 plt.ylabel("Log(Star Formation Rate) [$M_\odot / yr$]",fontsize=20)
@@ -30,11 +30,11 @@ plt.tick_params(axis='both', which = 'both', direction='inout', length = 8, widt
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.grid(visible=True,which='both',axis='both',color='grey',linestyle='-',linewidth=0.7,alpha =1)
-#plt.xlim(8.5,11.5)
+plt.xlim(7,11.5)
 #plt.ylim(-2,1)
 plt.tight_layout()
 plt.colorbar().set_label(label="Metallicity Gradient (dex $Kpc^{-1}$)",size=15)
-plt.savefig("csv2/OH_99.png")
+plt.savefig("csv2/OH_33.png")
 plt.close()
 
 '''
